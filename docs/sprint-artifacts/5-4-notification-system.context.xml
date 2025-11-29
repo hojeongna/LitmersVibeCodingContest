@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context story="5-4-notification-system" generated="2025-11-29">
+  <!-- Story Context for In-App & Email Notification System -->
+
+  <story-metadata>
+    <title>인앱 알림 센터 및 이메일 알림</title>
+    <epic>Epic 5 - AI &amp; 대시보드 &amp; 알림</epic>
+    <fr-coverage>FR-090, FR-091</fr-coverage>
+    <priority>P2</priority>
+    <estimated-points>8</estimated-points>
+  </story-metadata>
+
+  <acceptance-criteria>
+    <!-- FR-090: 인앱 알림 -->
+    <criterion id="AC-090-1">헤더에 알림 벨 아이콘 및 읽지 않은 개수 표시</criterion>
+    <criterion id="AC-090-2">벨 클릭 시 알림 드롭다운/페이지 표시</criterion>
+    <criterion id="AC-090-3">담당자 할당 시 실시간 알림 수신</criterion>
+    <criterion id="AC-090-4">댓글 작성 시 이슈 작성자에게 알림</criterion>
+    <criterion id="AC-090-5">마감일 임박 시 알림 (하루 전)</criterion>
+    <criterion id="AC-090-6">알림 클릭 시 읽음 처리 및 해당 이슈로 이동</criterion>
+    <criterion id="AC-090-7">"모두 읽음" 버튼으로 일괄 처리</criterion>
+    <!-- FR-091: 이메일 알림 -->
+    <criterion id="AC-091-1">담당자 할당 시 이메일 발송</criterion>
+    <criterion id="AC-091-2">이메일에 이슈 제목, 링크 포함</criterion>
+    <criterion id="AC-091-3">알림 설정에서 이메일 알림 끄기 가능 (v2)</criterion>
+  </acceptance-criteria>
+
+  <technical-specification>
+    <architecture>
+      <decision id="ADR-003">Supabase Realtime - 인앱 알림 실시간 업데이트</decision>
+      <decision id="ADR-005">API Route Handlers - 알림 CRUD API</decision>
+    </architecture>
+
+    <notification-types>
+      <type name="ASSIGNED">이슈 담당자 할당</type>
+      <type name="COMMENTED">이슈에 댓글 작성</type>
+      <type name="MENTIONED">댓글에서 멘션됨</type>
+      <type name="DUE_SOON">마감일 임박 (1일 전)</type>
+      <type name="STATUS_CHANGED">이슈 상태 변경</type>
+      <type name="TEAM_INVITE">팀 초대</type>
+    </notification-types>
+
+    <api-endpoints>
+      <endpoint method="GET" path="/api/notifications">
+        <description>알림 목록 조회 (FR-090)</description>
+        <query-params>
+          <param name="unread_only" type="boolean" default="false"/>
+          <param name="limit" type="number" default="20"/>
+          <param name="cursor" type="string" optional="true"/>
+        </query-params>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: {
+    notifications: Array<{
+      id: string,
+      type: 'ASSIGNED' | 'COMMENTED' | 'MENTIONED' | 'DUE_SOON' | 'STATUS_CHANGED' | 'TEAM_INVITE',
+      title: string,
+      message: string | null,
+      link: string | null,
+      is_read: boolean,
+      created_at: string,
+      actor?: {
+        name: string,
+        avatar_url: string | null
+      },
+      issue?: {
+        key: string,
+        title: string
+      }
+    }>,
+    unread_count: number,
+    next_cursor: string | null
+  }
+}
+          ]]>
+        </response>
+      </endpoint>
+
+      <endpoint method="PATCH" path="/api/notifications/[id]/read">
+        <description>알림 읽음 처리</description>
+        <response>
+          <![CDATA[
+{ success: true }
+          ]]>
+        </response>
+      </endpoint>
+
+      <endpoint method="POST" path="/api/notifications/read-all">
+        <description>모든 알림 읽음 처리</description>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: { updated_count: number }
+}
+          ]]>
+        </response>
+      </endpoint>
+
+      <endpoint method="GET" path="/api/notifications/unread-count">
+        <description>읽지 않은 알림 개수 조회</description>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: { count: number }
+}
+          ]]>
+        </response>
+      </endpoint>
+    </api-endpoints>
+
+    <data-models>
+      <model name="notifications">
+        <description>알림 테이블 (이미 스키마에 존재)</description>
+        <columns>
+          <column name="id" type="UUID" primary="true"/>
+          <column name="user_id" type="UUID" references="profiles.id">수신자</column>
+          <column name="type" type="string">ASSIGNED | COMMENTED | MENTIONED | DUE_SOON | STATUS_CHANGED | TEAM_INVITE</column>
+          <column name="title" type="string">알림 제목</column>
+          <column name="message" type="string" nullable="true">알림 내용</column>
+          <column name="link" type="string" nullable="true">클릭 시 이동 URL</column>
+          <column name="is_read" type="boolean" default="false"/>
+          <column name="created_at" type="TIMESTAMPTZ"/>
+        </columns>
+        <rls-policies>
+          <policy name="Users can view own notifications">
+            SELECT: auth.uid() = user_id
+          </policy>
+          <policy name="Users can update own notifications">
+            UPDATE: auth.uid() = user_id
+          </policy>
+        </rls-policies>
+      </model>
+    </data-models>
+
+    <realtime-subscription>
+      <![CDATA[
+// 실시간 알림 구독 (Supabase Realtime)
+const supabase = createClient()
+
+const channel = supabase
+  .channel('notifications')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications',
+      filter: `user_id=eq.${userId}`,
+    },
+    (payload) => {
+      // 새 알림 추가
+      addNotification(payload.new as Notification)
+      // 읽지 않은 개수 증가
+      incrementUnreadCount()
+      // Toast 알림 표시
+      showNotificationToast(payload.new as Notification)
+    }
+  )
+  .subscribe()
+      ]]>
+    </realtime-subscription>
+
+    <email-integration>
+      <![CDATA[
+// lib/notifications/email.ts
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+interface SendNotificationEmailParams {
+  to: string
+  type: NotificationType
+  title: string
+  message: string
+  link: string
+  issueKey?: string
+  actorName?: string
+}
+
+export async function sendNotificationEmail({
+  to,
+  type,
+  title,
+  message,
+  link,
+  issueKey,
+  actorName
+}: SendNotificationEmailParams) {
+  const subject = getEmailSubject(type, issueKey)
+
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL || 'Jira Lite <notifications@jiralite.app>',
+    to,
+    subject,
+    html: generateEmailTemplate({
+      type,
+      title,
+      message,
+      link,
+      issueKey,
+      actorName
+    })
+  })
+}
+
+function getEmailSubject(type: NotificationType, issueKey?: string): string {
+  const subjects: Record<NotificationType, string> = {
+    ASSIGNED: `[${issueKey}] 이슈가 할당되었습니다`,
+    COMMENTED: `[${issueKey}] 새 댓글이 작성되었습니다`,
+    MENTIONED: `[${issueKey}] 댓글에서 멘션되었습니다`,
+    DUE_SOON: `[${issueKey}] 마감일이 내일입니다`,
+    STATUS_CHANGED: `[${issueKey}] 이슈 상태가 변경되었습니다`,
+    TEAM_INVITE: '팀 초대를 받았습니다'
+  }
+  return subjects[type]
+}
+      ]]>
+    </email-integration>
+  </technical-specification>
+
+  <implementation-guide>
+    <file-structure>
+      <![CDATA[
+jira-lite-mvp/
+├── app/
+│   ├── (dashboard)/
+│   │   └── notifications/
+│   │       └── page.tsx            # 전체 알림 페이지
+│   └── api/
+│       └── notifications/
+│           ├── route.ts            # GET /api/notifications
+│           ├── read-all/
+│           │   └── route.ts        # POST /api/notifications/read-all
+│           ├── unread-count/
+│           │   └── route.ts        # GET /api/notifications/unread-count
+│           └── [id]/
+│               └── read/
+│                   └── route.ts    # PATCH /api/notifications/[id]/read
+├── components/
+│   └── notifications/
+│       ├── NotificationBell.tsx    # 헤더 벨 아이콘
+│       ├── NotificationDropdown.tsx # 드롭다운 알림 목록
+│       ├── NotificationList.tsx    # 알림 목록
+│       ├── NotificationItem.tsx    # 개별 알림 아이템
+│       ├── NotificationToast.tsx   # 실시간 알림 토스트
+│       └── index.ts
+├── lib/
+│   └── notifications/
+│       ├── service.ts              # 알림 생성/조회 서비스
+│       ├── email.ts                # Resend 이메일 발송
+│       └── templates.ts            # 이메일 템플릿
+└── hooks/
+    ├── use-notifications.ts        # 알림 목록 훅
+    └── use-realtime-notifications.ts # 실시간 알림 훅
+      ]]>
+    </file-structure>
+
+    <component-specs>
+      <component name="NotificationBell">
+        <location>components/notifications/NotificationBell.tsx</location>
+        <props>
+          <![CDATA[
+interface NotificationBellProps {
+  className?: string
+}
+          ]]>
+        </props>
+        <features>
+          <item>벨 아이콘 (Lucide Bell)</item>
+          <item>읽지 않은 개수 뱃지 (빨간색)</item>
+          <item>클릭 시 드롭다운 열기</item>
+          <item>실시간 개수 업데이트</item>
+        </features>
+      </component>
+
+      <component name="NotificationDropdown">
+        <location>components/notifications/NotificationDropdown.tsx</location>
+        <features>
+          <item>최대 5개 최신 알림 표시</item>
+          <item>"모두 읽음" 버튼</item>
+          <item>"전체 보기" 링크</item>
+          <item>빈 상태 메시지</item>
+        </features>
+      </component>
+
+      <component name="NotificationItem">
+        <location>components/notifications/NotificationItem.tsx</location>
+        <props>
+          <![CDATA[
+interface NotificationItemProps {
+  notification: {
+    id: string
+    type: NotificationType
+    title: string
+    message: string | null
+    link: string | null
+    is_read: boolean
+    created_at: string
+    actor?: { name: string; avatar_url: string | null }
+  }
+  onRead: (id: string) => void
+  onClick: (link: string) => void
+}
+          ]]>
+        </props>
+        <features>
+          <item>알림 유형별 아이콘</item>
+          <item>읽지 않은 상태 표시 (파란 점)</item>
+          <item>상대 시간 표시 (2분 전, 1시간 전)</item>
+          <item>클릭 시 읽음 처리 + 이동</item>
+        </features>
+      </component>
+
+      <component name="NotificationToast">
+        <location>components/notifications/NotificationToast.tsx</location>
+        <features>
+          <item>실시간 알림 도착 시 우측 하단 표시</item>
+          <item>5초 후 자동 닫힘</item>
+          <item>클릭 시 해당 페이지로 이동</item>
+          <item>X 버튼으로 닫기</item>
+        </features>
+      </component>
+    </component-specs>
+
+    <notification-trigger-points>
+      <![CDATA[
+// 알림 생성 트리거 포인트
+
+// 1. 이슈 담당자 할당 (app/api/issues/[id]/route.ts 또는 Supabase function)
+async function onIssueAssigned(issue: Issue, assigneeId: string, actorId: string) {
+  await createNotification({
+    user_id: assigneeId,
+    type: 'ASSIGNED',
+    title: '이슈가 할당되었습니다',
+    message: `${issue.key}: ${issue.title}`,
+    link: `/projects/${issue.project_id}/issues/${issue.id}`,
+  })
+
+  // 이메일 발송
+  const assignee = await getProfile(assigneeId)
+  await sendNotificationEmail({
+    to: assignee.email,
+    type: 'ASSIGNED',
+    title: '이슈가 할당되었습니다',
+    message: issue.title,
+    link: `${process.env.NEXT_PUBLIC_APP_URL}/projects/${issue.project_id}/issues/${issue.id}`,
+    issueKey: issue.key,
+    actorName: await getProfile(actorId).then(p => p.name)
+  })
+}
+
+// 2. 댓글 작성 (app/api/issues/[id]/comments/route.ts)
+async function onCommentCreated(comment: Comment, issue: Issue) {
+  // 이슈 작성자에게 알림 (본인 댓글은 제외)
+  if (issue.owner_id !== comment.author_id) {
+    await createNotification({
+      user_id: issue.owner_id,
+      type: 'COMMENTED',
+      title: '새 댓글이 작성되었습니다',
+      message: `${issue.key}: ${comment.content.substring(0, 100)}`,
+      link: `/projects/${issue.project_id}/issues/${issue.id}`,
+    })
+  }
+
+  // 멘션된 사용자에게 알림
+  const mentionedUsers = extractMentions(comment.content) // @username 파싱
+  for (const userId of mentionedUsers) {
+    await createNotification({
+      user_id: userId,
+      type: 'MENTIONED',
+      title: '댓글에서 멘션되었습니다',
+      message: `${issue.key}: ${comment.content.substring(0, 100)}`,
+      link: `/projects/${issue.project_id}/issues/${issue.id}`,
+    })
+  }
+}
+
+// 3. 마감일 임박 (Supabase Edge Function - 매일 실행)
+async function checkDueSoonIssues() {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const { data: issues } = await supabase
+    .from('issues')
+    .select('*')
+    .eq('due_date', tomorrow.toISOString().split('T')[0])
+    .is('deleted_at', null)
+
+  for (const issue of issues) {
+    if (issue.assignee_id) {
+      await createNotification({
+        user_id: issue.assignee_id,
+        type: 'DUE_SOON',
+        title: '마감일이 내일입니다',
+        message: `${issue.key}: ${issue.title}`,
+        link: `/projects/${issue.project_id}/issues/${issue.id}`,
+      })
+    }
+  }
+}
+      ]]>
+    </notification-trigger-points>
+
+    <code-samples>
+      <sample name="notification-bell">
+        <![CDATA[
+// components/notifications/NotificationBell.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Bell } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { NotificationDropdown } from './NotificationDropdown'
+import { useRealtimeNotifications } from '@/hooks/use-realtime-notifications'
+import { cn } from '@/lib/utils'
+
+export function NotificationBell({ className }: { className?: string }) {
+  const { unreadCount, notifications, markAsRead, markAllAsRead } = useRealtimeNotifications()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className={cn('relative', className)}>
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-80">
+        <NotificationDropdown
+          notifications={notifications.slice(0, 5)}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+        ]]>
+      </sample>
+
+      <sample name="realtime-notifications-hook">
+        <![CDATA[
+// hooks/use-realtime-notifications.ts
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/components/providers/auth-provider'
+import { toast } from 'sonner'
+
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string | null
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
+export function useRealtimeNotifications() {
+  const { user } = useAuth()
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const supabase = createClient()
+
+  // 초기 알림 로드
+  useEffect(() => {
+    if (!user) return
+
+    async function fetchNotifications() {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (data) {
+        setNotifications(data)
+        setUnreadCount(data.filter(n => !n.is_read).length)
+      }
+    }
+
+    fetchNotifications()
+  }, [user])
+
+  // 실시간 구독
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotification = payload.new as Notification
+          setNotifications(prev => [newNotification, ...prev])
+          setUnreadCount(prev => prev + 1)
+
+          // 토스트 알림
+          toast(newNotification.title, {
+            description: newNotification.message,
+            action: newNotification.link ? {
+              label: '보기',
+              onClick: () => window.location.href = newNotification.link!
+            } : undefined
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
+  const markAsRead = useCallback(async (id: string) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+    )
+    setUnreadCount(prev => Math.max(0, prev - 1))
+  }, [])
+
+  const markAllAsRead = useCallback(async () => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user?.id)
+      .eq('is_read', false)
+
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    setUnreadCount(0)
+  }, [user])
+
+  return { notifications, unreadCount, markAsRead, markAllAsRead }
+}
+        ]]>
+      </sample>
+
+      <sample name="notification-service">
+        <![CDATA[
+// lib/notifications/service.ts
+import { createClient } from '@/lib/supabase/server'
+import { sendNotificationEmail } from './email'
+
+export type NotificationType =
+  | 'ASSIGNED'
+  | 'COMMENTED'
+  | 'MENTIONED'
+  | 'DUE_SOON'
+  | 'STATUS_CHANGED'
+  | 'TEAM_INVITE'
+
+interface CreateNotificationParams {
+  user_id: string
+  type: NotificationType
+  title: string
+  message?: string
+  link?: string
+  send_email?: boolean
+}
+
+export async function createNotification({
+  user_id,
+  type,
+  title,
+  message,
+  link,
+  send_email = true
+}: CreateNotificationParams) {
+  const supabase = await createClient()
+
+  // DB에 알림 저장
+  const { data: notification, error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id,
+      type,
+      title,
+      message,
+      link,
+      is_read: false
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to create notification:', error)
+    return null
+  }
+
+  // 이메일 발송 (비동기)
+  if (send_email) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user_id)
+      .single()
+
+    // 사용자 이메일 가져오기 (auth.users에서)
+    const { data: authUser } = await supabase.auth.admin.getUserById(user_id)
+
+    if (authUser?.user?.email) {
+      sendNotificationEmail({
+        to: authUser.user.email,
+        type,
+        title,
+        message: message || '',
+        link: link ? `${process.env.NEXT_PUBLIC_APP_URL}${link}` : ''
+      }).catch(err => console.error('Email send failed:', err))
+    }
+  }
+
+  return notification
+}
+        ]]>
+      </sample>
+    </code-samples>
+  </implementation-guide>
+
+  <ux-design-reference>
+    <design-system>
+      <framework>shadcn/ui + Tailwind CSS + Radix UI</framework>
+      <icons>Lucide Icons</icons>
+    </design-system>
+
+    <notification-dropdown-design>
+      <![CDATA[
+<!-- 알림 드롭다운 (ux-design-specification.md 참조) -->
++--------------------------------+
+| Notifications            [Mark all read]
++--------------------------------+
+| 🔴 Issue assigned to you       |
+|    JL-12: Email notification   |
+|    2 minutes ago               |
++--------------------------------+
+|    New comment on JL-8         |
+|    Seulgi: "Looking good!"     |
+|    1 hour ago                  |
++--------------------------------+
+| 🔴 Due date approaching        |
+|    JL-7: AI summary feature    |
+|    Due tomorrow                |
++--------------------------------+
+| [View all notifications →]     |
++--------------------------------+
+      ]]>
+    </notification-dropdown-design>
+
+    <notification-type-icons>
+      <![CDATA[
+// 알림 유형별 아이콘 (Lucide Icons)
+const typeIcons: Record<NotificationType, LucideIcon> = {
+  ASSIGNED: UserPlus,
+  COMMENTED: MessageSquare,
+  MENTIONED: AtSign,
+  DUE_SOON: AlertTriangle,
+  STATUS_CHANGED: RefreshCw,
+  TEAM_INVITE: Mail
+}
+
+const typeColors: Record<NotificationType, string> = {
+  ASSIGNED: 'text-blue-500',
+  COMMENTED: 'text-green-500',
+  MENTIONED: 'text-purple-500',
+  DUE_SOON: 'text-amber-500',
+  STATUS_CHANGED: 'text-zinc-500',
+  TEAM_INVITE: 'text-indigo-500'
+}
+      ]]>
+    </notification-type-icons>
+
+    <notification-item-style>
+      <![CDATA[
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  border-bottom: 1px solid #e4e4e7;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background: #fafafa;
+}
+
+.notification-item.unread {
+  background: #f0f9ff;
+}
+
+.notification-item.unread::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.notification-title {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #18181b;
+}
+
+.notification-message {
+  font-size: 0.8rem;
+  color: #71717a;
+  margin-top: 2px;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: #a1a1aa;
+  margin-top: 4px;
+}
+      ]]>
+    </notification-item-style>
+
+    <toast-notification-style>
+      <![CDATA[
+<!-- 실시간 알림 토스트 (sonner 사용) -->
+// components/ui/sonner.tsx 설정 활용
+// 우측 하단 표시, 5초 후 자동 닫힘
+
+toast(notification.title, {
+  description: notification.message,
+  action: {
+    label: '보기',
+    onClick: () => router.push(notification.link)
+  }
+})
+      ]]>
+    </toast-notification-style>
+  </ux-design-reference>
+
+  <existing-codebase>
+    <relevant-files>
+      <file path="jira-lite-mvp/components/layout/header.tsx">
+        <description>헤더 컴포넌트 - NotificationBell 추가 위치</description>
+      </file>
+      <file path="jira-lite-mvp/components/ui/dropdown-menu.tsx">
+        <description>드롭다운 메뉴 컴포넌트</description>
+      </file>
+      <file path="jira-lite-mvp/components/ui/sonner.tsx">
+        <description>Toast 알림 컴포넌트</description>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/client.ts">
+        <description>클라이언트 사이드 Supabase (Realtime용)</description>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/types.ts">
+        <description>DB 타입 정의 (notifications 테이블 포함)</description>
+      </file>
+      <file path="jira-lite-mvp/components/providers/auth-provider.tsx">
+        <description>인증 프로바이더 (user 정보)</description>
+      </file>
+    </relevant-files>
+
+    <existing-types>
+      <![CDATA[
+// lib/supabase/types.ts에서 발췌
+export type Notification = Tables<'notifications'>
+// {
+//   id: string
+//   user_id: string
+//   type: string
+//   title: string
+//   message: string | null
+//   link: string | null
+//   is_read: boolean
+//   created_at: string
+// }
+      ]]>
+    </existing-types>
+  </existing-codebase>
+
+  <dependencies>
+    <npm-packages>
+      <package name="resend" version="^6.5.2">이메일 발송 (Resend)</package>
+      <package name="sonner" version="latest">Toast 알림</package>
+    </npm-packages>
+
+    <environment-variables>
+      <variable name="RESEND_API_KEY" required="true">Resend API 키</variable>
+      <variable name="RESEND_FROM_EMAIL" required="true">발신 이메일 주소</variable>
+      <variable name="NEXT_PUBLIC_APP_URL" required="true">앱 URL (이메일 링크용)</variable>
+    </environment-variables>
+  </dependencies>
+
+  <testing-guidance>
+    <unit-tests>
+      <test>알림 생성 함수가 DB에 알림 저장</test>
+      <test>읽음 처리 함수가 is_read 업데이트</test>
+      <test>모두 읽음 처리 함수가 일괄 업데이트</test>
+      <test>상대 시간 포맷팅 (2분 전, 1시간 전)</test>
+    </unit-tests>
+
+    <integration-tests>
+      <test>GET /api/notifications - 알림 목록 반환</test>
+      <test>GET /api/notifications?unread_only=true - 읽지 않은 알림만</test>
+      <test>PATCH /api/notifications/[id]/read - 읽음 처리</test>
+      <test>POST /api/notifications/read-all - 모두 읽음</test>
+      <test>이슈 할당 시 알림 생성 확인</test>
+      <test>댓글 작성 시 알림 생성 확인</test>
+    </integration-tests>
+
+    <e2e-scenarios>
+      <scenario>로그인 → 헤더에 알림 벨 표시 → 읽지 않은 개수 확인</scenario>
+      <scenario>알림 벨 클릭 → 드롭다운 열림 → 알림 클릭 → 이슈 이동</scenario>
+      <scenario>다른 사용자가 이슈 할당 → 실시간 알림 수신 → 토스트 표시</scenario>
+      <scenario>모두 읽음 클릭 → 읽지 않은 개수 0으로 업데이트</scenario>
+    </e2e-scenarios>
+  </testing-guidance>
+
+  <notes>
+    <note priority="high">Supabase Realtime 구독은 클라이언트 컴포넌트에서만 가능</note>
+    <note priority="high">이메일 발송은 비동기로 처리 (응답 지연 방지)</note>
+    <note priority="medium">읽지 않은 알림 개수는 실시간으로 업데이트</note>
+    <note priority="medium">마감일 알림은 Supabase Edge Function 또는 cron job 필요</note>
+    <note priority="low">이메일 알림 끄기 설정은 v2에서 구현</note>
+  </notes>
+</story-context>

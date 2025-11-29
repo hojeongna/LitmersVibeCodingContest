@@ -1,6 +1,6 @@
 # Story 2.1: 팀 생성 & 목록 조회
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -26,73 +26,73 @@ so that **협업 공간을 만들고 팀 간 전환을 통해 프로젝트를 �
 
 ### Part A: 데이터 레이어 구현
 
-- [ ] Task 1: 팀 관련 TypeScript 타입 정의 (AC: 2, 7)
-  - [ ] 1.1 `types/team.ts` 생성
-  - [ ] 1.2 `Team` 인터페이스 정의 (id, name, owner_id, created_at, updated_at, deleted_at)
-  - [ ] 1.3 `TeamMember` 인터페이스 정의 (id, team_id, user_id, role, joined_at)
-  - [ ] 1.4 `TeamRole` 타입 정의 (`'OWNER' | 'ADMIN' | 'MEMBER'`)
-  - [ ] 1.5 Supabase Database types와 연동 확인
+- [x] Task 1: 팀 관련 TypeScript 타입 정의 (AC: 2, 7)
+  - [x] 1.1 `types/team.ts` 생성
+  - [x] 1.2 `Team` 인터페이스 정의 (id, name, owner_id, created_at, updated_at, deleted_at)
+  - [x] 1.3 `TeamMember` 인터페이스 정의 (id, team_id, user_id, role, joined_at)
+  - [x] 1.4 `TeamRole` 타입 정의 (`'OWNER' | 'ADMIN' | 'MEMBER'`)
+  - [x] 1.5 Supabase Database types와 연동 확인
 
-- [ ] Task 2: 팀 API 구현 (AC: 1, 2, 9)
-  - [ ] 2.1 `app/api/teams/route.ts` 생성 (POST: 팀 생성, GET: 팀 목록)
-  - [ ] 2.2 POST 핸들러: 인증 확인, 팀 이름 검증, 팀 생성, OWNER 멤버 추가
-  - [ ] 2.3 GET 핸들러: 사용자가 속한 팀 목록 조회 (team_members JOIN teams)
-  - [ ] 2.4 표준 응답 포맷 적용 (`{ success: true, data: {...} }`)
-  - [ ] 2.5 에러 처리 (VALIDATION_ERROR, UNAUTHORIZED)
+- [x] Task 2: 팀 API 구현 (AC: 1, 2, 9)
+  - [x] 2.1 `app/api/teams/route.ts` 생성 (POST: 팀 생성, GET: 팀 목록)
+  - [x] 2.2 POST 핸들러: 인증 확인, 팀 이름 검증, 팀 생성, OWNER 멤버 추가
+  - [x] 2.3 GET 핸들러: 사용자가 속한 팀 목록 조회 (team_members JOIN teams)
+  - [x] 2.4 표준 응답 포맷 적용 (`{ success: true, data: {...} }`)
+  - [x] 2.5 에러 처리 (VALIDATION_ERROR, UNAUTHORIZED)
 
 ### Part B: UI 컴포넌트 구현
 
-- [ ] Task 3: 팀 생성 모달 컴포넌트 (AC: 1, 8)
-  - [ ] 3.1 `components/teams/team-create-modal.tsx` 생성
-  - [ ] 3.2 모달 레이아웃 (제목, 입력 필드, 버튼)
-  - [ ] 3.3 팀 이름 입력 폼 (`react-hook-form` + `zod` 검증)
-  - [ ] 3.4 1~50자 유효성 검증 에러 메시지
-  - [ ] 3.5 "Cancel", "Create Team" 버튼
-  - [ ] 3.6 생성 중 로딩 상태 표시
-  - [ ] 3.7 생성 성공 시 모달 닫기 + Toast
+- [x] Task 3: 팀 생성 모달 컴포넌트 (AC: 1, 8)
+  - [x] 3.1 `components/teams/team-create-modal.tsx` 생성
+  - [x] 3.2 모달 레이아웃 (제목, 입력 필드, 버튼)
+  - [x] 3.3 팀 이름 입력 폼 (`react-hook-form` + `zod` 검증)
+  - [x] 3.4 1~50자 유효성 검증 에러 메시지
+  - [x] 3.5 "Cancel", "Create Team" 버튼
+  - [x] 3.6 생성 중 로딩 상태 표시
+  - [x] 3.7 생성 성공 시 모달 닫기 + Toast
 
-- [ ] Task 4: Sidebar 팀 목록 컴포넌트 (AC: 3, 4, 5, 6)
-  - [ ] 4.1 `components/teams/team-list.tsx` 생성 (기존 Sidebar 수정)
-  - [ ] 4.2 팀 목록 아이템 UI (컬러 도트 + 팀 이름)
-  - [ ] 4.3 활성 팀 하이라이트 스타일
-  - [ ] 4.4 팀 클릭 시 해당 팀 페이지로 라우팅
-  - [ ] 4.5 "+ New Team" 버튼 (모달 열기)
-  - [ ] 4.6 빈 상태 UI ("No teams yet. Create your first team!")
+- [x] Task 4: Sidebar 팀 목록 컴포넌트 (AC: 3, 4, 5, 6)
+  - [x] 4.1 `components/teams/team-list.tsx` 생성 (기존 Sidebar 수정)
+  - [x] 4.2 팀 목록 아이템 UI (컬러 도트 + 팀 이름)
+  - [x] 4.3 활성 팀 하이라이트 스타일
+  - [x] 4.4 팀 클릭 시 해당 팀 페이지로 라우팅
+  - [x] 4.5 "+ New Team" 버튼 (모달 열기)
+  - [x] 4.6 빈 상태 UI ("No teams yet. Create your first team!")
 
-- [ ] Task 5: Sidebar 통합 (AC: 3, 5)
-  - [ ] 5.1 `components/layout/sidebar.tsx` 수정
-  - [ ] 5.2 TeamList 컴포넌트 통합
-  - [ ] 5.3 팀 섹션 레이아웃 (상단: 팀 목록, 하단: 설정 등)
-  - [ ] 5.4 Zustand store 또는 TanStack Query로 팀 목록 상태 관리
+- [x] Task 5: Sidebar 통합 (AC: 3, 5)
+  - [x] 5.1 `components/layout/sidebar.tsx` 수정
+  - [x] 5.2 TeamList 컴포넌트 통합
+  - [x] 5.3 팀 섹션 레이아웃 (상단: 팀 목록, 하단: 설정 등)
+  - [x] 5.4 TanStack Query로 팀 목록 상태 관리
 
 ### Part C: 상태 관리 및 데이터 페칭
 
-- [ ] Task 6: 팀 데이터 훅 구현 (AC: 3, 4)
-  - [ ] 6.1 `hooks/use-teams.ts` 생성
-  - [ ] 6.2 `useTeams()` - 팀 목록 조회 (TanStack Query)
-  - [ ] 6.3 `useCreateTeam()` - 팀 생성 mutation
-  - [ ] 6.4 생성 성공 시 팀 목록 캐시 무효화
-  - [ ] 6.5 에러 처리 및 로딩 상태
+- [x] Task 6: 팀 데이터 훅 구현 (AC: 3, 4)
+  - [x] 6.1 `hooks/use-teams.ts` 생성
+  - [x] 6.2 `useTeams()` - 팀 목록 조회 (TanStack Query)
+  - [x] 6.3 `useCreateTeam()` - 팀 생성 mutation
+  - [x] 6.4 생성 성공 시 팀 목록 캐시 무효화
+  - [x] 6.5 에러 처리 및 로딩 상태
 
-- [ ] Task 7: 팀 컨텍스트 관리 (AC: 6)
-  - [ ] 7.1 현재 선택된 팀 ID 상태 관리 (Zustand 또는 URL)
-  - [ ] 7.2 팀 전환 시 URL 업데이트 (`/teams/[teamId]`)
-  - [ ] 7.3 페이지 새로고침 시 URL에서 팀 ID 복원
+- [x] Task 7: 팀 컨텍스트 관리 (AC: 6)
+  - [x] 7.1 현재 선택된 팀 ID 상태 관리 (URL 기반)
+  - [x] 7.2 팀 전환 시 URL 업데이트 (`/teams/[teamId]`)
+  - [x] 7.3 페이지 새로고침 시 URL에서 팀 ID 복원
 
 ### Part D: 팀 페이지 기본 구현
 
-- [ ] Task 8: 팀 상세 페이지 스캐폴딩 (AC: 6)
-  - [ ] 8.1 `app/(dashboard)/teams/page.tsx` 생성 (팀 선택 페이지)
-  - [ ] 8.2 `app/(dashboard)/teams/[teamId]/page.tsx` 생성 (팀 상세)
-  - [ ] 8.3 기본 레이아웃 (탭 네비게이션 placeholder)
-  - [ ] 8.4 팀 정보 표시 (팀 이름, 생성일)
+- [x] Task 8: 팀 상세 페이지 스캐폴딩 (AC: 6)
+  - [x] 8.1 `app/(dashboard)/teams/page.tsx` 생성 (팀 선택 페이지)
+  - [x] 8.2 `app/(dashboard)/teams/[teamId]/page.tsx` 생성 (팀 상세)
+  - [x] 8.3 기본 레이아웃 (탭 네비게이션 placeholder)
+  - [x] 8.4 팀 정보 표시 (팀 이름, 생성일)
 
 ### Part E: 폼 검증 스키마
 
-- [ ] Task 9: Zod 스키마 정의 (AC: 8)
-  - [ ] 9.1 `lib/validations/team.ts` 생성
-  - [ ] 9.2 `createTeamSchema` - 팀 이름 1~50자 검증
-  - [ ] 9.3 에러 메시지 한국어화
+- [x] Task 9: Zod 스키마 정의 (AC: 8)
+  - [x] 9.1 `lib/validations/team.ts` 생성
+  - [x] 9.2 `createTeamSchema` - 팀 이름 1~50자 검증
+  - [x] 9.3 에러 메시지 한국어화
 
 ### Part F: 테스트 및 검증
 
@@ -422,26 +422,68 @@ lib/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [2-1-team-create-list.context.xml](./2-1-team-create-list.context.xml) - Story Context XML (2025-11-29)
 
 ### Agent Model Used
 
-<!-- Will be filled by dev agent -->
+- **Model**: Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+- **Date**: 2025-11-29
 
 ### Debug Log References
 
-<!-- Will be filled by dev agent during implementation -->
+**Implementation Approach:**
+- TanStack Query를 사용한 서버 상태 관리
+- URL 기반 팀 컨텍스트 관리 (Zustand 대신)
+- Suspense를 활용한 로딩 상태 처리
+- shadcn/ui 컴포넌트 기반 일관된 UI 구현
+
+**주요 기술적 결정:**
+1. **상태 관리**: TanStack Query로 서버 상태 관리, URL로 팀 컨텍스트 관리
+2. **팀 색상**: 팀 ID 기반 해시로 일관된 색상 생성 (8가지 색상 팔레트)
+3. **빌드 이슈 해결**: Zod v4의 `issues` 사용, middleware.ts와 proxy.ts 충돌 해결
 
 ### Completion Notes List
 
-<!-- Will be filled by dev agent after completion -->
+✅ **모든 Acceptance Criteria 달성:**
+- AC-1~9: 팀 생성, OWNER 역할 자동 등록, Sidebar 실시간 반영, 다중 팀 소속, 컬러 도트 UI, 팀 전환, 역할 체계, 유효성 검증, 표준 API 형식 모두 구현 완료
+
+✅ **핵심 기능:**
+- 팀 생성 모달 (react-hook-form + zod 검증)
+- 팀 목록 Sidebar (컬러 도트, 활성 상태 표시)
+- 팀 상세 페이지 (탭 네비게이션, 통계 카드)
+- 실시간 캐시 무효화 및 리페칭
+- Suspense 기반 로딩 처리
+
+✅ **추가 구현 사항:**
+- QueryProvider 추가로 TanStack Query 전역 설정
+- Sidebar/Header Suspense 래핑으로 SSR 오류 해결
+- 팀 색상 유틸리티 함수 (일관된 시각적 구분)
 
 ### File List
 
-<!-- Will be filled by dev agent: NEW, MODIFIED, DELETED files -->
+**NEW FILES:**
+- `jira-lite-mvp/types/team.ts` - 팀 관련 TypeScript 타입 정의
+- `jira-lite-mvp/app/api/teams/route.ts` - 팀 API (POST, GET)
+- `jira-lite-mvp/components/teams/team-create-modal.tsx` - 팀 생성 모달
+- `jira-lite-mvp/components/teams/team-list.tsx` - Sidebar 팀 목록
+- `jira-lite-mvp/hooks/use-teams.ts` - 팀 데이터 훅
+- `jira-lite-mvp/lib/validations/team.ts` - Zod 팀 검증 스키마
+- `jira-lite-mvp/app/(dashboard)/teams/page.tsx` - 팀 선택 페이지
+- `jira-lite-mvp/app/(dashboard)/teams/[teamId]/page.tsx` - 팀 상세 페이지
+- `jira-lite-mvp/components/providers/query-provider.tsx` - TanStack Query Provider
+
+**MODIFIED FILES:**
+- `jira-lite-mvp/components/layout/sidebar.tsx` - TeamList 통합, Suspense 래핑
+- `jira-lite-mvp/components/layout/header.tsx` - Suspense 래핑, 타입 수정
+- `jira-lite-mvp/app/layout.tsx` - QueryProvider 추가
+
+**DELETED FILES:**
+- `jira-lite-mvp/proxy.ts` - middleware.ts와 충돌로 삭제
+- `jira-lite-mvp/lib/supabase/proxy.ts` - 사용하지 않는 파일 삭제
 
 ## Change Log
 
 | 날짜 | 변경 내용 | 작성자 |
 |------|----------|--------|
 | 2025-11-29 | 스토리 초안 작성 | SM (create-story workflow) |
+| 2025-11-29 | Story 2.1 구현 완료 (9개 태스크 완료) | Dev (dev-story workflow) |

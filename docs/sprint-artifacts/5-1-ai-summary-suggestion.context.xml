@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context story="5-1-ai-summary-suggestion" generated="2025-11-29">
+  <!-- Story Context for AI Issue Summary & Solution Suggestion -->
+
+  <story-metadata>
+    <title>AI 이슈 요약 및 해결 전략 제안</title>
+    <epic>Epic 5 - AI &amp; 대시보드 &amp; 알림</epic>
+    <fr-coverage>FR-040, FR-041</fr-coverage>
+    <priority>P1</priority>
+    <estimated-points>5</estimated-points>
+  </story-metadata>
+
+  <acceptance-criteria>
+    <!-- FR-040: AI 이슈 요약 -->
+    <criterion id="AC-040-1">이슈 상세 페이지에서 "AI 요약" 버튼 클릭 시 요약 생성</criterion>
+    <criterion id="AC-040-2">description이 10자 미만이면 AI 버튼 비활성화</criterion>
+    <criterion id="AC-040-3">요약 결과가 이슈에 저장되고 재방문 시 표시됨</criterion>
+    <criterion id="AC-040-4">"Regenerate" 버튼으로 요약 재생성 가능</criterion>
+    <criterion id="AC-040-5">로딩 중 스피너 표시, 에러 시 메시지 표시</criterion>
+    <!-- FR-041: 해결 전략 제안 -->
+    <criterion id="AC-041-1">이슈 상세에서 "AI 해결 전략" 버튼 표시</criterion>
+    <criterion id="AC-041-2">해결 전략이 단계별로 표시됨</criterion>
+    <criterion id="AC-041-3">전략을 복사하거나 설명에 추가 가능</criterion>
+  </acceptance-criteria>
+
+  <technical-specification>
+    <architecture>
+      <decision id="ADR-005">API Route Handlers - AI 호출은 Route Handler로 구현</decision>
+      <decision id="ADR-006">Server-Side OpenAI - AI 호출은 서버에서만 (API key 보호)</decision>
+    </architecture>
+
+    <api-endpoints>
+      <endpoint method="POST" path="/api/ai/summary">
+        <description>이슈 내용을 AI로 요약 (FR-040)</description>
+        <request>
+          <![CDATA[
+{
+  issue_id: string
+}
+          ]]>
+        </request>
+        <response>
+          <![CDATA[
+// Success
+{
+  success: true,
+  data: {
+    summary: string,
+    generated_at: string
+  }
+}
+
+// Error
+{
+  success: false,
+  error: {
+    code: 'RATE_LIMIT_EXCEEDED' | 'DESCRIPTION_TOO_SHORT' | 'AI_ERROR',
+    message: string
+  }
+}
+          ]]>
+        </response>
+        <constraints>
+          <item>Rate Limit: 분당 10회, 일당 100회</item>
+          <item>description 10자 이상 필수</item>
+        </constraints>
+      </endpoint>
+
+      <endpoint method="POST" path="/api/ai/strategy">
+        <description>이슈 해결 전략 제안 (FR-041)</description>
+        <request>
+          <![CDATA[
+{
+  issue_id: string
+}
+          ]]>
+        </request>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: {
+    strategy: string,
+    steps: string[],
+    confidence: number
+  }
+}
+          ]]>
+        </response>
+      </endpoint>
+    </api-endpoints>
+
+    <data-models>
+      <model name="issues-ai-extension">
+        <description>기존 issues 테이블 AI 컬럼 확장</description>
+        <columns>
+          <column name="ai_summary" type="TEXT" nullable="true">AI 생성 요약</column>
+          <column name="ai_strategy" type="TEXT" nullable="true">AI 해결 전략</column>
+          <column name="ai_generated_at" type="TIMESTAMPTZ" nullable="true">AI 결과 생성 시간</column>
+        </columns>
+      </model>
+
+      <model name="ai_cache">
+        <description>AI 결과 캐싱 테이블 (이미 스키마에 존재)</description>
+        <columns>
+          <column name="id" type="UUID" primary="true"/>
+          <column name="issue_id" type="UUID" references="issues.id"/>
+          <column name="cache_type" type="string">summary | strategy | suggestion</column>
+          <column name="content_hash" type="string">콘텐츠 해시 (캐시 유효성)</column>
+          <column name="result" type="JSONB">캐싱된 결과</column>
+          <column name="created_at" type="TIMESTAMPTZ"/>
+        </columns>
+      </model>
+    </data-models>
+  </technical-specification>
+
+  <implementation-guide>
+    <file-structure>
+      <![CDATA[
+jira-lite-mvp/
+├── app/
+│   └── api/
+│       └── ai/
+│           ├── summary/
+│           │   └── route.ts        # POST /api/ai/summary
+│           └── strategy/
+│               └── route.ts        # POST /api/ai/strategy
+├── components/
+│   └── ai/
+│       ├── AISummaryPanel.tsx      # AI 요약 표시 패널
+│       ├── AIStrategyPanel.tsx     # AI 전략 표시 패널
+│       └── index.ts
+├── lib/
+│   └── ai/
+│       ├── openai-client.ts        # OpenAI 클라이언트 설정
+│       ├── prompts.ts              # AI 프롬프트 템플릿
+│       └── rate-limiter.ts         # Rate Limiting 로직
+└── hooks/
+    └── use-ai-summary.ts           # AI 요약 훅
+      ]]>
+    </file-structure>
+
+    <component-specs>
+      <component name="AISummaryPanel">
+        <location>components/ai/AISummaryPanel.tsx</location>
+        <props>
+          <![CDATA[
+interface AISummaryPanelProps {
+  issueId: string
+  description: string
+  existingSummary?: string
+  onSummaryGenerated?: (summary: string) => void
+}
+          ]]>
+        </props>
+        <features>
+          <item>AI 요약 버튼 (description 10자 미만 시 비활성화)</item>
+          <item>로딩 상태 (스피너 + "분석 중..." 텍스트)</item>
+          <item>요약 결과 표시 (AI 패널 스타일)</item>
+          <item>Regenerate 버튼</item>
+          <item>에러 메시지 Toast</item>
+        </features>
+      </component>
+
+      <component name="AIStrategyPanel">
+        <location>components/ai/AIStrategyPanel.tsx</location>
+        <props>
+          <![CDATA[
+interface AIStrategyPanelProps {
+  issueId: string
+  title: string
+  description: string
+  existingStrategy?: string
+}
+          ]]>
+        </props>
+        <features>
+          <item>AI 전략 제안 버튼</item>
+          <item>단계별 전략 표시 (순서 리스트)</item>
+          <item>복사 버튼</item>
+          <item>설명에 추가 버튼</item>
+        </features>
+      </component>
+    </component-specs>
+
+    <code-samples>
+      <sample name="openai-client.ts">
+        <![CDATA[
+// lib/ai/openai-client.ts
+import OpenAI from 'openai'
+
+export const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
+
+export async function generateSummary(
+  title: string,
+  description: string
+): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are a helpful assistant that summarizes software issues.
+Provide a concise 2-4 sentence summary in Korean.
+Focus on: what the issue is, why it matters, and any key constraints.`
+      },
+      {
+        role: 'user',
+        content: `Issue Title: ${title}\n\nDescription:\n${description}`
+      }
+    ],
+    max_tokens: 300,
+    temperature: 0.7,
+  })
+
+  return response.choices[0].message.content || ''
+}
+
+export async function generateStrategy(
+  title: string,
+  description: string
+): Promise<{ strategy: string; steps: string[] }> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are a senior software engineer. Provide step-by-step solution strategies for issues.
+Return JSON format: { "strategy": "overall approach", "steps": ["step1", "step2", ...] }
+Write in Korean. Maximum 5 steps.`
+      },
+      {
+        role: 'user',
+        content: `Issue Title: ${title}\n\nDescription:\n${description}`
+      }
+    ],
+    max_tokens: 500,
+    temperature: 0.7,
+    response_format: { type: 'json_object' }
+  })
+
+  return JSON.parse(response.choices[0].message.content || '{}')
+}
+        ]]>
+      </sample>
+
+      <sample name="api-route-summary">
+        <![CDATA[
+// app/api/ai/summary/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { generateSummary } from '@/lib/ai/openai-client'
+import { checkRateLimit, recordUsage } from '@/lib/ai/rate-limiter'
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } },
+        { status: 401 }
+      )
+    }
+
+    // Rate limit check
+    const canProceed = await checkRateLimit(user.id)
+    if (!canProceed) {
+      return NextResponse.json(
+        { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'AI 사용 한도를 초과했습니다' } },
+        { status: 429 }
+      )
+    }
+
+    const { issue_id } = await request.json()
+
+    // Fetch issue
+    const { data: issue, error: issueError } = await supabase
+      .from('issues')
+      .select('title, description')
+      .eq('id', issue_id)
+      .single()
+
+    if (issueError || !issue) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: '이슈를 찾을 수 없습니다' } },
+        { status: 404 }
+      )
+    }
+
+    // Check description length
+    if (!issue.description || issue.description.length < 10) {
+      return NextResponse.json(
+        { success: false, error: { code: 'DESCRIPTION_TOO_SHORT', message: '설명이 10자 이상이어야 합니다' } },
+        { status: 400 }
+      )
+    }
+
+    // Generate summary
+    const summary = await generateSummary(issue.title, issue.description)
+
+    // Save to database
+    await supabase
+      .from('issues')
+      .update({
+        ai_summary: summary,
+        ai_generated_at: new Date().toISOString()
+      })
+      .eq('id', issue_id)
+
+    // Record usage
+    await recordUsage(user.id, 'summary')
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        summary,
+        generated_at: new Date().toISOString()
+      }
+    })
+
+  } catch (error) {
+    console.error('AI Summary Error:', error)
+    return NextResponse.json(
+      { success: false, error: { code: 'AI_ERROR', message: 'AI 요약 생성에 실패했습니다' } },
+      { status: 500 }
+    )
+  }
+}
+        ]]>
+      </sample>
+    </code-samples>
+  </implementation-guide>
+
+  <ux-design-reference>
+    <design-system>
+      <framework>shadcn/ui + Tailwind CSS + Radix UI</framework>
+      <icons>Lucide Icons</icons>
+    </design-system>
+
+    <color-theme name="Linear Productivity">
+      <primary>#5B5FC7 (Indigo)</primary>
+      <accent>#3B82F6 (Blue)</accent>
+      <ai-gradient>linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%)</ai-gradient>
+      <text-primary>#18181B (Zinc 900)</text-primary>
+      <text-secondary>#71717A (Zinc 500)</text-secondary>
+      <background>#FAFAFA (Zinc 50)</background>
+      <surface>#FFFFFF</surface>
+      <border>#E4E4E7 (Zinc 200)</border>
+    </color-theme>
+
+    <ai-panel-design>
+      <![CDATA[
+<!-- AI Panel 스타일 (ux-color-themes.html 참조) -->
+.ai-panel {
+  background: linear-gradient(135deg, rgba(91, 95, 199, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(91, 95, 199, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #5B5FC7;
+}
+
+.ai-content {
+  font-size: 0.875rem;
+  color: #3f3f46;
+  line-height: 1.6;
+}
+      ]]>
+    </ai-panel-design>
+
+    <ai-button-states>
+      <state name="사용 가능">기본 AI 그라디언트 버튼</state>
+      <state name="요청 중">버튼 비활성화 + Spinner + "분석 중..."</state>
+      <state name="비활성화 (description 부족)">버튼 비활성화 + 회색 처리 + 툴팁</state>
+      <state name="Rate Limit 도달">버튼 비활성화 + 회색 처리 + 남은 시간 표시</state>
+    </ai-button-states>
+
+    <toast-feedback>
+      <success>"AI 요약이 생성되었습니다" (3초 후 자동 닫힘)</success>
+      <error>"AI 요약 생성에 실패했습니다" (5초)</error>
+      <rate-limit>"AI 사용 한도를 초과했습니다. X초 후 다시 시도해주세요" (5초)</rate-limit>
+    </toast-feedback>
+  </ux-design-reference>
+
+  <existing-codebase>
+    <relevant-files>
+      <file path="jira-lite-mvp/components/ui/ai-button.tsx">
+        <description>이미 구현된 AI 버튼 컴포넌트 (그라디언트 스타일, 로딩 상태)</description>
+        <note>이 컴포넌트를 활용하여 AISummaryPanel 구현</note>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/types.ts">
+        <description>DB 타입 정의 (ai_cache, ai_rate_limits 테이블 포함)</description>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/server.ts">
+        <description>서버 사이드 Supabase 클라이언트</description>
+      </file>
+      <file path="jira-lite-mvp/components/layout/app-shell.tsx">
+        <description>앱 레이아웃 쉘</description>
+      </file>
+    </relevant-files>
+
+    <existing-types>
+      <![CDATA[
+// lib/supabase/types.ts에서 발췌
+export type AiCache = Tables<'ai_cache'>
+export type AiRateLimit = Tables<'ai_rate_limits'>
+export type AiCacheType = 'summary' | 'suggestion' | 'comment_summary'
+
+// ai_cache 테이블
+{
+  id: string
+  issue_id: string
+  cache_type: string  // 'summary' | 'strategy' | 'suggestion'
+  content_hash: string
+  result: Json
+  created_at: string
+}
+
+// ai_rate_limits 테이블
+{
+  user_id: string
+  minute_count: number
+  minute_reset_at: string | null
+  daily_count: number
+  daily_reset_at: string | null
+}
+      ]]>
+    </existing-types>
+  </existing-codebase>
+
+  <dependencies>
+    <npm-packages>
+      <package name="openai" version="^6.9.1">OpenAI API 클라이언트</package>
+    </npm-packages>
+
+    <environment-variables>
+      <variable name="OPENAI_API_KEY" required="true">OpenAI API 키</variable>
+    </environment-variables>
+
+    <epic-dependencies>
+      <dependency epic="1">인증 시스템 - 사용자 ID로 Rate Limit 적용</dependency>
+      <dependency epic="3">이슈 CRUD - AI 요약 대상 이슈 조회</dependency>
+    </epic-dependencies>
+  </dependencies>
+
+  <testing-guidance>
+    <unit-tests>
+      <test>generateSummary 함수가 올바른 형식의 요약 반환</test>
+      <test>generateStrategy 함수가 JSON 형식으로 전략 반환</test>
+      <test>Rate Limiter가 분당 10회 제한 적용</test>
+      <test>Rate Limiter가 일당 100회 제한 적용</test>
+    </unit-tests>
+
+    <integration-tests>
+      <test>POST /api/ai/summary - 유효한 이슈에 대해 요약 생성</test>
+      <test>POST /api/ai/summary - description 10자 미만 시 400 에러</test>
+      <test>POST /api/ai/summary - Rate Limit 초과 시 429 에러</test>
+      <test>POST /api/ai/summary - 요약 결과가 DB에 저장됨</test>
+    </integration-tests>
+
+    <e2e-scenarios>
+      <scenario>이슈 상세 → AI 요약 클릭 → 로딩 → 결과 표시</scenario>
+      <scenario>이슈 상세 → AI 전략 클릭 → 단계별 전략 표시</scenario>
+      <scenario>Regenerate 클릭 → 새 요약 생성</scenario>
+    </e2e-scenarios>
+  </testing-guidance>
+
+  <notes>
+    <note priority="high">OpenAI API 호출 시 타임아웃 설정 (10초) 필수</note>
+    <note priority="high">에러 발생 시 사용자에게 친절한 메시지 표시</note>
+    <note priority="medium">캐싱 활용하여 동일 내용 재요청 시 기존 결과 반환</note>
+    <note priority="medium">AI 결과에 대한 피드백 수집 (v2)</note>
+  </notes>
+</story-context>

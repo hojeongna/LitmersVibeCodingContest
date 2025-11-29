@@ -1,6 +1,6 @@
 # Story 3.1: 프로젝트 CRUD
 
-Status: drafted
+Status: review
 
 ## Story
 

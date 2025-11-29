@@ -1,0 +1,279 @@
+<story-context id="2-3-member-invite" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2-3</storyId>
+    <title>멤버 초대</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-3-member-invite.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>팀 OWNER 또는 ADMIN</asA>
+    <iWant>이메일을 통해 새 멤버를 팀에 초대</iWant>
+    <soThat>팀 규모를 확장하고 협업할 사람들을 추가할 수 있다</soThat>
+    <tasks>
+      <taskGroup title="Part A: 초대 API 구현">
+        <task id="1" title="초대 생성 API" ac="1, 2, 5, 11">
+          <subtask>1.1 app/api/teams/[teamId]/invites/route.ts 생성 (POST, GET)</subtask>
+          <subtask>1.2 POST 핸들러: 초대 생성 (권한 검증, 중복 체크, 토큰 생성)</subtask>
+          <subtask>1.3 GET 핸들러: 대기 중 초대 목록 조회</subtask>
+          <subtask>1.4 초대 토큰 생성 (crypto.randomUUID)</subtask>
+          <subtask>1.5 만료일 설정 (NOW + 7일)</subtask>
+        </task>
+        <task id="2" title="초대 관리 API" ac="7, 8">
+          <subtask>2.1 app/api/invites/[inviteId]/route.ts 생성 (DELETE)</subtask>
+          <subtask>2.2 DELETE 핸들러: 초대 취소</subtask>
+          <subtask>2.3 app/api/invites/[inviteId]/resend/route.ts 생성 (POST)</subtask>
+          <subtask>2.4 POST 핸들러: 초대 재발송 (만료일 갱신)</subtask>
+        </task>
+        <task id="3" title="초대 수락 API" ac="9, 10">
+          <subtask>3.1 app/api/invites/[token]/accept/route.ts 생성 (POST)</subtask>
+          <subtask>3.2 토큰 검증 (존재, 만료, 이메일 일치)</subtask>
+          <subtask>3.3 team_members에 새 멤버 추가</subtask>
+          <subtask>3.4 team_invites에서 초대 삭제</subtask>
+          <subtask>3.5 활동 로그 기록</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part B: 이메일 발송">
+        <task id="4" title="초대 이메일 템플릿" ac="3">
+          <subtask>4.1 emails/team-invite.tsx 생성 (React Email)</subtask>
+          <subtask>4.2 템플릿 디자인 (팀 이름, 초대자, 링크, 만료일)</subtask>
+          <subtask>4.3 한국어 텍스트</subtask>
+        </task>
+        <task id="5" title="이메일 발송 서비스" ac="3">
+          <subtask>5.1 lib/email/resend.ts에 sendTeamInvite 함수 추가</subtask>
+          <subtask>5.2 Resend API 호출</subtask>
+          <subtask>5.3 에러 처리 및 재시도 로직</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part C: UI 구현">
+        <task id="6" title="초대 모달" ac="1, 2">
+          <subtask>6.1 components/teams/invite-modal.tsx 생성</subtask>
+          <subtask>6.2 이메일 입력 필드</subtask>
+          <subtask>6.3 역할 선택 드롭다운 (ADMIN, MEMBER)</subtask>
+          <subtask>6.4 Send Invitation 버튼</subtask>
+          <subtask>6.5 로딩 상태 및 성공 Toast</subtask>
+        </task>
+        <task id="7" title="Pending Invites 탭" ac="6, 7, 8">
+          <subtask>7.1 app/(dashboard)/teams/[teamId]/invites/page.tsx 생성</subtask>
+          <subtask>7.2 대기 중 초대 목록 테이블</subtask>
+          <subtask>7.3 만료일 표시 (3일 이하: 경고색)</subtask>
+          <subtask>7.4 Resend 버튼</subtask>
+          <subtask>7.5 취소(X) 버튼</subtask>
+        </task>
+        <task id="8" title="초대 수락 페이지" ac="9">
+          <subtask>8.1 app/invite/[token]/page.tsx 생성</subtask>
+          <subtask>8.2 초대 정보 표시 (팀 이름, 역할)</subtask>
+          <subtask>8.3 Accept Invitation 버튼</subtask>
+          <subtask>8.4 만료/무효 시 에러 메시지</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part D: 훅 및 유틸리티">
+        <task id="9" title="초대 관련 훅" ac="6, 7, 8">
+          <subtask>9.1 hooks/use-invites.ts 생성</subtask>
+          <subtask>9.2 useTeamInvites(teamId) - 초대 목록 조회</subtask>
+          <subtask>9.3 useCreateInvite() - 초대 생성 mutation</subtask>
+          <subtask>9.4 useCancelInvite() - 초대 취소 mutation</subtask>
+          <subtask>9.5 useResendInvite() - 초대 재발송 mutation</subtask>
+        </task>
+        <task id="10" title="Zod 스키마" ac="1, 2">
+          <subtask>10.1 lib/validations/invite.ts 생성</subtask>
+          <subtask>10.2 createInviteSchema - 이메일 형식, 역할 검증</subtask>
+        </task>
+      </taskGroup>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" fr="FR-013">OWNER 또는 ADMIN이 이메일로 멤버 초대 가능</criterion>
+    <criterion id="AC-2" fr="FR-013">초대 시 역할(ADMIN/MEMBER) 선택 가능</criterion>
+    <criterion id="AC-3" fr="FR-013">초대 이메일에 초대 링크 포함</criterion>
+    <criterion id="AC-4" fr="FR-013">초대 링크는 7일 후 만료</criterion>
+    <criterion id="AC-5" fr="FR-013">이미 팀 멤버인 이메일로는 초대 불가</criterion>
+    <criterion id="AC-6" fr="FR-013">대기 중인 초대 목록 조회 가능 (OWNER, ADMIN)</criterion>
+    <criterion id="AC-7" fr="FR-013">대기 중인 초대 취소 가능</criterion>
+    <criterion id="AC-8" fr="FR-013">초대 재발송 시 만료일 갱신</criterion>
+    <criterion id="AC-9" fr="FR-013">초대 수락 시 팀 멤버로 등록</criterion>
+    <criterion id="AC-10" fr="FR-013">초대 수락 후 초대 레코드 삭제</criterion>
+    <criterion id="AC-11" fr="FR-013">API 응답 형식이 표준 포맷 준수</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc type="tech-spec" priority="high">
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <relevance>초대 API, 워크플로우, 데이터 모델</relevance>
+      </doc>
+      <doc type="ux-visual" priority="high">
+        <path>docs/ux-design-directions.html</path>
+        <relevance>초대 모달, 테이블 스타일</relevance>
+      </doc>
+      <doc type="ux-theme" priority="high">
+        <path>docs/ux-color-themes.html</path>
+        <relevance>버튼, 폼, 경고 색상</relevance>
+      </doc>
+    </docs>
+
+    <code>
+      <existingComponents>
+        <component path="jira-lite-mvp/components/ui/dialog.tsx" relevance="초대 모달용"/>
+        <component path="jira-lite-mvp/components/ui/select.tsx" relevance="역할 선택 드롭다운"/>
+        <component path="jira-lite-mvp/components/ui/input.tsx" relevance="이메일 입력"/>
+        <component path="jira-lite-mvp/components/ui/button.tsx" relevance="액션 버튼"/>
+        <component path="jira-lite-mvp/components/ui/sonner.tsx" relevance="Toast 알림"/>
+        <component path="jira-lite-mvp/lib/supabase/server.ts" relevance="서버 DB 클라이언트"/>
+        <component path="jira-lite-mvp/lib/supabase/types.ts" relevance="TeamInvite 타입"/>
+      </existingComponents>
+
+      <filesToCreate>
+        <file path="jira-lite-mvp/app/api/teams/[teamId]/invites/route.ts" purpose="초대 생성/목록 API"/>
+        <file path="jira-lite-mvp/app/api/invites/[inviteId]/route.ts" purpose="초대 취소 API"/>
+        <file path="jira-lite-mvp/app/api/invites/[inviteId]/resend/route.ts" purpose="초대 재발송 API"/>
+        <file path="jira-lite-mvp/app/api/invites/[token]/accept/route.ts" purpose="초대 수락 API"/>
+        <file path="jira-lite-mvp/app/(dashboard)/teams/[teamId]/invites/page.tsx" purpose="Pending Invites 탭"/>
+        <file path="jira-lite-mvp/app/invite/[token]/page.tsx" purpose="초대 수락 페이지"/>
+        <file path="jira-lite-mvp/components/teams/invite-modal.tsx" purpose="초대 모달"/>
+        <file path="jira-lite-mvp/emails/team-invite.tsx" purpose="초대 이메일 템플릿"/>
+        <file path="jira-lite-mvp/hooks/use-invites.ts" purpose="초대 관련 훅"/>
+        <file path="jira-lite-mvp/lib/validations/invite.ts" purpose="초대 스키마"/>
+        <file path="jira-lite-mvp/lib/email/resend.ts" purpose="이메일 발송 서비스 (수정)"/>
+      </filesToCreate>
+    </code>
+
+    <dependencies>
+      <runtime>
+        <package name="resend" version="^6.5.2" usage="이메일 발송"/>
+        <package name="@tanstack/react-query" version="^5.90.11" usage="데이터 페칭/캐싱"/>
+        <package name="react-hook-form" version="^7.67.0" usage="폼 관리"/>
+        <package name="zod" version="^4.1.13" usage="스키마 검증"/>
+      </runtime>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="security">
+      <title>권한 검증</title>
+      <description>OWNER 또는 ADMIN만 초대 생성/관리 가능</description>
+    </constraint>
+    <constraint type="data">
+      <title>초대 만료</title>
+      <description>초대는 생성 후 7일 뒤 자동 만료</description>
+    </constraint>
+    <constraint type="email">
+      <title>이메일 발송</title>
+      <description>Resend API를 통한 실제 이메일 발송</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <api endpoint="POST /api/teams/[teamId]/invites">
+      <description>초대 생성</description>
+      <auth>OWNER 또는 ADMIN</auth>
+      <request>{ "email": "member@example.com", "role": "MEMBER" }</request>
+    </api>
+    <api endpoint="GET /api/teams/[teamId]/invites">
+      <description>대기 중 초대 목록</description>
+      <auth>OWNER 또는 ADMIN</auth>
+    </api>
+    <api endpoint="DELETE /api/invites/[inviteId]">
+      <description>초대 취소</description>
+      <auth>OWNER 또는 ADMIN</auth>
+    </api>
+    <api endpoint="POST /api/invites/[inviteId]/resend">
+      <description>초대 재발송</description>
+      <auth>OWNER 또는 ADMIN</auth>
+    </api>
+    <api endpoint="POST /api/invites/[token]/accept">
+      <description>초대 수락</description>
+      <auth>초대받은 사용자 (이메일 일치)</auth>
+    </api>
+
+    <hooks>
+      <hook name="useTeamInvites(teamId)">팀의 대기 중 초대 목록 조회</hook>
+      <hook name="useCreateInvite()">초대 생성 mutation</hook>
+      <hook name="useCancelInvite()">초대 취소 mutation</hook>
+      <hook name="useResendInvite()">초대 재발송 mutation</hook>
+    </hooks>
+
+    <schemas>
+      <schema name="createInviteSchema">
+const createInviteSchema = z.object({
+  email: z.string().email('유효한 이메일을 입력해주세요'),
+  role: z.enum(['ADMIN', 'MEMBER']).default('MEMBER'),
+});
+      </schema>
+    </schemas>
+  </interfaces>
+
+  <tests>
+    <ideas>
+      <scenario id="1" ac="1, 2, 3" priority="high">
+        <title>초대 생성 및 이메일 발송</title>
+        <steps>
+          1. OWNER로 로그인
+          2. Invite Member 버튼 클릭
+          3. 이메일과 역할 입력
+          4. Send Invitation 클릭
+          5. 이메일 발송 확인
+          6. Pending Invites에 표시 확인
+        </steps>
+      </scenario>
+      <scenario id="2" ac="5" priority="high">
+        <title>중복 이메일 초대 차단</title>
+        <steps>
+          1. 이미 팀 멤버인 이메일로 초대 시도
+          2. ALREADY_MEMBER 에러 확인
+        </steps>
+      </scenario>
+      <scenario id="3" ac="4, 9, 10" priority="high">
+        <title>초대 수락</title>
+        <steps>
+          1. 초대 이메일의 링크 클릭
+          2. Accept Invitation 버튼 클릭
+          3. team_members에 추가 확인
+          4. team_invites에서 삭제 확인
+        </steps>
+      </scenario>
+      <scenario id="4" ac="4" priority="medium">
+        <title>만료된 초대 접근</title>
+        <steps>
+          1. 7일 지난 초대 링크 접근
+          2. INVITE_EXPIRED 에러 확인
+        </steps>
+      </scenario>
+    </ideas>
+  </tests>
+
+  <designReference>
+    <uxSpecs>
+      <spec title="초대 모달 UI">
++------------------------------------------+
+| Invite Team Member                    [X] |
++------------------------------------------+
+|                                          |
+| Email Address *                          |
+| +--------------------------------------+ |
+| | member@example.com                   | |
+| +--------------------------------------+ |
+|                                          |
+| Role                                     |
+| +--------------------------------------+ |
+| | Member                           [v] | |
+| +--------------------------------------+ |
+|                                          |
+| [Cancel]                [Send Invitation] |
++------------------------------------------+
+      </spec>
+      <spec title="Pending Invites 테이블">
++------------------------------------------------------------+
+| Email                  Role      Expires      Actions       |
++------------------------------------------------------------+
+| invited@example.com    Member    in 6 days    [Resend] [X]  |
+| other@example.com      Admin     in 2 days    [Resend] [X]  |
++------------------------------------------------------------+
+      </spec>
+    </uxSpecs>
+  </designReference>
+</story-context>

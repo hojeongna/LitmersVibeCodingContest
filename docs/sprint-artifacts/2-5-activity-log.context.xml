@@ -1,0 +1,263 @@
+<story-context id="2-5-activity-log" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2-5</storyId>
+    <title>활동 로그</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-5-activity-log.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>팀 멤버</asA>
+    <iWant>팀 활동 로그를 조회</iWant>
+    <soThat>팀 내에서 일어난 변경 사항을 추적하고 투명성을 확보할 수 있다</soThat>
+    <tasks>
+      <taskGroup title="Part A: 활동 로그 API">
+        <task id="1" title="활동 로그 조회 API" ac="6, 7, 11">
+          <subtask>1.1 app/api/teams/[teamId]/activities/route.ts 생성 (GET)</subtask>
+          <subtask>1.2 페이지네이션 파라미터 (page, limit)</subtask>
+          <subtask>1.3 최신순 정렬 (created_at DESC)</subtask>
+          <subtask>1.4 actor 프로필 정보 JOIN</subtask>
+          <subtask>1.5 팀 멤버십 검증</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part B: 활동 로그 기록 서비스">
+        <task id="2" title="ActivityLogService 구현" ac="1, 2, 3, 4, 5">
+          <subtask>2.1 lib/services/activity.ts 생성</subtask>
+          <subtask>2.2 logActivity(teamId, actorId, action, targetType?, targetId?, details?) 함수</subtask>
+          <subtask>2.3 기존 API에 활동 로그 기록 추가</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part C: UI 구현">
+        <task id="3" title="Activity Log 탭 페이지" ac="6, 7, 8, 9, 10">
+          <subtask>3.1 app/(dashboard)/teams/[teamId]/activity/page.tsx 생성</subtask>
+          <subtask>3.2 ActivityTimeline 컴포넌트</subtask>
+          <subtask>3.3 무한 스크롤 (Intersection Observer) 또는 Load More 버튼</subtask>
+          <subtask>3.4 빈 상태 UI</subtask>
+        </task>
+        <task id="4" title="활동 아이템 컴포넌트" ac="8, 9, 10">
+          <subtask>4.1 components/teams/activity-item.tsx 생성</subtask>
+          <subtask>4.2 아이콘 + 액션 텍스트 + 상대 시간</subtask>
+          <subtask>4.3 actor 아바타 + 이름</subtask>
+          <subtask>4.4 활동 타입별 색상</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part D: 훅 및 유틸리티">
+        <task id="5" title="활동 로그 훅" ac="6, 7">
+          <subtask>5.1 hooks/use-activities.ts 생성</subtask>
+          <subtask>5.2 useTeamActivities(teamId) - 무한 쿼리</subtask>
+          <subtask>5.3 useInfiniteQuery 활용</subtask>
+        </task>
+        <task id="6" title="상대 시간 유틸리티" ac="10">
+          <subtask>6.1 lib/utils/date.ts에 formatRelativeTime 함수 추가</subtask>
+          <subtask>6.2 date-fns의 formatDistanceToNow 활용</subtask>
+          <subtask>6.3 한국어 로케일 적용</subtask>
+        </task>
+      </taskGroup>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" fr="FR-019">멤버 가입 이벤트가 활동 로그에 기록됨</criterion>
+    <criterion id="AC-2" fr="FR-019">멤버 탈퇴/퇴장 이벤트가 기록됨</criterion>
+    <criterion id="AC-3" fr="FR-019">역할 변경 이벤트가 기록됨 (변경 전/후 역할 포함)</criterion>
+    <criterion id="AC-4" fr="FR-019">팀 설정 변경 이벤트가 기록됨</criterion>
+    <criterion id="AC-5" fr="FR-019">멤버 초대 이벤트가 기록됨</criterion>
+    <criterion id="AC-6" fr="FR-019">활동 로그는 최신순으로 정렬됨</criterion>
+    <criterion id="AC-7" fr="FR-019">무한 스크롤 또는 페이지네이션 구현</criterion>
+    <criterion id="AC-8" fr="FR-019">활동 타입별 아이콘/색상 표시</criterion>
+    <criterion id="AC-9" fr="FR-019">활동 수행자(actor) 정보 표시</criterion>
+    <criterion id="AC-10" fr="FR-019">상대 시간 표시 (예: "2분 전", "어제")</criterion>
+    <criterion id="AC-11" fr="FR-019">API 응답 형식이 표준 포맷 준수</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc type="tech-spec" priority="high">
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <relevance>활동 로그 스펙, team_activities 테이블</relevance>
+      </doc>
+    </docs>
+
+    <code>
+      <existingComponents>
+        <component path="jira-lite-mvp/components/ui/avatar.tsx" relevance="actor 아바타"/>
+        <component path="jira-lite-mvp/components/ui/skeleton.tsx" relevance="로딩 상태"/>
+        <component path="jira-lite-mvp/lib/supabase/server.ts" relevance="서버 DB 클라이언트"/>
+        <component path="jira-lite-mvp/lib/supabase/types.ts" relevance="TeamActivity 타입"/>
+      </existingComponents>
+
+      <filesToCreate>
+        <file path="jira-lite-mvp/app/api/teams/[teamId]/activities/route.ts" purpose="활동 로그 조회 API"/>
+        <file path="jira-lite-mvp/app/(dashboard)/teams/[teamId]/activity/page.tsx" purpose="Activity Log 탭"/>
+        <file path="jira-lite-mvp/components/teams/activity-timeline.tsx" purpose="활동 타임라인"/>
+        <file path="jira-lite-mvp/components/teams/activity-item.tsx" purpose="활동 아이템"/>
+        <file path="jira-lite-mvp/lib/services/activity.ts" purpose="ActivityLogService"/>
+        <file path="jira-lite-mvp/lib/utils/date.ts" purpose="상대 시간 유틸"/>
+        <file path="jira-lite-mvp/hooks/use-activities.ts" purpose="활동 로그 훅"/>
+      </filesToCreate>
+    </code>
+
+    <dependencies>
+      <runtime>
+        <package name="date-fns" version="^4.1.0" usage="상대 시간 포맷"/>
+        <package name="@tanstack/react-query" version="^5.90.11" usage="무한 스크롤 쿼리"/>
+      </runtime>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="security">
+      <title>팀 멤버십 검증</title>
+      <description>팀 멤버만 활동 로그 조회 가능</description>
+    </constraint>
+    <constraint type="performance">
+      <title>페이지네이션</title>
+      <description>대량 로그 효율적 로드를 위한 페이지네이션/무한스크롤 필수</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <api endpoint="GET /api/teams/[teamId]/activities">
+      <description>활동 로그 조회</description>
+      <auth>팀 멤버</auth>
+      <queryParams>page, limit (기본 20)</queryParams>
+      <response>
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "team_id": "team-uuid",
+      "actor_id": "user-uuid",
+      "action": "member_joined",
+      "target_type": "member",
+      "target_id": "target-user-uuid",
+      "details": { "role": "MEMBER" },
+      "created_at": "2025-11-29T...",
+      "actor": {
+        "name": "김서연",
+        "avatar_url": null
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "totalPages": 3,
+    "hasMore": true
+  }
+}
+      </response>
+    </api>
+
+    <services>
+      <service name="logActivity">
+        <signature>logActivity(teamId, actorId, action, targetType?, targetId?, details?)</signature>
+        <description>활동 로그 기록 서비스 함수</description>
+        <actions>
+          <action type="member_invited">멤버 초대</action>
+          <action type="member_joined">멤버 가입</action>
+          <action type="member_removed">강제 퇴장</action>
+          <action type="member_left">자발적 탈퇴</action>
+          <action type="role_changed">역할 변경</action>
+          <action type="team_updated">팀 설정 변경</action>
+          <action type="team_deleted">팀 삭제</action>
+        </actions>
+      </service>
+    </services>
+
+    <hooks>
+      <hook name="useTeamActivities(teamId)">활동 로그 무한 쿼리</hook>
+    </hooks>
+
+    <utils>
+      <util name="formatRelativeTime(date)">상대 시간 포맷 (date-fns + ko 로케일)</util>
+    </utils>
+  </interfaces>
+
+  <tests>
+    <ideas>
+      <scenario id="1" ac="1, 2, 3, 4, 5" priority="high">
+        <title>활동 로그 기록 확인</title>
+        <steps>
+          1. 멤버 초대 → member_invited 로그 확인
+          2. 초대 수락 → member_joined 로그 확인
+          3. 역할 변경 → role_changed 로그 (from/to 확인)
+          4. 멤버 퇴장 → member_removed 로그 확인
+          5. 팀 설정 수정 → team_updated 로그 확인
+        </steps>
+      </scenario>
+      <scenario id="2" ac="6, 7" priority="high">
+        <title>페이지네이션 테스트</title>
+        <steps>
+          1. 30개 활동 생성
+          2. 첫 페이지 20개 로드 확인
+          3. Load More 또는 스크롤로 다음 페이지
+          4. 최신순 정렬 확인
+        </steps>
+      </scenario>
+      <scenario id="3" ac="8, 9, 10" priority="medium">
+        <title>UI 표시 확인</title>
+        <steps>
+          1. 각 활동 타입별 아이콘 확인
+          2. 액터 아바타/이름 표시 확인
+          3. 상대 시간 표시 확인 ("2분 전", "어제" 등)
+        </steps>
+      </scenario>
+    </ideas>
+  </tests>
+
+  <designReference>
+    <activityTypes>
+      <type action="member_invited" icon="📧" color="#22C55E">멤버 초대</type>
+      <type action="member_joined" icon="✅" color="#3B82F6">멤버 가입</type>
+      <type action="role_changed" icon="🔄" color="#F59E0B">역할 변경</type>
+      <type action="member_removed" icon="❌" color="#EF4444">강제 퇴장</type>
+      <type action="member_left" icon="👋" color="#A1A1AA">자발적 탈퇴</type>
+      <type action="team_updated" icon="⚙️" color="#8B5CF6">팀 설정 변경</type>
+      <type action="team_deleted" icon="🗑️" color="#EF4444">팀 삭제</type>
+    </activityTypes>
+    <uxSpecs>
+      <spec title="Activity Timeline UI">
++--------------------------------------------------------------------+
+| 📧 홍길동 invited 김서연 as Member                        2분 전     |
++--------------------------------------------------------------------+
+| ✅ 김서연 joined the team                                 1시간 전   |
++--------------------------------------------------------------------+
+| 🔄 홍길동 changed 박영희's role from Member to Admin       어제       |
++--------------------------------------------------------------------+
+| ❌ 홍길동 removed 이민수 from the team                     3일 전     |
++--------------------------------------------------------------------+
+| ⚙️ 홍길동 updated team name to "New Name"                 1주 전     |
++--------------------------------------------------------------------+
+                        [Load More]
+      </spec>
+    </uxSpecs>
+    <dbSchema>
+CREATE TABLE public.team_activities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id UUID REFERENCES public.teams NOT NULL,
+  actor_id UUID REFERENCES public.profiles NOT NULL,
+  action VARCHAR(50) NOT NULL,
+  target_type VARCHAR(30),  -- 'member', 'project', 'team'
+  target_id UUID,
+  details JSONB,            -- { "from": "MEMBER", "to": "ADMIN" }
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_team_activities_team ON public.team_activities(team_id);
+CREATE INDEX idx_team_activities_created ON public.team_activities(created_at DESC);
+    </dbSchema>
+  </designReference>
+
+  <apisToModify>
+    <api path="app/api/teams/[teamId]/invites/route.ts" action="member_invited"/>
+    <api path="app/api/invites/[token]/accept/route.ts" action="member_joined"/>
+    <api path="app/api/teams/[teamId]/members/[userId]/route.ts" action="member_removed, member_left, role_changed"/>
+    <api path="app/api/teams/[teamId]/route.ts" action="team_updated, team_deleted"/>
+  </apisToModify>
+</story-context>

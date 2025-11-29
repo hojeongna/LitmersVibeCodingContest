@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 3-5-issue-search-filter
+  Generated: 2025-11-29
+  Epic: 3 - 프로젝트 & 이슈 관리
+  FR Coverage: FR-036
+-->
+<story-context story-key="3-5-issue-search-filter" epic="3">
+  <meta>
+    <title>이슈 검색 &amp; 필터링</title>
+    <status>drafted</status>
+    <fr-coverage>FR-036</fr-coverage>
+    <depends-on>3-3-issue-create-list, 3-4-issue-detail-edit</depends-on>
+  </meta>
+
+  <!-- ============================================
+       SECTION 1: PRD Requirements
+       ============================================ -->
+  <prd-requirements>
+    <requirement id="FR-036" priority="P1">
+      <title>이슈 검색 &amp; 필터링</title>
+      <description>
+        - 제목 기준 실시간 검색 (디바운스 300ms)
+        - 상태별 필터링 (복수 선택)
+        - 우선순위별 필터링 (복수 선택)
+        - 담당자별 필터링
+        - 라벨별 필터링 (복수 선택)
+        - 마감일 범위 필터링
+        - 복합 필터 AND 조건 결합
+        - 필터 상태 URL 쿼리 파라미터 반영
+        - URL 공유 시 필터 상태 복원
+        - 정렬 옵션 (생성일, 수정일, 우선순위, 마감일)
+        - 필터 초기화 버튼
+      </description>
+    </requirement>
+  </prd-requirements>
+
+  <!-- ============================================
+       SECTION 2: Architecture Context
+       ============================================ -->
+  <architecture>
+    <api-extension>
+      <endpoint path="GET /api/projects/[projectId]/issues">
+        <query-params>
+          <param name="search" type="string">제목 검색 (ILIKE)</param>
+          <param name="status" type="string">상태 ID (쉼표 구분)</param>
+          <param name="priority" type="string">우선순위 (쉼표 구분: HIGH,MEDIUM,LOW)</param>
+          <param name="assignee" type="string">담당자 UUID 또는 'unassigned'</param>
+          <param name="label" type="string">라벨 UUID (쉼표 구분)</param>
+          <param name="dueDateFrom" type="string">마감일 시작 (YYYY-MM-DD)</param>
+          <param name="dueDateTo" type="string">마감일 끝 (YYYY-MM-DD)</param>
+          <param name="sortBy" type="string">정렬 필드: createdAt|updatedAt|priority|dueDate</param>
+          <param name="sortOrder" type="string">정렬 순서: asc|desc</param>
+        </query-params>
+      </endpoint>
+    </api-extension>
+
+    <sql-query-pattern><![CDATA[
+SELECT i.*, s.name as status_name, p.name as assignee_name
+FROM issues i
+LEFT JOIN statuses s ON i.status_id = s.id
+LEFT JOIN profiles p ON i.assignee_id = p.id
+WHERE i.project_id = $1
+  AND i.deleted_at IS NULL
+  AND i.title ILIKE '%' || $search || '%'     -- 검색
+  AND i.status_id = ANY($statusIds)            -- 상태 필터
+  AND i.priority = ANY($priorities)            -- 우선순위 필터
+  AND (i.assignee_id = $assignee OR ($assignee = 'unassigned' AND i.assignee_id IS NULL))
+  AND i.id IN (                                -- 라벨 필터
+    SELECT issue_id FROM issue_labels WHERE label_id = ANY($labelIds)
+  )
+  AND i.due_date BETWEEN $dueDateFrom AND $dueDateTo
+ORDER BY
+  CASE WHEN $sortBy = 'priority' THEN
+    CASE i.priority WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 3 END
+  END,
+  CASE WHEN $sortBy = 'createdAt' THEN i.created_at END,
+  CASE WHEN $sortBy = 'updatedAt' THEN i.updated_at END,
+  CASE WHEN $sortBy = 'dueDate' THEN i.due_date END
+$sortOrder
+LIMIT $limit OFFSET $offset;
+    ]]></sql-query-pattern>
+
+    <state-management>
+      <store name="filter-store" library="Zustand">
+        <state>
+          <field name="search" type="string" default=""/>
+          <field name="statuses" type="string[]" default="[]"/>
+          <field name="priorities" type="string[]" default="[]"/>
+          <field name="assignee" type="string | null" default="null"/>
+          <field name="labels" type="string[]" default="[]"/>
+          <field name="dueDateFrom" type="string | null" default="null"/>
+          <field name="dueDateTo" type="string | null" default="null"/>
+          <field name="sortBy" type="string" default="createdAt"/>
+          <field name="sortOrder" type="string" default="desc"/>
+        </state>
+        <actions>
+          <action name="setSearch"/>
+          <action name="setStatuses"/>
+          <action name="setPriorities"/>
+          <action name="setAssignee"/>
+          <action name="setLabels"/>
+          <action name="setDateRange"/>
+          <action name="setSortBy"/>
+          <action name="setSortOrder"/>
+          <action name="resetFilters"/>
+        </actions>
+      </store>
+    </state-management>
+
+    <url-sync-pattern>
+      <hook>useSearchParams (Next.js App Router)</hook>
+      <behavior>
+        - 필터 변경 시 URL 쿼리 파라미터 업데이트
+        - 페이지 로드 시 URL에서 필터 복원
+        - 브라우저 뒤로가기/앞으로가기 지원
+      </behavior>
+      <url-format><![CDATA[
+/projects/[projectId]?
+  search=bug&
+  status=uuid1,uuid2&
+  priority=HIGH,MEDIUM&
+  assignee=user-uuid&
+  label=label-uuid1,label-uuid2&
+  dueDateFrom=2025-01-01&
+  dueDateTo=2025-01-31&
+  sortBy=priority&
+  sortOrder=desc
+      ]]></url-format>
+    </url-sync-pattern>
+  </architecture>
+
+  <!-- ============================================
+       SECTION 3: UX Design Specification
+       ============================================ -->
+  <ux-design source="docs/ux-design-specification.md">
+    <filter-bar-layout>
+      <ascii-diagram><![CDATA[
++--------------------------------------------------------------------+
+| [🔍 Search issues...]  [Status ▾] [Priority ▾] [Assignee ▾]        |
+| [Labels ▾] [Due Date ▾] [Sort: Created ▾]           [Clear All]    |
++--------------------------------------------------------------------+
+
+적용된 필터 Chips:
++--------------------------------------------------------------------+
+| Filters: [Status: In Progress ×] [Priority: HIGH ×] [Clear all]    |
++--------------------------------------------------------------------+
+      ]]></ascii-diagram>
+    </filter-bar-layout>
+
+    <search-bar>
+      <debounce-ms>300</debounce-ms>
+      <placeholder>Search issues...</placeholder>
+      <icon>Lucide Search</icon>
+      <clear-button>X 아이콘으로 검색어 지우기</clear-button>
+    </search-bar>
+
+    <filter-dropdowns>
+      <dropdown name="Status">
+        <type>Multi-select Checkbox</type>
+        <options>프로젝트 상태 목록 (Backlog, In Progress, Review, Done, + 커스텀)</options>
+      </dropdown>
+      <dropdown name="Priority">
+        <type>Multi-select Chips</type>
+        <options>HIGH, MEDIUM, LOW (색상 적용)</options>
+      </dropdown>
+      <dropdown name="Assignee">
+        <type>Searchable Single Select</type>
+        <options>팀 멤버 목록 + "Unassigned"</options>
+        <display>아바타 + 이름</display>
+      </dropdown>
+      <dropdown name="Labels">
+        <type>Multi-select Chips</type>
+        <options>프로젝트 라벨 목록 (색상 적용)</options>
+      </dropdown>
+      <dropdown name="Due Date">
+        <type>Date Range Picker</type>
+        <presets>Today, This Week, This Month, Overdue, Custom Range</presets>
+      </dropdown>
+    </filter-dropdowns>
+
+    <sort-dropdown>
+      <options>
+        <option value="createdAt">Created Date</option>
+        <option value="updatedAt">Updated Date</option>
+        <option value="priority">Priority</option>
+        <option value="dueDate">Due Date</option>
+      </options>
+      <toggle>Ascending / Descending</toggle>
+    </sort-dropdown>
+
+    <color-theme>
+      <filter-button>bg-zinc-100 border border-zinc-200</filter-button>
+      <active-filter>bg-indigo-100 text-indigo-700 border-indigo-200</active-filter>
+      <clear-all>text-zinc-500 hover:text-zinc-700</clear-all>
+      <filter-badge>bg-indigo-500 text-white (필터 개수 표시)</filter-badge>
+    </color-theme>
+  </ux-design>
+
+  <!-- ============================================
+       SECTION 4: Existing Codebase Context
+       ============================================ -->
+  <existing-code>
+    <hooks-from-story-3-3>
+      <hook path="hooks/use-issues.ts">useIssues 훅 확장 필요</hook>
+      <hook path="hooks/use-labels.ts">useLabels (라벨 필터 옵션)</hook>
+    </hooks-from-story-3-3>
+
+    <hooks-from-story-3-4>
+      <hook path="hooks/use-team-members.ts">useTeamMembers (담당자 필터 옵션)</hook>
+    </hooks-from-story-3-4>
+
+    <ui-components>
+      <component path="components/ui/select.tsx">Select (정렬, 단일 선택 필터)</component>
+      <component path="components/ui/button.tsx">Button (Clear All)</component>
+      <component path="components/ui/input.tsx">Input (검색 바)</component>
+      <component path="components/ui/checkbox.tsx">Checkbox (다중 선택 필터)</component>
+      <component path="components/ui/dropdown-menu.tsx">DropdownMenu (필터 드롭다운)</component>
+    </ui-components>
+
+    <component-pattern path="components/ui/priority-badge.tsx">
+      <reuse>우선순위 필터 Chip에 색상 적용</reuse>
+    </component-pattern>
+
+    <component-pattern path="components/ui/label-tag.tsx">
+      <reuse>라벨 필터 Chip에 색상 적용</reuse>
+    </component-pattern>
+  </existing-code>
+
+  <!-- ============================================
+       SECTION 5: Files to Create
+       ============================================ -->
+  <files-to-create>
+    <api>
+      <file path="app/api/projects/[projectId]/issues/route.ts" mode="extend">
+        <add>GET 메서드에 필터링/정렬 쿼리 파라미터 처리 추가</add>
+      </file>
+    </api>
+
+    <stores>
+      <file path="stores/filter-store.ts">
+        <purpose>Zustand 필터 상태 스토어</purpose>
+        <exports>
+          <store name="useFilterStore">
+            <state>search, statuses, priorities, assignee, labels, dueDateFrom, dueDateTo, sortBy, sortOrder</state>
+            <actions>setSearch, setStatuses, setPriorities, setAssignee, setLabels, setDateRange, setSortBy, setSortOrder, resetFilters</actions>
+          </store>
+        </exports>
+      </file>
+    </stores>
+
+    <hooks>
+      <file path="hooks/use-debounce.ts">
+        <purpose>디바운스 커스텀 훅</purpose>
+        <usage>검색 입력에 300ms 디바운스 적용</usage>
+      </file>
+      <file path="hooks/use-filter-sync.ts">
+        <purpose>URL 쿼리 파라미터와 필터 스토어 동기화</purpose>
+        <features>
+          <feature>필터 변경 → URL 업데이트</feature>
+          <feature>페이지 로드 → URL에서 필터 복원</feature>
+        </features>
+      </file>
+      <file path="hooks/use-issues.ts" mode="extend">
+        <add>필터 파라미터를 쿼리 키에 포함, 필터 변경 시 자동 재조회</add>
+      </file>
+    </hooks>
+
+    <components>
+      <file path="components/issues/search-bar.tsx">
+        <purpose>검색 바 컴포넌트</purpose>
+        <features>
+          <feature>검색 아이콘</feature>
+          <feature>입력 필드 (placeholder: "Search issues...")</feature>
+          <feature>디바운스 300ms</feature>
+          <feature>검색어 지우기 X 버튼</feature>
+        </features>
+      </file>
+      <file path="components/issues/filter-bar.tsx">
+        <purpose>필터 바 컨테이너</purpose>
+        <children>
+          <child>SearchBar</child>
+          <child>StatusFilter</child>
+          <child>PriorityFilter</child>
+          <child>AssigneeFilter</child>
+          <child>LabelFilter</child>
+          <child>DateRangeFilter</child>
+          <child>SortDropdown</child>
+          <child>ClearAllButton</child>
+        </children>
+      </file>
+      <file path="components/issues/status-filter.tsx">
+        <purpose>상태 Multi-select 필터</purpose>
+      </file>
+      <file path="components/issues/priority-filter.tsx">
+        <purpose>우선순위 Multi-select 필터</purpose>
+        <visual>PriorityBadge 색상 적용</visual>
+      </file>
+      <file path="components/issues/assignee-filter.tsx">
+        <purpose>담당자 Single-select 필터</purpose>
+        <visual>Avatar + 이름</visual>
+      </file>
+      <file path="components/issues/label-filter.tsx">
+        <purpose>라벨 Multi-select 필터</purpose>
+        <visual>LabelTag 색상 적용</visual>
+      </file>
+      <file path="components/issues/date-range-filter.tsx">
+        <purpose>마감일 범위 필터</purpose>
+        <presets>Today, This Week, This Month, Overdue</presets>
+      </file>
+      <file path="components/issues/sort-dropdown.tsx">
+        <purpose>정렬 드롭다운</purpose>
+        <options>Created, Updated, Priority, Due Date</options>
+        <toggle>ASC/DESC</toggle>
+      </file>
+      <file path="components/issues/active-filters.tsx">
+        <purpose>적용된 필터 Chip 표시</purpose>
+        <features>
+          <feature>각 필터를 Chip으로 표시</feature>
+          <feature>X 클릭으로 개별 제거</feature>
+          <feature>Clear All 버튼</feature>
+        </features>
+      </file>
+    </components>
+  </files-to-create>
+
+  <!-- ============================================
+       SECTION 6: Acceptance Criteria Checklist
+       ============================================ -->
+  <acceptance-criteria>
+    <ac id="1" status="pending">검색어 입력 시 이슈 제목 기준 실시간 필터링</ac>
+    <ac id="2" status="pending">검색에 디바운스(300ms) 적용</ac>
+    <ac id="3" status="pending">상태별 필터링 (복수 선택)</ac>
+    <ac id="4" status="pending">우선순위별 필터링 (복수 선택)</ac>
+    <ac id="5" status="pending">담당자별 필터링</ac>
+    <ac id="6" status="pending">라벨별 필터링 (복수 선택)</ac>
+    <ac id="7" status="pending">마감일 범위 필터링</ac>
+    <ac id="8" status="pending">복합 필터 AND 조건 결합</ac>
+    <ac id="9" status="pending">필터 상태 URL 쿼리 파라미터 반영</ac>
+    <ac id="10" status="pending">URL 공유 시 동일한 필터 상태 복원</ac>
+    <ac id="11" status="pending">정렬 옵션 제공</ac>
+    <ac id="12" status="pending">필터 초기화 버튼</ac>
+  </acceptance-criteria>
+
+  <!-- ============================================
+       SECTION 7: Dependencies
+       ============================================ -->
+  <dependencies>
+    <story-dependency id="3-3-issue-create-list" status="drafted" required="true">
+      이슈 목록 API, useIssues 훅
+    </story-dependency>
+    <story-dependency id="3-4-issue-detail-edit" status="drafted">
+      useTeamMembers 훅
+    </story-dependency>
+    <package-dependency name="zustand" version="^4.x">필터 상태 관리</package-dependency>
+    <package-dependency name="date-fns" version="^3.x">날짜 범위 계산</package-dependency>
+  </dependencies>
+</story-context>

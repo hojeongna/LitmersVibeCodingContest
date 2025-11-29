@@ -1,0 +1,328 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>5</storyId>
+    <title>뷰 전환 &amp; UX 개선</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-5-view-switch-ux-improvement.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>프로젝트 팀 멤버</asA>
+    <iWant>칸반 보드와 리스트 뷰를 전환하고, 다양한 UX 개선 기능을 사용</iWant>
+    <soThat>상황에 맞는 최적의 방식으로 이슈를 관리하고 효율적으로 작업할 수 있다</soThat>
+    <tasks>
+      <part id="A" name="뷰 전환 (Board/List)">
+        <task id="1" acs="1,2">ViewToggle 컴포넌트 구현</task>
+        <task id="2" acs="3,4">ListView 컴포넌트 구현</task>
+        <task id="3" acs="1,2">ProjectView 라우팅 통합</task>
+      </part>
+      <part id="B" name="URL 기반 필터 공유">
+        <task id="4" acs="5">useFilterParams 훅 구현</task>
+        <task id="5" acs="5">FilterBar 컴포넌트 개선</task>
+      </part>
+      <part id="C" name="Empty State &amp; Loading">
+        <task id="6" acs="6">EmptyState 컴포넌트 구현</task>
+        <task id="7" acs="7">Skeleton 로딩 UI</task>
+      </part>
+      <part id="D" name="서브태스크 진행률">
+        <task id="8" acs="8">SubtaskProgress 컴포넌트 구현</task>
+      </part>
+      <part id="E" name="키보드 단축키">
+        <task id="9" acs="9">useKeyboardShortcuts 훅 구현</task>
+        <task id="10" acs="9">KeyboardShortcutsModal 컴포넌트</task>
+      </part>
+      <part id="F" name="모바일 반응형">
+        <task id="11" acs="10">모바일 칸반 스와이프</task>
+        <task id="12" acs="10">모바일 레이아웃 최적화</task>
+      </part>
+      <part id="G" name="다크모드">
+        <task id="13" acs="11">다크모드 지원</task>
+      </part>
+      <part id="H" name="이슈 네비게이션">
+        <task id="14" acs="12">IssueNavigator 구현</task>
+      </part>
+      <part id="I" name="타입 및 유틸리티">
+        <task id="15" acs="전체">타입 정의 확장</task>
+      </part>
+      <part id="J" name="테스트">
+        <task id="16" acs="1-12">E2E 테스트 시나리오</task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" fr="NFR">칸반 보드 뷰와 리스트 뷰를 탭으로 전환할 수 있다</ac>
+    <ac id="2" fr="NFR">선택된 뷰가 사용자별로 저장되어 다음 방문 시 유지된다</ac>
+    <ac id="3" fr="NFR">리스트 뷰에서 이슈 테이블로 조회할 수 있다</ac>
+    <ac id="4" fr="NFR">리스트 뷰에서 컬럼 정렬(상태, 우선순위, 마감일, 담당자)이 가능하다</ac>
+    <ac id="5" fr="NFR">공유 필터가 URL에 반영되어 링크 공유 시 동일 필터가 적용된다</ac>
+    <ac id="6" fr="NFR">빈 상태(이슈 없음)에 적절한 Empty State UI가 표시된다</ac>
+    <ac id="7" fr="NFR">로딩 상태에 Skeleton UI가 표시된다</ac>
+    <ac id="8" fr="FR-039-2">이슈 카드에 서브태스크 진행률이 표시된다</ac>
+    <ac id="9" fr="NFR">키보드 단축키로 주요 기능을 빠르게 사용할 수 있다</ac>
+    <ac id="10" fr="NFR">모바일 반응형에서 칸반 컬럼 스와이프로 전환할 수 있다</ac>
+    <ac id="11" fr="NFR">다크모드를 지원한다</ac>
+    <ac id="12" fr="NFR">이슈 상세 패널에서 "다음 이슈", "이전 이슈" 네비게이션이 가능하다</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="4.2, 7.1, 8.1">
+        Board/List 탭 전환, Empty State 패턴, 반응형 전략.
+      </doc>
+      <doc path="docs/ux-design-directions.html" title="Design Direction Mockups" section="Kanban Board">
+        인터랙티브 UI 목업. View Tabs, Filter Bar 시각화.
+      </doc>
+      <doc path="docs/ux-color-themes.html" title="Color Theme Visualizer" section="Dark Mode">
+        Toggle Dark Mode 버튼 클릭으로 다크모드 색상 확인.
+      </doc>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-4.md" title="Epic 4 Technical Specification" section="Non-Functional Requirements">
+        성능 목표, 반응형 브레이크포인트.
+      </doc>
+      <doc path="docs/prd.md" title="PRD" section="FR-039-2">
+        서브태스크 진행률 요구사항.
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/components/kanban/board.tsx" kind="component" reason="뷰 전환 통합">KanbanBoard 컴포넌트 수정</file>
+      <file path="jira-lite-mvp/components/kanban/issue-card.tsx" kind="component" reason="서브태스크 진행률 추가">IssueCard 컴포넌트 수정</file>
+      <file path="jira-lite-mvp/components/ui/tabs.tsx" kind="component" reason="View Tabs">shadcn/ui Tabs 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/table.tsx" kind="component" reason="List View 테이블">shadcn/ui Table 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/skeleton.tsx" kind="component" reason="로딩 상태">shadcn/ui Skeleton 컴포넌트</file>
+      <file path="jira-lite-mvp/app/globals.css" kind="style" reason="다크모드 CSS 변수">CSS 변수 정의</file>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="next-themes" version="latest">다크모드 지원</package>
+        <package name="embla-carousel-react" version="latest">모바일 스와이프 (또는 @dnd-kit 활용)</package>
+        <package name="@tanstack/react-query" version="^5.90.11">서버 상태 관리</package>
+        <package name="lucide-react" version="^0.511.0">아이콘 (Empty State, 정렬 화살표)</package>
+      </npm>
+      <shadcn-ui>
+        <component name="Tabs">뷰 전환 탭</component>
+        <component name="Table">리스트 뷰 테이블</component>
+        <component name="Skeleton">로딩 상태</component>
+        <component name="Dialog">단축키 도움말 모달</component>
+      </shadcn-ui>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">뷰 전환 컴포넌트는 components/kanban/ 폴더에 생성</constraint>
+    <constraint type="architecture">리스트 뷰는 components/issues/list-view.tsx에 생성</constraint>
+    <constraint type="architecture">Empty State는 components/ui/empty-state.tsx에 생성</constraint>
+    <constraint type="architecture">ThemeProvider는 components/providers/theme-provider.tsx에 생성</constraint>
+    <constraint type="ux">URL 쿼리 파라미터: view=board|list, sort, order, status, priority, assignee, label, search, due</constraint>
+    <constraint type="ux">localStorage에 선택된 뷰 저장</constraint>
+    <constraint type="ux">초기 로드 우선순위: URL → localStorage → 기본값(board)</constraint>
+    <constraint type="ux">다크모드: Tailwind CSS dark mode (class 전략)</constraint>
+    <constraint type="responsive">Desktop (1280px+): 전체 레이아웃</constraint>
+    <constraint type="responsive">Laptop (1024-1279px): Detail Panel 오버레이</constraint>
+    <constraint type="responsive">Tablet (768-1023px): Sidebar 축소, 스와이프 컬럼</constraint>
+    <constraint type="responsive">Mobile (&lt;768px): 단일 컬럼 스와이프, 전체 화면 상세</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="ViewMode" kind="TypeScript" path="types/view.ts">
+      <signature>
+        type ViewMode = 'board' | 'list';
+      </signature>
+    </interface>
+    <interface name="SortField" kind="TypeScript" path="types/view.ts">
+      <signature>
+        type SortField = 'status' | 'priority' | 'due_date' | 'assignee' | 'created_at';
+      </signature>
+    </interface>
+    <interface name="SortOrder" kind="TypeScript" path="types/view.ts">
+      <signature>
+        type SortOrder = 'asc' | 'desc';
+      </signature>
+    </interface>
+    <interface name="FilterState" kind="TypeScript" path="types/view.ts">
+      <signature>
+        interface FilterState {
+          status?: string[];
+          priority?: string[];
+          assignee?: string;
+          label?: string[];
+          search?: string;
+          due?: 'today' | 'week' | 'overdue';
+        }
+      </signature>
+    </interface>
+    <interface name="useFilterParams" kind="Hook" path="hooks/use-filter-params.ts">
+      <description>URL ↔ 필터 상태 동기화 훅</description>
+      <returns>
+        {
+          filters: FilterState,
+          setFilter: (key, value) => void,
+          clearFilters: () => void,
+          shareUrl: () => string
+        }
+      </returns>
+    </interface>
+    <interface name="useKeyboardShortcuts" kind="Hook" path="hooks/use-keyboard-shortcuts.ts">
+      <description>키보드 단축키 등록/해제 훅</description>
+      <shortcuts>
+        <shortcut key="Cmd/Ctrl + K" action="검색 Command Palette 열기"/>
+        <shortcut key="N" action="새 이슈 모달 열기" condition="input focus 아닐 때"/>
+        <shortcut key="?" action="단축키 도움말 모달" condition="input focus 아닐 때"/>
+        <shortcut key="Escape" action="패널/모달 닫기"/>
+        <shortcut key="← / →" action="이슈 네비게이션" condition="상세 패널 열린 상태"/>
+      </shortcuts>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      E2E 테스트 중심으로 Chrome DevTools MCP 또는 Playwright 사용.
+      반응형 테스트는 다양한 뷰포트 사이즈로 수행.
+      다크모드 테스트는 테마 토글 후 색상 확인.
+    </standards>
+    <locations>
+      <location>jira-lite-mvp/__tests__/</location>
+      <location>jira-lite-mvp/**/*.test.ts</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Board/List 탭 클릭 → 뷰 전환 확인</idea>
+      <idea ac="2">뷰 전환 → 페이지 새로고침 → 동일 뷰 유지 확인</idea>
+      <idea ac="3">리스트 뷰에서 테이블 형식 이슈 목록 표시 확인</idea>
+      <idea ac="4">컬럼 헤더 클릭 → 정렬 변경 (ASC ↔ DESC) 확인</idea>
+      <idea ac="5">필터 적용 → URL 복사 → 새 탭에서 열기 → 동일 필터 확인</idea>
+      <idea ac="6">이슈 없는 프로젝트 → Empty State 일러스트 및 CTA 표시 확인</idea>
+      <idea ac="7">느린 네트워크 시뮬레이션 → Skeleton 렌더링 확인</idea>
+      <idea ac="8">서브태스크 있는 이슈 → "2/5" 프로그레스 바 표시 확인</idea>
+      <idea ac="9">Cmd+K(검색), N(새 이슈), ?(단축키 도움말) 동작 확인</idea>
+      <idea ac="10">모바일 뷰포트 → 좌우 스와이프로 컬럼 이동 확인</idea>
+      <idea ac="11">테마 토글 → 다크모드 색상 변경 확인</idea>
+      <idea ac="12">상세 패널 → ← / → 키로 이슈 탐색 확인</idea>
+    </ideas>
+  </tests>
+
+  <colorReference>
+    <theme name="Linear Productivity - Light Mode">
+      <color name="Background" hex="#FAFAFA"/>
+      <color name="Card" hex="#FFFFFF"/>
+      <color name="Border" hex="#E4E4E7"/>
+      <color name="Text Primary" hex="#18181B"/>
+      <color name="Text Secondary" hex="#71717A"/>
+      <color name="Primary" hex="#5B5FC7"/>
+    </theme>
+    <theme name="Linear Productivity - Dark Mode">
+      <color name="Background" hex="#09090B"/>
+      <color name="Card" hex="#18181B"/>
+      <color name="Border" hex="#27272A"/>
+      <color name="Text Primary" hex="#FAFAFA"/>
+      <color name="Text Secondary" hex="#A1A1AA"/>
+      <color name="Primary" hex="#818CF8">밝은 Indigo</color>
+    </theme>
+    <darkModeCssVariables>
+      <variable name="--background" light="#FAFAFA" dark="#09090B"/>
+      <variable name="--foreground" light="#18181B" dark="#FAFAFA"/>
+      <variable name="--card" light="#FFFFFF" dark="#18181B"/>
+      <variable name="--border" light="#E4E4E7" dark="#27272A"/>
+      <variable name="--primary" light="#5B5FC7" dark="#818CF8"/>
+    </darkModeCssVariables>
+  </colorReference>
+
+  <emptyStateMessages>
+    <state type="no-issues">
+      <icon>Inbox</icon>
+      <title>이슈가 없습니다</title>
+      <description>새 이슈를 만들어 프로젝트를 시작하세요.</description>
+      <cta>+ 새 이슈 만들기</cta>
+    </state>
+    <state type="no-search-results">
+      <icon>Search</icon>
+      <title>검색 결과가 없습니다</title>
+      <description>다른 키워드로 검색해보세요.</description>
+      <cta>필터 초기화</cta>
+    </state>
+    <state type="no-filter-results">
+      <icon>Filter</icon>
+      <title>조건에 맞는 이슈가 없습니다</title>
+      <description>필터 조건을 조정해보세요.</description>
+      <cta>필터 초기화</cta>
+    </state>
+  </emptyStateMessages>
+
+  <keyboardShortcuts>
+    <shortcut key="Cmd/Ctrl + K" action="검색 Command Palette 열기" scope="전역"/>
+    <shortcut key="N" action="새 이슈 모달 열기" scope="input focus 아닐 때"/>
+    <shortcut key="?" action="단축키 도움말 모달" scope="input focus 아닐 때"/>
+    <shortcut key="Escape" action="패널/모달 닫기" scope="패널 열린 상태"/>
+    <shortcut key="←" action="이전 이슈" scope="상세 패널 열린 상태"/>
+    <shortcut key="→" action="다음 이슈" scope="상세 패널 열린 상태"/>
+    <shortcut key="J / K" action="이슈 목록 위/아래" scope="대안 네비게이션"/>
+  </keyboardShortcuts>
+
+  <responsiveBreakpoints>
+    <breakpoint name="Desktop" range="1280px+" layout="Sidebar + Main + Panel">
+      <feature>전체 컬럼 표시</feature>
+      <feature>우측 패널 이슈 상세</feature>
+    </breakpoint>
+    <breakpoint name="Laptop" range="1024-1279px" layout="Sidebar(축소) + Main">
+      <feature>전체 컬럼 표시</feature>
+      <feature>오버레이 이슈 상세</feature>
+    </breakpoint>
+    <breakpoint name="Tablet" range="768-1023px" layout="햄버거 + Main">
+      <feature>스와이프 컬럼</feature>
+      <feature>전체 화면 이슈 상세</feature>
+    </breakpoint>
+    <breakpoint name="Mobile" range="&lt;768px" layout="Bottom Nav + Main">
+      <feature>스와이프 컬럼</feature>
+      <feature>전체 화면 이슈 상세</feature>
+    </breakpoint>
+  </responsiveBreakpoints>
+
+  <urlFilterParams>
+    <param name="view" type="string" values="board,list" default="board"/>
+    <param name="sort" type="string" values="status,priority,due_date,assignee,created_at"/>
+    <param name="order" type="string" values="asc,desc" default="asc"/>
+    <param name="status" type="string" description="콤마 구분 상태 ID"/>
+    <param name="priority" type="string" values="HIGH,MEDIUM,LOW"/>
+    <param name="assignee" type="string" description="사용자 ID"/>
+    <param name="label" type="string" description="콤마 구분 라벨 ID"/>
+    <param name="search" type="string" description="검색어"/>
+    <param name="due" type="string" values="today,week,overdue"/>
+    <example>/projects/abc123?view=board&amp;status=in-progress,review&amp;priority=HIGH&amp;assignee=user-uuid&amp;search=auth</example>
+  </urlFilterParams>
+
+  <fileStructure>
+    <newFiles>
+      <file>components/kanban/view-toggle.tsx</file>
+      <file>components/kanban/kanban-skeleton.tsx</file>
+      <file>components/kanban/mobile-kanban.tsx</file>
+      <file>components/issues/list-view.tsx</file>
+      <file>components/issues/list-skeleton.tsx</file>
+      <file>components/issues/subtask-progress.tsx</file>
+      <file>components/ui/empty-state.tsx</file>
+      <file>components/ui/keyboard-shortcuts-modal.tsx</file>
+      <file>components/providers/theme-provider.tsx</file>
+      <file>hooks/use-filter-params.ts</file>
+      <file>hooks/use-keyboard-shortcuts.ts</file>
+      <file>types/view.ts</file>
+    </newFiles>
+    <existingToModify>
+      <file>app/(dashboard)/projects/[projectId]/page.tsx (뷰 전환 로직)</file>
+      <file>components/kanban/filter-bar.tsx (URL 파라미터 연동)</file>
+      <file>components/kanban/issue-card.tsx (서브태스크 진행률)</file>
+      <file>app/globals.css (다크모드 CSS 변수)</file>
+      <file>app/layout.tsx (ThemeProvider 래핑)</file>
+    </existingToModify>
+  </fileStructure>
+
+  <storyDependencies>
+    <dependency story="4-1" required="true">KanbanBoard, IssueCard 컴포넌트</dependency>
+    <dependency story="4-2" required="true">Drag &amp; Drop (칸반 보드)</dependency>
+    <dependency epic="3" required="true">issues 데이터 구조, 서브태스크</dependency>
+  </storyDependencies>
+
+  <additionalPackages>
+    <package name="next-themes" install="npm install next-themes">다크모드 지원</package>
+    <package name="embla-carousel-react" install="npm install embla-carousel-react" optional="true">모바일 스와이프 (또는 기존 @dnd-kit 활용)</package>
+  </additionalPackages>
+</story-context>

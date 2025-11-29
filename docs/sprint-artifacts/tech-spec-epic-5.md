@@ -847,16 +847,321 @@ export async function POST(request: Request) {
 
 ## Acceptance Criteria (Authoritative)
 
-{{acceptance_criteria}}
+### FR-040: AI 이슈 요약
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-040-1 | 이슈 상세 페이지에서 "AI 요약" 버튼 클릭 시 요약 생성 | UI 테스트 |
+| AC-040-2 | description이 10자 미만이면 AI 버튼 비활성화 | UI 테스트 |
+| AC-040-3 | 요약 결과가 이슈에 저장되고 재방문 시 표시됨 | 통합 테스트 |
+| AC-040-4 | "Regenerate" 버튼으로 요약 재생성 가능 | UI 테스트 |
+| AC-040-5 | 로딩 중 스피너 표시, 에러 시 메시지 표시 | UI 테스트 |
+
+### FR-041: 라벨 자동 제안
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-041-1 | 이슈 생성/편집 시 "AI 라벨 제안" 버튼 표시 | UI 테스트 |
+| AC-041-2 | 제안된 라벨 목록에서 선택하여 적용 가능 | UI 테스트 |
+| AC-041-3 | 제안 라벨은 신뢰도 점수와 함께 표시 | UI 테스트 |
+
+### FR-042: 우선순위 자동 제안
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-042-1 | 이슈 생성 시 AI가 우선순위 제안 | UI 테스트 |
+| AC-042-2 | 제안된 우선순위를 원클릭으로 적용 가능 | UI 테스트 |
+| AC-042-3 | 사용자가 수동으로 변경 가능 | UI 테스트 |
+
+### FR-043: AI Rate Limiting
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-043-1 | 분당 10회 초과 시 429 에러 반환 | API 테스트 |
+| AC-043-2 | 일당 100회 초과 시 429 에러 반환 | API 테스트 |
+| AC-043-3 | 남은 사용량 UI에 표시 (선택) | UI 테스트 |
+| AC-043-4 | 제한 초과 시 친절한 안내 메시지 표시 | UI 테스트 |
+
+### FR-044: 중복 이슈 탐지
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-044-1 | 이슈 생성 시 유사도 80% 이상 이슈 경고 | UI 테스트 |
+| AC-044-2 | 중복 의심 이슈 클릭 시 해당 이슈로 이동 | UI 테스트 |
+| AC-044-3 | 사용자가 무시하고 생성 진행 가능 | UI 테스트 |
+
+### FR-045: 댓글 요약
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-045-1 | 댓글 3개 이상 시 "댓글 요약" 버튼 표시 | UI 테스트 |
+| AC-045-2 | 요약에 핵심 포인트 목록 포함 | UI 테스트 |
+| AC-045-3 | 요약 결과 복사 가능 | UI 테스트 |
+
+### FR-080: 개인 대시보드
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-080-1 | 로그인 후 대시보드 페이지 접근 가능 | UI 테스트 |
+| AC-080-2 | 내 담당 이슈 통계 표시 (진행중/완료/마감임박) | UI 테스트 |
+| AC-080-3 | 마감 7일 이내 이슈 목록 표시 | UI 테스트 |
+| AC-080-4 | 이슈 클릭 시 해당 이슈로 이동 | UI 테스트 |
+
+### FR-081: 프로젝트 통계
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-081-1 | 프로젝트 진행률 표시 (완료/전체) | UI 테스트 |
+| AC-081-2 | 상태별 이슈 분포 차트 (파이/바) | UI 테스트 |
+| AC-081-3 | 우선순위별 분포 표시 | UI 테스트 |
+
+### FR-082: 활동 트렌드
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-082-1 | 최근 7일 생성/완료 이슈 트렌드 라인 차트 | UI 테스트 |
+| AC-082-2 | 기간 필터 변경 가능 (7일/30일) | UI 테스트 |
+
+### FR-090: 인앱 알림
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-090-1 | 헤더에 알림 벨 아이콘 및 읽지 않은 개수 표시 | UI 테스트 |
+| AC-090-2 | 벨 클릭 시 알림 드롭다운/페이지 표시 | UI 테스트 |
+| AC-090-3 | 담당자 할당 시 실시간 알림 수신 | 통합 테스트 |
+| AC-090-4 | 댓글 작성 시 이슈 작성자에게 알림 | 통합 테스트 |
+| AC-090-5 | 마감일 임박 시 알림 (하루 전) | 스케줄 테스트 |
+| AC-090-6 | 알림 클릭 시 읽음 처리 및 해당 이슈로 이동 | UI 테스트 |
+| AC-090-7 | "모두 읽음" 버튼으로 일괄 처리 | UI 테스트 |
+
+### FR-091: 이메일 알림
+
+| AC ID | 인수 조건 | 검증 방법 |
+|-------|----------|----------|
+| AC-091-1 | 담당자 할당 시 이메일 발송 | 통합 테스트 |
+| AC-091-2 | 이메일에 이슈 제목, 링크 포함 | 이메일 템플릿 검증 |
+| AC-091-3 | 알림 설정에서 이메일 알림 끄기 가능 (v2) | - |
 
 ## Traceability Mapping
 
-{{traceability_mapping}}
+### FR → Story → 구현 컴포넌트 맵핑
+
+| FR | Story ID | 컴포넌트/파일 | API Endpoint |
+|----|----------|--------------|--------------|
+| FR-040 | 5.1 | `components/ai/AISummaryPanel.tsx` | `POST /api/ai/summary` |
+| FR-041 | 5.2 | `components/ai/AILabelSuggestion.tsx` | `POST /api/ai/suggest` |
+| FR-042 | 5.2 | `components/ai/AIPrioritySuggestion.tsx` | `POST /api/ai/suggest` |
+| FR-043 | 5.3 | `lib/ai/rate-limiter.ts` | (미들웨어) |
+| FR-044 | 5.4 | `components/ai/DuplicateWarning.tsx` | `POST /api/ai/duplicate` |
+| FR-045 | 5.5 | `components/ai/CommentSummary.tsx` | `POST /api/ai/comment-summary` |
+| FR-080 | 5.6 | `app/(dashboard)/dashboard/page.tsx` | `GET /api/dashboard/personal` |
+| FR-081 | 5.7 | `components/dashboard/ProjectStats.tsx` | `GET /api/dashboard/project/:id` |
+| FR-082 | 5.7 | `components/dashboard/ActivityChart.tsx` | `GET /api/dashboard/project/:id` |
+| FR-090 | 5.8 | `components/notifications/NotificationCenter.tsx` | `GET /api/notifications` |
+| FR-091 | 5.9 | `lib/notifications/email.ts` | (서버 사이드) |
+
+### Story 목록 (예상)
+
+| Story | 제목 | FR Coverage | 예상 포인트 |
+|-------|------|-------------|------------|
+| 5.1 | AI 이슈 요약 기능 | FR-040 | 5 |
+| 5.2 | AI 라벨/우선순위 제안 | FR-041, FR-042 | 5 |
+| 5.3 | AI Rate Limiting | FR-043 | 3 |
+| 5.4 | 중복 이슈 탐지 | FR-044 | 5 |
+| 5.5 | 댓글 요약 | FR-045 | 3 |
+| 5.6 | 개인 대시보드 | FR-080 | 5 |
+| 5.7 | 프로젝트 통계 & 차트 | FR-081, FR-082 | 5 |
+| 5.8 | 인앱 알림 센터 | FR-090 | 8 |
+| 5.9 | 이메일 알림 | FR-091 | 5 |
+
+**총 예상 포인트**: 44 SP
+
+### 파일 구조 계획
+
+```
+app/
+├── (dashboard)/
+│   ├── dashboard/
+│   │   └── page.tsx              # FR-080
+│   └── notifications/
+│       └── page.tsx              # FR-090
+├── api/
+│   ├── ai/
+│   │   ├── summary/route.ts      # FR-040
+│   │   ├── suggest/route.ts      # FR-041, FR-042
+│   │   ├── duplicate/route.ts    # FR-044
+│   │   └── comment-summary/route.ts  # FR-045
+│   ├── dashboard/
+│   │   ├── personal/route.ts     # FR-080
+│   │   └── project/[id]/route.ts # FR-081, FR-082
+│   └── notifications/
+│       ├── route.ts              # FR-090
+│       └── [id]/read/route.ts    # FR-090
+
+components/
+├── ai/
+│   ├── AISummaryPanel.tsx        # FR-040
+│   ├── AILabelSuggestion.tsx     # FR-041
+│   ├── AIPrioritySuggestion.tsx  # FR-042
+│   ├── DuplicateWarning.tsx      # FR-044
+│   └── CommentSummary.tsx        # FR-045
+├── dashboard/
+│   ├── StatsCard.tsx             # FR-080
+│   ├── ProjectProgress.tsx       # FR-081
+│   ├── IssuesByStatusChart.tsx   # FR-081
+│   ├── ActivityTrendChart.tsx    # FR-082
+│   └── UpcomingDeadlines.tsx     # FR-080
+└── notifications/
+    ├── NotificationBell.tsx      # FR-090
+    ├── NotificationList.tsx      # FR-090
+    ├── NotificationItem.tsx      # FR-090
+    └── NotificationToast.tsx     # FR-090
+
+lib/
+├── ai/
+│   ├── openai-client.ts
+│   ├── prompts.ts
+│   └── rate-limiter.ts           # FR-043
+├── dashboard/
+│   └── stats.ts
+└── notifications/
+    ├── service.ts                # FR-090
+    └── email.ts                  # FR-091
+```
 
 ## Risks, Assumptions, Open Questions
 
-{{risks_assumptions_questions}}
+### Risks (위험 요소)
+
+| 위험 | 영향도 | 가능성 | 완화 전략 |
+|------|--------|--------|----------|
+| OpenAI API 비용 초과 | 높음 | 중간 | Rate Limiting 적용, 사용량 모니터링, 예산 알림 설정 |
+| OpenAI API 응답 지연 | 중간 | 중간 | 타임아웃 설정 (10초), 사용자에게 로딩 상태 표시, 취소 버튼 |
+| AI 결과 품질 불일치 | 중간 | 높음 | 프롬프트 튜닝, 사용자 피드백 수집, Regenerate 기능 |
+| Resend 이메일 전달 실패 | 낮음 | 낮음 | 재시도 로직, 실패 로깅, 인앱 알림으로 보완 |
+| Realtime 연결 불안정 | 중간 | 중간 | 자동 재연결, 폴링 폴백, 연결 상태 UI 표시 |
+| 대시보드 쿼리 성능 | 중간 | 중간 | 인덱스 최적화, 캐싱, 데이터 집계 최적화 |
+
+### Assumptions (가정)
+
+| 가정 | 검증 방법 |
+|------|----------|
+| OpenAI GPT-5-nano (또는 gpt-4o-mini)가 충분한 품질 제공 | 프로토타입 테스트 |
+| 사용자당 분당 10회 AI 호출이 충분함 | 사용 패턴 모니터링 |
+| Resend 무료 티어 (일 100통)로 MVP 충분 | 예상 사용량 계산 |
+| Supabase Realtime이 안정적으로 작동 | 부하 테스트 |
+| 사용자가 AI 제안을 수동으로 확인/적용할 의향 있음 | 사용자 피드백 |
+
+### Open Questions (미결 사항)
+
+| 질문 | 결정 필요 시점 | 담당자 |
+|------|--------------|--------|
+| 1. OpenAI 모델 선택 (gpt-4o-mini vs gpt-5-nano)? | Story 5.1 시작 전 | PM/Dev |
+| 2. AI 캐싱 전략 - 결과를 얼마나 유지할지? | Story 5.1 | Dev |
+| 3. 중복 탐지 유사도 threshold (80% 적절한지)? | Story 5.4 | PM |
+| 4. 마감일 알림 - 며칠 전부터? (1일/3일/7일) | Story 5.8 | PM |
+| 5. 이메일 알림 - 어떤 이벤트에 발송할지 우선순위? | Story 5.9 | PM |
+| 6. 대시보드 - 팀 전체 통계도 필요한지? | Story 5.6 | PM |
+| 7. 알림 - 배지 알림 외 Toast도 기본 활성화? | Story 5.8 | UX |
+
+### 결정 로그
+
+| 날짜 | 결정 사항 | 근거 |
+|------|----------|------|
+| 2025-11-29 | GPT-4o-mini 사용 | 비용 효율성, 충분한 품질 (GPT-5-nano 미출시 시) |
+| 2025-11-29 | Rate Limit 분당 10회 | PRD FR-043 명시 |
+| 2025-11-29 | Resend 사용 | package.json에 이미 의존성 포함 |
 
 ## Test Strategy Summary
 
-{{test_strategy}}
+### 테스트 레벨별 전략
+
+| 레벨 | 범위 | 도구 |
+|------|------|------|
+| Unit Test | AI 유틸리티, Rate Limiter, 통계 계산 | Jest/Vitest |
+| Integration Test | API Route + Supabase, OpenAI Mock | Jest + MSW |
+| E2E Test | 주요 사용자 플로우 | Playwright |
+| Manual Test | AI 품질 검증, UX 검증 | QA 체크리스트 |
+
+### 주요 테스트 케이스
+
+#### AI 기능 (FR-040 ~ FR-045)
+
+```typescript
+// AI Summary 테스트
+describe('POST /api/ai/summary', () => {
+  it('should generate summary for valid issue', async () => {})
+  it('should return error if description < 10 chars', async () => {})
+  it('should return 429 if rate limit exceeded', async () => {})
+  it('should handle OpenAI API error gracefully', async () => {})
+})
+
+// Rate Limiter 테스트
+describe('AIRateLimiter', () => {
+  it('should allow request within minute limit', async () => {})
+  it('should block request exceeding minute limit', async () => {})
+  it('should allow request within daily limit', async () => {})
+  it('should block request exceeding daily limit', async () => {})
+})
+```
+
+#### 대시보드 (FR-080 ~ FR-082)
+
+```typescript
+describe('Dashboard Stats', () => {
+  it('should return correct issue counts by status', async () => {})
+  it('should return upcoming deadlines within 7 days', async () => {})
+  it('should calculate project progress percentage', async () => {})
+  it('should group issues by status for chart', async () => {})
+})
+```
+
+#### 알림 (FR-090 ~ FR-091)
+
+```typescript
+describe('Notification Service', () => {
+  it('should create notification on issue assignment', async () => {})
+  it('should mark notification as read', async () => {})
+  it('should mark all notifications as read', async () => {})
+  it('should send email via Resend', async () => {})
+})
+
+describe('Realtime Notifications', () => {
+  it('should receive new notification in real-time', async () => {})
+  it('should update unread count on new notification', async () => {})
+})
+```
+
+### E2E 테스트 시나리오
+
+| 시나리오 | 설명 |
+|---------|------|
+| AI 요약 플로우 | 이슈 상세 → AI 요약 클릭 → 로딩 → 결과 표시 |
+| 대시보드 접근 | 로그인 → 대시보드 → 통계 로딩 → 차트 렌더링 |
+| 알림 수신 | 다른 사용자가 이슈 할당 → 실시간 알림 수신 → 클릭 → 이슈 이동 |
+| 이메일 발송 | 이슈 할당 → 이메일 발송 확인 (Resend 대시보드) |
+
+### 테스트 데이터
+
+```sql
+-- 테스트용 시드 데이터
+-- 다양한 상태의 이슈 10개
+-- 댓글 20개 (요약 테스트용)
+-- 마감일 다양한 이슈 (오버듀, 1일/3일/7일 후)
+```
+
+### 품질 게이트
+
+| 항목 | 기준 |
+|------|------|
+| Unit Test Coverage | > 70% |
+| Integration Test | 모든 API endpoint |
+| E2E | 핵심 사용자 플로우 3개 |
+| Performance | API 응답 < 2초 (AI 제외) |
+| AI 응답 | < 5초 (P95) |
+
+---
+
+*문서 생성일: 2025-11-29*
+*작성자: hojeong*
+*상태: Draft - 리뷰 대기*

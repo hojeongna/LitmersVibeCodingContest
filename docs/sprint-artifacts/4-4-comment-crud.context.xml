@@ -1,0 +1,311 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4</storyId>
+    <title>댓글 CRUD</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-4-comment-crud.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>프로젝트 팀 멤버</asA>
+    <iWant>이슈에 댓글을 작성하고 조회/수정/삭제할 수 있도록</iWant>
+    <soThat>팀원들과 이슈에 대해 논의하고 협업할 수 있다</soThat>
+    <tasks>
+      <part id="A" name="댓글 API 구현">
+        <task id="1" acs="4,5,7">GET /api/issues/[issueId]/comments 엔드포인트</task>
+        <task id="2" acs="1,2,3">POST /api/issues/[issueId]/comments 엔드포인트</task>
+        <task id="3" acs="8,9">PUT /api/comments/[commentId] 엔드포인트</task>
+        <task id="4" acs="10,11,12,14">DELETE /api/comments/[commentId] 엔드포인트</task>
+      </part>
+      <part id="B" name="댓글 컴포넌트 구현">
+        <task id="5" acs="1,3,4,7">CommentSection 컴포넌트</task>
+        <task id="6" acs="5,6,8,9,10,11,12">CommentItem 컴포넌트</task>
+        <task id="7" acs="1,2,15">CommentInput 컴포넌트</task>
+        <task id="8" acs="8,9">CommentEditForm 컴포넌트</task>
+        <task id="9" acs="13">DeleteCommentModal 컴포넌트</task>
+      </part>
+      <part id="C" name="마크다운 렌더링">
+        <task id="10" acs="15">마크다운 지원 구현</task>
+      </part>
+      <part id="D" name="훅 및 상태 관리">
+        <task id="11" acs="전체">useComments 훅 구현</task>
+      </part>
+      <part id="E" name="IssueDetailPanel 통합">
+        <task id="12" acs="1,4">IssueDetailPanel에 CommentSection 통합</task>
+      </part>
+      <part id="F" name="타입 정의">
+        <task id="13" acs="전체">댓글 관련 타입 정의</task>
+      </part>
+      <part id="G" name="테스트">
+        <task id="14" acs="1-15">E2E 테스트 시나리오</task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" fr="FR-060">이슈 상세 패널에서 댓글을 작성할 수 있다</ac>
+    <ac id="2" fr="FR-060">댓글 내용은 1~1000자 사이여야 한다</ac>
+    <ac id="3" fr="FR-060">댓글 작성 후 목록에 즉시 표시된다 (Optimistic Update)</ac>
+    <ac id="4" fr="FR-061">댓글이 작성일 역순(최신순)으로 표시된다</ac>
+    <ac id="5" fr="FR-061">각 댓글에 작성자 아바타, 이름, 내용, 작성 시간이 표시된다</ac>
+    <ac id="6" fr="FR-061">작성 시간은 상대 시간으로 표시된다 ("2시간 전", "3일 전")</ac>
+    <ac id="7" fr="FR-061">20개 이상 댓글 시 "더 보기" 버튼 또는 무한 스크롤이 동작한다</ac>
+    <ac id="8" fr="FR-062">본인 댓글에만 수정 버튼이 표시된다</ac>
+    <ac id="9" fr="FR-062">수정된 댓글에 "(수정됨)" 표시가 나타난다</ac>
+    <ac id="10" fr="FR-063">본인 댓글을 삭제할 수 있다</ac>
+    <ac id="11" fr="FR-063">이슈 소유자(reporter)도 해당 이슈의 모든 댓글을 삭제할 수 있다</ac>
+    <ac id="12" fr="FR-063">팀 OWNER/ADMIN은 모든 댓글을 삭제할 수 있다</ac>
+    <ac id="13" fr="FR-063">삭제 전 확인 모달이 표시된다</ac>
+    <ac id="14" fr="FR-063">삭제된 댓글은 목록에서 제거된다 (Soft Delete)</ac>
+    <ac id="15" fr="FR-060">마크다운 기본 문법을 지원한다 (볼드, 이탤릭, 코드, 링크)</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="4.3.5 Comment Input">
+        댓글 입력 UI 스타일. 작성자 아바타, 입력창, 전송 버튼 레이아웃.
+      </doc>
+      <doc path="docs/ux-design-directions.html" title="Design Direction Mockups" section="Kanban Board - Issue Detail Panel">
+        인터랙티브 UI 목업. Issue Detail Panel 내 Comments 섹션 시각화.
+      </doc>
+      <doc path="docs/ux-color-themes.html" title="Color Theme Visualizer" section="Components">
+        Avatar, 버튼 스타일, 텍스트 색상 참조.
+      </doc>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-4.md" title="Epic 4 Technical Specification" section="FR-060~063">
+        댓글 CRUD 기술 사양. comments 테이블 스키마, RLS 정책, API 설계.
+      </doc>
+      <doc path="docs/prd.md" title="PRD" section="FR-060~063">
+        댓글 작성/조회/수정/삭제 기능 요구사항.
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/components/issues/issue-detail-panel.tsx" kind="component" reason="CommentSection 통합">기존 IssueDetailPanel 수정</file>
+      <file path="jira-lite-mvp/components/ui/avatar.tsx" kind="component" reason="작성자 아바타">shadcn/ui Avatar 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/button.tsx" kind="component" reason="수정/삭제/전송 버튼">shadcn/ui Button 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/textarea.tsx" kind="component" reason="댓글 입력">shadcn/ui Textarea 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/dialog.tsx" kind="component" reason="삭제 확인 모달">shadcn/ui Dialog 컴포넌트</file>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="@tanstack/react-query" version="^5.90.11">useInfiniteQuery - 댓글 페이지네이션</package>
+        <package name="react-markdown" version="^9.x">마크다운 렌더링</package>
+        <package name="date-fns" version="^4.1.0">상대 시간 표시 (formatDistanceToNow)</package>
+        <package name="zod" version="^3.24.0">Request Body 검증 (1-1000자)</package>
+      </npm>
+      <shadcn-ui>
+        <component name="Avatar">작성자 프로필</component>
+        <component name="Textarea">댓글 입력창</component>
+        <component name="Dialog">삭제 확인 모달</component>
+        <component name="Button">Ghost 스타일 수정/삭제 버튼</component>
+      </shadcn-ui>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">댓글 API는 app/api/issues/[issueId]/comments/ 및 app/api/comments/[commentId]/ 하위에 생성</constraint>
+    <constraint type="architecture">댓글 컴포넌트는 components/issues/ 폴더에 생성</constraint>
+    <constraint type="architecture">마크다운 렌더러는 components/ui/markdown-renderer.tsx에 생성</constraint>
+    <constraint type="validation">댓글 내용 1~1000자 제한</constraint>
+    <constraint type="security">팀 멤버십 검증 필수 (RLS 정책)</constraint>
+    <constraint type="security">수정: 본인 댓글만</constraint>
+    <constraint type="security">삭제: 본인 OR 이슈 reporter OR 팀 OWNER/ADMIN</constraint>
+    <constraint type="security">XSS 방지: 마크다운 렌더링 시 HTML 태그 이스케이프</constraint>
+    <constraint type="ux">아바타: 32x32px, 원형, Primary 배경색</constraint>
+    <constraint type="ux">이름: font-weight 600, Zinc 900</constraint>
+    <constraint type="ux">시간: font-size 0.75rem, Zinc 500</constraint>
+    <constraint type="ux">내용: font-size 0.875rem, Zinc 700</constraint>
+    <constraint type="ux">(edited): font-size 0.75rem, Zinc 400, 이탤릭</constraint>
+    <constraint type="ux">수정/삭제 버튼: Ghost 스타일, 호버 시 표시</constraint>
+    <constraint type="ux">Enter로 전송, Shift+Enter로 줄바꿈</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="GET /api/issues/[issueId]/comments" kind="REST" path="app/api/issues/[issueId]/comments/route.ts">
+      <description>댓글 목록 조회 (created_at DESC 정렬, 페이지네이션)</description>
+      <queryParams>
+        <param name="page" type="number" default="1"/>
+        <param name="limit" type="number" default="20"/>
+      </queryParams>
+      <response>
+        {
+          success: true,
+          data: {
+            comments: Comment[],
+            pagination: {
+              page: number,
+              limit: number,
+              total: number,
+              has_more: boolean
+            }
+          }
+        }
+      </response>
+    </interface>
+    <interface name="POST /api/issues/[issueId]/comments" kind="REST" path="app/api/issues/[issueId]/comments/route.ts">
+      <description>댓글 작성 (팀 멤버만)</description>
+      <request>
+        { content: string }  // 1-1000자
+      </request>
+      <response>
+        { success: true, data: { comment: Comment } }
+      </response>
+      <error code="VALIDATION_ERROR">댓글은 1-1000자 사이여야 합니다.</error>
+    </interface>
+    <interface name="PUT /api/comments/[commentId]" kind="REST" path="app/api/comments/[commentId]/route.ts">
+      <description>댓글 수정 (본인만)</description>
+      <request>
+        { content: string }  // 1-1000자
+      </request>
+      <response>
+        { success: true, data: { comment: Comment } }
+      </response>
+    </interface>
+    <interface name="DELETE /api/comments/[commentId]" kind="REST" path="app/api/comments/[commentId]/route.ts">
+      <description>댓글 삭제 (본인 OR 이슈 reporter OR OWNER/ADMIN)</description>
+      <response>
+        { success: true }
+      </response>
+    </interface>
+    <interface name="Comment" kind="TypeScript" path="types/comment.ts">
+      <signature>
+        interface Comment {
+          id: string;
+          issue_id: string;
+          author: {
+            id: string;
+            name: string;
+            avatar_url: string | null;
+          };
+          content: string;
+          created_at: string;
+          updated_at: string;
+          is_edited: boolean;  // computed: updated_at > created_at
+        }
+      </signature>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      E2E 테스트 중심으로 Chrome DevTools MCP 또는 Playwright 사용.
+      권한별 테스트(본인, 이슈 reporter, OWNER/ADMIN, MEMBER) 수행.
+      Optimistic Update 동작 확인.
+    </standards>
+    <locations>
+      <location>jira-lite-mvp/__tests__/</location>
+      <location>jira-lite-mvp/**/*.test.ts</location>
+    </locations>
+    <ideas>
+      <idea ac="1,3">댓글 작성 → 목록에 즉시 표시 (Optimistic Update)</idea>
+      <idea ac="2">빈 댓글 제출 차단, 1000자 초과 시 에러 표시</idea>
+      <idea ac="4">댓글 목록이 최신순(created_at DESC)으로 정렬되는지 확인</idea>
+      <idea ac="5">댓글에 아바타, 이름, 내용, 시간 모두 표시 확인</idea>
+      <idea ac="6">시간 경과에 따른 상대 시간 텍스트 변화 확인 ("방금 전" → "2시간 전")</idea>
+      <idea ac="7">20개 초과 댓글 시 "더 보기" 버튼 또는 무한 스크롤 동작</idea>
+      <idea ac="8">본인 댓글에만 수정 버튼 표시, 타인 댓글에는 없음</idea>
+      <idea ac="9">댓글 수정 후 "(수정됨)" 라벨 표시</idea>
+      <idea ac="10,11,12">본인/이슈 reporter/OWNER 계정으로 댓글 삭제 동작 확인</idea>
+      <idea ac="13">삭제 클릭 → 확인 모달 표시 → 확인 시 삭제</idea>
+      <idea ac="14">삭제 후 목록에서 댓글 사라짐, DB에 deleted_at 기록</idea>
+      <idea ac="15">**bold**, *italic*, `code`, [link](url) 마크다운 렌더링 확인</idea>
+    </ideas>
+  </tests>
+
+  <colorReference>
+    <theme name="Linear Productivity">
+      <color name="Primary" hex="#5B5FC7" usage="아바타 배경, 전송 버튼"/>
+      <color name="Text Primary" hex="#18181B" usage="이름"/>
+      <color name="Text Secondary" hex="#71717A" usage="시간, (edited)"/>
+      <color name="Text Content" hex="#3F3F46" usage="댓글 내용"/>
+      <color name="Destructive" hex="#EF4444" usage="삭제 버튼"/>
+    </theme>
+    <commentStyles>
+      <style element="Avatar" size="32x32" shape="circle" background="Primary"/>
+      <style element="Name" fontWeight="600" color="#18181B"/>
+      <style element="Time" fontSize="0.75rem" color="#71717A"/>
+      <style element="Content" fontSize="0.875rem" color="#3F3F46"/>
+      <style element="Edited" fontSize="0.75rem" color="#A1A1AA" fontStyle="italic"/>
+      <style element="ActionButtons" variant="ghost" visibility="hover"/>
+    </commentStyles>
+  </colorReference>
+
+  <fileStructure>
+    <newFiles>
+      <file>app/api/issues/[issueId]/comments/route.ts</file>
+      <file>app/api/comments/[commentId]/route.ts</file>
+      <file>components/issues/comment-section.tsx</file>
+      <file>components/issues/comment-item.tsx</file>
+      <file>components/issues/comment-input.tsx</file>
+      <file>components/issues/comment-edit-form.tsx</file>
+      <file>components/issues/delete-comment-modal.tsx</file>
+      <file>components/ui/markdown-renderer.tsx</file>
+      <file>hooks/use-comments.ts</file>
+      <file>types/comment.ts</file>
+    </newFiles>
+    <existingToModify>
+      <file>components/issues/issue-detail-panel.tsx (CommentSection 통합)</file>
+    </existingToModify>
+  </fileStructure>
+
+  <databaseSchema>
+    <table name="comments">
+      <column name="id" type="UUID" primary="true"/>
+      <column name="issue_id" type="UUID" references="issues"/>
+      <column name="author_id" type="UUID" references="profiles"/>
+      <column name="content" type="TEXT">CHECK (char_length(content) BETWEEN 1 AND 1000)</column>
+      <column name="created_at" type="TIMESTAMPTZ"/>
+      <column name="updated_at" type="TIMESTAMPTZ"/>
+      <column name="deleted_at" type="TIMESTAMPTZ" nullable="true"/>
+    </table>
+    <rlsPolicies>
+      <policy name="Team members can view comments" action="SELECT">
+        팀 멤버만 댓글 조회 가능, deleted_at IS NULL
+      </policy>
+      <policy name="Team members can create comments" action="INSERT">
+        팀 멤버만 댓글 작성 가능
+      </policy>
+      <policy name="Author can update own comments" action="UPDATE">
+        본인 댓글만 수정 가능
+      </policy>
+      <policy name="Author/Reporter/Admin can delete comments" action="UPDATE (deleted_at)">
+        본인, 이슈 reporter, 팀 OWNER/ADMIN만 삭제 가능
+      </policy>
+    </rlsPolicies>
+  </databaseSchema>
+
+  <storyDependencies>
+    <dependency story="4-1" required="true">IssueDetailPanel 컴포넌트</dependency>
+    <dependency epic="3" required="true">issues 테이블, IssueService</dependency>
+    <dependency epic="1" required="true">인증, 팀 멤버십, 프로필</dependency>
+  </storyDependencies>
+
+  <markdownSupport>
+    <supportedSyntax>
+      <syntax name="bold">**text** 또는 __text__</syntax>
+      <syntax name="italic">*text* 또는 _text_</syntax>
+      <syntax name="strikethrough">~~text~~</syntax>
+      <syntax name="inline code">`code`</syntax>
+      <syntax name="code block">```code block```</syntax>
+      <syntax name="links">[text](url)</syntax>
+      <syntax name="line breaks">줄바꿈 지원</syntax>
+    </supportedSyntax>
+    <security>HTML 태그는 이스케이프하여 XSS 방지</security>
+    <package>react-markdown ^9.x 사용</package>
+  </markdownSupport>
+
+  <dateFnsUsage>
+    <example>
+      import { formatDistanceToNow } from 'date-fns';
+      import { ko } from 'date-fns/locale';
+
+      formatDistanceToNow(new Date(comment.created_at), {
+        addSuffix: true,
+        locale: ko
+      });
+      // 결과: "2시간 전", "3일 전", "1개월 전"
+    </example>
+  </dateFnsUsage>
+</story-context>

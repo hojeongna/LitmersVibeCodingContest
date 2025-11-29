@@ -1,0 +1,271 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>3</storyId>
+    <title>커스텀 컬럼 &amp; WIP Limit</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-3-custom-column-wip-limit.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>프로젝트 관리자 (OWNER/ADMIN)</asA>
+    <iWant>프로젝트별로 커스텀 상태(컬럼)를 추가/수정/삭제하고 컬럼별 WIP Limit을 설정</iWant>
+    <soThat>팀의 워크플로우에 맞게 칸반 보드를 커스터마이징하고 작업 진행률을 효과적으로 관리할 수 있다</soThat>
+    <tasks>
+      <part id="A" name="상태 관리 API 구현">
+        <task id="1" acs="1,6">GET /api/projects/[projectId]/statuses 엔드포인트</task>
+        <task id="2" acs="1,9">POST /api/projects/[projectId]/statuses 엔드포인트</task>
+        <task id="3" acs="2,3,6,10">PUT /api/statuses/[statusId] 엔드포인트</task>
+        <task id="4" acs="4,5,9">DELETE /api/statuses/[statusId] 엔드포인트</task>
+      </part>
+      <part id="B" name="프로젝트 설정 UI">
+        <task id="5" acs="1,2,3,4,5,9">StatusSettingsPanel 컴포넌트 구현</task>
+        <task id="6" acs="1,2,3,6">StatusFormModal 컴포넌트 구현</task>
+        <task id="7" acs="3">ColorPicker 컴포넌트 구현</task>
+      </part>
+      <part id="C" name="칸반 보드 WIP Limit UI">
+        <task id="8" acs="7,8">KanbanColumn WIP Limit 표시</task>
+        <task id="9" acs="8">WIP Limit 초과 경고 Toast</task>
+      </part>
+      <part id="D" name="상태 순서 드래그">
+        <task id="10" acs="10">컬럼 헤더 드래그로 순서 변경</task>
+      </part>
+      <part id="E" name="타입 및 훅">
+        <task id="11" acs="전체">상태 관련 타입 정의</task>
+        <task id="12" acs="전체">useStatuses 훅 구현</task>
+      </part>
+      <part id="F" name="테스트">
+        <task id="13" acs="1-10">E2E 테스트 시나리오</task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" fr="FR-053">프로젝트 설정에서 커스텀 상태를 추가할 수 있다 (최대 5개 추가, 총 9개)</ac>
+    <ac id="2" fr="FR-053">커스텀 상태의 이름을 수정할 수 있다 (최대 30자)</ac>
+    <ac id="3" fr="FR-053">커스텀 상태의 색상을 수정할 수 있다 (HEX 컬러)</ac>
+    <ac id="4" fr="FR-053">커스텀 상태를 삭제할 수 있다 (해당 이슈는 Backlog로 자동 이동)</ac>
+    <ac id="5" fr="FR-053">기본 상태(Backlog, Done)는 삭제할 수 없다</ac>
+    <ac id="6" fr="FR-054">컬럼별 WIP Limit을 설정할 수 있다 (1~50 또는 무제한)</ac>
+    <ac id="7" fr="FR-054">WIP Limit 초과 시 컬럼 헤더에 경고 표시가 나타난다</ac>
+    <ac id="8" fr="FR-054">WIP Limit 초과해도 이슈 이동은 허용된다 (경고 Toast만)</ac>
+    <ac id="9" fr="FR-053">MEMBER 역할 사용자는 상태 설정을 변경할 수 없다</ac>
+    <ac id="10" fr="FR-053">상태 순서(position)를 드래그로 변경할 수 있다</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="4.2 Key Screen Designs">
+        칸반 보드 레이아웃 및 컬럼 디자인. WIP Limit 시각적 피드백 패턴.
+      </doc>
+      <doc path="docs/ux-design-directions.html" title="Design Direction Mockups" section="Kanban Board">
+        인터랙티브 UI 목업. 컬럼 헤더 스타일, 카운트 표시, WIP 경고 상태 시각화.
+      </doc>
+      <doc path="docs/ux-color-themes.html" title="Color Theme Visualizer" section="Components">
+        컬럼 색상, Error/Warning 색상. WIP 초과 시 빨간색 스타일링 참조.
+      </doc>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-4.md" title="Epic 4 Technical Specification" section="FR-053, FR-054">
+        커스텀 컬럼 및 WIP Limit 기술 사양. statuses 테이블 스키마, API 설계.
+      </doc>
+      <doc path="docs/prd.md" title="PRD" section="FR-053, FR-054">
+        커스텀 컬럼 및 WIP Limit 기능 요구사항.
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/components/kanban/column.tsx" kind="component" reason="WIP Limit UI 추가">기존 KanbanColumn 컴포넌트 수정</file>
+      <file path="jira-lite-mvp/components/ui/button.tsx" kind="component" reason="Add Status 버튼">shadcn/ui Button 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/input.tsx" kind="component" reason="상태 이름 입력">shadcn/ui Input 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/dialog.tsx" kind="component" reason="상태 생성/수정 모달">shadcn/ui Dialog 컴포넌트</file>
+      <file path="jira-lite-mvp/components/ui/sonner.tsx" kind="component" reason="WIP 초과 경고 Toast">Toast 알림 컴포넌트</file>
+      <file path="jira-lite-mvp/types/kanban.ts" kind="type" reason="Status 타입 확장">기존 타입 파일 수정</file>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="@dnd-kit/core" version="^6.3.1">상태 순서 변경 드래그</package>
+        <package name="@dnd-kit/sortable" version="^10.0.0">정렬 가능한 리스트</package>
+        <package name="@tanstack/react-query" version="^5.90.11">서버 상태 관리, 캐시 무효화</package>
+        <package name="sonner" version="^2.0.3">Toast 알림</package>
+        <package name="zod" version="^3.24.0">Request Body 검증</package>
+      </npm>
+      <shadcn-ui>
+        <component name="Dialog">상태 생성/수정 모달</component>
+        <component name="Input">상태 이름 입력</component>
+        <component name="Label">폼 라벨</component>
+        <component name="Switch">WIP Limit 무제한 토글</component>
+        <component name="Table">상태 목록 테이블</component>
+      </shadcn-ui>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">상태 관리 API는 app/api/projects/[projectId]/statuses/ 및 app/api/statuses/[statusId]/ 하위에 생성</constraint>
+    <constraint type="architecture">설정 컴포넌트는 components/settings/ 폴더에 생성</constraint>
+    <constraint type="architecture">ColorPicker는 components/ui/color-picker.tsx에 생성</constraint>
+    <constraint type="business">기본 4개 + 커스텀 최대 5개 = 총 9개 상태 제한</constraint>
+    <constraint type="business">Backlog와 Done은 이름/색상 변경 불가 (시스템 상태)</constraint>
+    <constraint type="business">In Progress와 Review는 이름/색상 변경 가능, 삭제 불가</constraint>
+    <constraint type="business">커스텀 상태 삭제 시 이슈는 Backlog로 자동 이동</constraint>
+    <constraint type="security">OWNER/ADMIN만 상태 생성/수정/삭제 가능</constraint>
+    <constraint type="security">MEMBER는 상태 설정 UI 읽기 전용</constraint>
+    <constraint type="ux">WIP 초과 시: 카운트 빨간색 볼드, 컬럼 테두리 border-red-300</constraint>
+    <constraint type="ux">WIP 80%+ 시: 카운트 노란색 (text-amber-500)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="GET /api/projects/[projectId]/statuses" kind="REST" path="app/api/projects/[projectId]/statuses/route.ts">
+      <description>프로젝트의 모든 상태 조회 (position 순 정렬)</description>
+      <response>
+        {
+          success: true,
+          data: { statuses: Status[] }
+        }
+      </response>
+    </interface>
+    <interface name="POST /api/projects/[projectId]/statuses" kind="REST" path="app/api/projects/[projectId]/statuses/route.ts">
+      <description>커스텀 상태 추가 (OWNER/ADMIN만)</description>
+      <request>
+        {
+          name: string,       // 1-30자
+          color: string,      // HEX 형식 (#XXXXXX)
+          wip_limit?: number  // 1-50 또는 null
+        }
+      </request>
+      <response>
+        { success: true, data: { status: Status } }
+      </response>
+    </interface>
+    <interface name="PUT /api/statuses/[statusId]" kind="REST" path="app/api/statuses/[statusId]/route.ts">
+      <description>상태 수정 (OWNER/ADMIN만)</description>
+      <request>
+        {
+          name?: string,       // 1-30자
+          color?: string,      // HEX 형식
+          position?: number,   // 순서 변경용
+          wip_limit?: number | null  // 1-50 또는 null(무제한)
+        }
+      </request>
+      <response>
+        { success: true, data: { status: Status } }
+      </response>
+    </interface>
+    <interface name="DELETE /api/statuses/[statusId]" kind="REST" path="app/api/statuses/[statusId]/route.ts">
+      <description>커스텀 상태 삭제 (OWNER/ADMIN만, 기본 상태 삭제 차단)</description>
+      <response>
+        { success: true, data: { moved_issues_count: number } }
+      </response>
+      <error code="FORBIDDEN">기본 상태는 삭제할 수 없습니다.</error>
+    </interface>
+    <interface name="Status" kind="TypeScript" path="types/status.ts">
+      <signature>
+        interface Status {
+          id: string;
+          project_id: string;
+          name: string;
+          color: string | null;
+          position: number;
+          wip_limit: number | null;
+          is_default: boolean;
+          created_at: string;
+        }
+      </signature>
+    </interface>
+    <interface name="CreateStatusRequest" kind="TypeScript" path="types/status.ts">
+      <signature>
+        interface CreateStatusRequest {
+          name: string;
+          color: string;
+          wip_limit?: number | null;
+        }
+      </signature>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      E2E 테스트 중심으로 Chrome DevTools MCP 또는 Playwright 사용.
+      권한 테스트는 다양한 역할(OWNER, ADMIN, MEMBER)로 수행.
+    </standards>
+    <locations>
+      <location>jira-lite-mvp/__tests__/</location>
+      <location>jira-lite-mvp/**/*.test.ts</location>
+    </locations>
+    <ideas>
+      <idea ac="1">커스텀 상태 추가 → 칸반 보드에 새 컬럼 표시 확인</idea>
+      <idea ac="2,3">상태 이름/색상 수정 → 컬럼 헤더 변경 확인</idea>
+      <idea ac="4">커스텀 상태 삭제 → 해당 이슈들 Backlog로 이동 확인</idea>
+      <idea ac="5">기본 상태(Backlog, Done) 삭제 시도 → 차단 확인</idea>
+      <idea ac="6">WIP Limit 설정 → DB 및 UI 반영 확인</idea>
+      <idea ac="7">WIP Limit 초과 시 → 빨간색 카운트, 경고 테두리 확인</idea>
+      <idea ac="8">WIP 초과 상태에서 이슈 드롭 → 이동 성공 + 경고 Toast 확인</idea>
+      <idea ac="9">MEMBER 계정으로 접근 → 설정 UI 비활성화 또는 숨김 확인</idea>
+      <idea ac="10">상태 행 드래그로 순서 변경 → 새로고침 후 유지 확인</idea>
+    </ideas>
+  </tests>
+
+  <colorReference>
+    <theme name="Linear Productivity">
+      <color name="Primary" hex="#5B5FC7" usage="주요 버튼"/>
+      <color name="Error" hex="#EF4444" usage="WIP 초과 경고"/>
+      <color name="Warning" hex="#F59E0B" usage="WIP 80%+ 경고"/>
+    </theme>
+    <wipLimitStyles>
+      <style name="정상" class="text-zinc-500">카운트 회색</style>
+      <style name="경고 (80%+)" class="text-amber-500">카운트 노란색</style>
+      <style name="초과" class="text-red-600 font-bold border-red-300">카운트 빨간색 볼드, 컬럼 테두리 빨간색</style>
+    </wipLimitStyles>
+    <colorPickerPalette>
+      <color name="Zinc" hex="#71717A"/>
+      <color name="Blue" hex="#3B82F6"/>
+      <color name="Violet" hex="#8B5CF6"/>
+      <color name="Green" hex="#22C55E"/>
+      <color name="Yellow" hex="#F59E0B"/>
+      <color name="Red" hex="#EF4444"/>
+      <color name="Orange" hex="#F97316"/>
+      <color name="Pink" hex="#EC4899"/>
+      <color name="Cyan" hex="#06B6D4"/>
+    </colorPickerPalette>
+  </colorReference>
+
+  <fileStructure>
+    <newFiles>
+      <file>app/api/statuses/[statusId]/route.ts</file>
+      <file>components/settings/status-settings-panel.tsx</file>
+      <file>components/settings/status-form-modal.tsx</file>
+      <file>components/ui/color-picker.tsx</file>
+      <file>hooks/use-statuses.ts</file>
+      <file>types/status.ts</file>
+    </newFiles>
+    <existingToModify>
+      <file>app/api/projects/[projectId]/statuses/route.ts (GET 확장, POST 추가)</file>
+      <file>components/kanban/column.tsx (WIP Limit UI 추가)</file>
+      <file>types/kanban.ts (Status 타입 확장 또는 status.ts로 분리)</file>
+    </existingToModify>
+  </fileStructure>
+
+  <databaseSchema>
+    <table name="statuses">
+      <column name="id" type="UUID" primary="true"/>
+      <column name="project_id" type="UUID" references="projects"/>
+      <column name="name" type="VARCHAR(30)"/>
+      <column name="color" type="VARCHAR(7)">HEX 색상</column>
+      <column name="position" type="INTEGER"/>
+      <column name="wip_limit" type="INTEGER" nullable="true">null = 무제한</column>
+      <column name="is_default" type="BOOLEAN"/>
+      <column name="created_at" type="TIMESTAMPTZ"/>
+    </table>
+    <defaultStatuses>
+      <status name="Backlog" color="#71717A" position="0" is_default="true" deletable="false" editable="false"/>
+      <status name="In Progress" color="#3B82F6" position="1" is_default="true" deletable="false" editable="true"/>
+      <status name="Review" color="#8B5CF6" position="2" is_default="true" deletable="false" editable="true"/>
+      <status name="Done" color="#22C55E" position="3" is_default="true" deletable="false" editable="false"/>
+    </defaultStatuses>
+  </databaseSchema>
+
+  <storyDependencies>
+    <dependency story="4-1" required="true">KanbanBoard, KanbanColumn 컴포넌트</dependency>
+    <dependency story="4-2" required="true">Drag &amp; Drop 기반 (순서 변경 드래그에 활용)</dependency>
+    <dependency epic="1" required="true">인증, 팀 멤버십, 역할 검증</dependency>
+  </storyDependencies>
+</story-context>

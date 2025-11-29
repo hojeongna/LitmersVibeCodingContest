@@ -4,57 +4,158 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* Linear Productivity Theme - Light Mode */
+    /* Primary Colors */
+    --background: 240 5% 98%; /* Zinc 50 #FAFAFA */
+    --foreground: 240 6% 10%; /* Zinc 900 #18181B */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 240 6% 10%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --popover-foreground: 240 6% 10%;
+
+    /* Primary: Indigo #5B5FC7 */
+    --primary: 238 39% 57%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 238 39% 51%; /* #4F52B3 */
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%; /* Zinc 500 #71717A */
+
+    /* Accent: Blue #3B82F6 */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%; /* Zinc 200 #E4E4E7 */
+    --input: 240 6% 90%;
+    --ring: 238 39% 57%; /* Primary color for focus ring */
+
+    /* Semantic Colors */
+    --success: 142 71% 45%; /* #22C55E */
+    --warning: 38 92% 50%; /* #F59E0B */
+    --info: 217 91% 60%; /* #3B82F6 */
+
+    /* Priority Colors */
+    --priority-high-bg: 0 93% 94%; /* #FEE2E2 */
+    --priority-high-text: 0 72% 51%; /* #DC2626 */
+    --priority-medium-bg: 48 96% 89%; /* #FEF3C7 */
+    --priority-medium-text: 32 95% 44%; /* #D97706 */
+    --priority-low-bg: 142 77% 93%; /* #DCFCE7 */
+    --priority-low-text: 142 76% 36%; /* #16A34A */
+
+    /* Kanban Column Colors */
+    --column-backlog: 240 4% 46%; /* Zinc 500 #71717A */
+    --column-progress: 217 91% 60%; /* #3B82F6 */
+    --column-review: 271 81% 56%; /* #A855F7 */
+    --column-done: 142 71% 45%; /* #22C55E */
+
+    /* Label Colors */
+    --label-bug-bg: 0 93% 94%; /* #FEE2E2 */
+    --label-bug-text: 0 72% 51%; /* #DC2626 */
+    --label-feature-bg: 214 95% 93%; /* #DBEAFE */
+    --label-feature-text: 217 91% 60%; /* #2563EB */
+    --label-enhancement-bg: 270 100% 95%; /* #F3E8FF */
+    --label-enhancement-text: 263 70% 50%; /* #7C3AED */
+    --label-docs-bg: 152 81% 91%; /* #D1FAE5 */
+    --label-docs-text: 160 84% 39%; /* #059669 */
+
+    /* Sidebar Colors (Dark theme) */
+    --sidebar-background: 240 6% 10%; /* Zinc 900 #18181B */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-muted: 240 4% 46%;
+    --sidebar-hover: 240 5% 17%; /* Zinc 800 */
+    --sidebar-active: 238 39% 57%; /* Primary */
+
+    /* Chart Colors */
+    --chart-1: 238 39% 57%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 271 81% 56%;
+
     --radius: 0.5rem;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Linear Productivity Theme - Dark Mode */
+    --background: 240 6% 10%; /* Zinc 900 */
+    --foreground: 240 5% 96%;
+
+    --card: 240 5% 17%; /* Zinc 800 */
+    --card-foreground: 240 5% 96%;
+
+    --popover: 240 5% 17%;
+    --popover-foreground: 240 5% 96%;
+
+    --primary: 238 39% 57%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 238 39% 51%;
+
+    --secondary: 240 5% 17%;
+    --secondary-foreground: 240 5% 96%;
+
+    --muted: 240 5% 17%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 26%; /* Zinc 700 */
+    --input: 240 5% 26%;
+    --ring: 238 39% 57%;
+
+    /* Semantic Colors (same in dark) */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 217 91% 60%;
+
+    /* Priority Colors (same in dark) */
+    --priority-high-bg: 0 93% 94%;
+    --priority-high-text: 0 72% 51%;
+    --priority-medium-bg: 48 96% 89%;
+    --priority-medium-text: 32 95% 44%;
+    --priority-low-bg: 142 77% 93%;
+    --priority-low-text: 142 76% 36%;
+
+    /* Kanban Column Colors (same) */
+    --column-backlog: 240 4% 46%;
+    --column-progress: 217 91% 60%;
+    --column-review: 271 81% 56%;
+    --column-done: 142 71% 45%;
+
+    /* Label Colors (same) */
+    --label-bug-bg: 0 93% 94%;
+    --label-bug-text: 0 72% 51%;
+    --label-feature-bg: 214 95% 93%;
+    --label-feature-text: 217 91% 60%;
+    --label-enhancement-bg: 270 100% 95%;
+    --label-enhancement-text: 263 70% 50%;
+    --label-docs-bg: 152 81% 91%;
+    --label-docs-text: 160 84% 39%;
+
+    /* Sidebar Colors (remains dark) */
+    --sidebar-background: 240 6% 10%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-muted: 240 4% 46%;
+    --sidebar-hover: 240 5% 17%;
+    --sidebar-active: 238 39% 57%;
+
+    /* Chart Colors */
+    --chart-1: 238 39% 57%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 271 81% 56%;
   }
 }
 
@@ -64,5 +165,21 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* AI Button Gradient */
+@layer components {
+  .btn-ai {
+    @apply text-white font-medium transition-all;
+    background: linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%);
+  }
+  .btn-ai:hover {
+    background: linear-gradient(135deg, #4F52B3 0%, #2563EB 100%);
+  }
+  .btn-ai:disabled {
+    @apply opacity-60 cursor-not-allowed;
+    background: #E4E4E7;
+    color: #A1A1AA;
   }
 }

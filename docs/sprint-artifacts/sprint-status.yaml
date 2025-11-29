@@ -46,11 +46,11 @@ development_status:
   # ==========================================
   epic-1: contexted
   1-1-project-init-db-schema-deploy: done
-  1-2-common-layout-ui-components: ready-for-dev
+  1-2-common-layout-ui-components: review
   1-3-signup-login: ready-for-dev
-  1-4-google-oauth: drafted
+  1-4-google-oauth: ready-for-dev
   1-5-profile-password-management: ready-for-dev
-  1-6-account-delete: backlog
+  1-6-account-delete: ready-for-dev
   epic-1-retrospective: optional
 
   # ==========================================
@@ -59,8 +59,8 @@ development_status:
   # 의존성: Epic 1 완료 후 병렬 진행 가능
   # ==========================================
   epic-2: contexted
-  2-1-team-create-list: backlog
-  2-2-team-detail-edit-delete: backlog
+  2-1-team-create-list: review
+  2-2-team-detail-edit-delete: review
   2-3-member-invite-system: backlog
   2-4-member-management: backlog
   2-5-team-activity-log: backlog
@@ -72,12 +72,12 @@ development_status:
   # 의존성: Epic 1 완료 후 병렬 진행 가능
   # ==========================================
   epic-3: contexted
-  3-1-project-crud: drafted
-  3-2-project-advanced-features: backlog
-  3-3-issue-create-list: backlog
-  3-4-issue-detail-edit: backlog
-  3-5-issue-search-filter: backlog
-  3-6-history-subtasks: backlog
+  3-1-project-crud: ready-for-dev
+  3-2-project-advanced-features: ready-for-dev
+  3-3-issue-create-list: ready-for-dev
+  3-4-issue-detail-edit: ready-for-dev
+  3-5-issue-search-filter: ready-for-dev
+  3-6-history-subtasks: ready-for-dev
   epic-3-retrospective: optional
 
   # ==========================================
@@ -86,11 +86,11 @@ development_status:
   # 의존성: Epic 1 완료 후 병렬 진행 가능
   # ==========================================
   epic-4: contexted
-  4-1-kanban-board-basic-ui: backlog
-  4-2-drag-and-drop: backlog
-  4-3-custom-column-wip-limit: backlog
-  4-4-comment-crud: backlog
-  4-5-view-switch-ux-improvement: backlog
+  4-1-kanban-board-basic-ui: review
+  4-2-drag-and-drop: review
+  4-3-custom-column-wip-limit: review
+  4-4-comment-crud: review
+  4-5-view-switch-ux-improvement: drafted
   epic-4-retrospective: optional
 
   # ==========================================
@@ -98,10 +98,10 @@ development_status:
   # FR Coverage: FR-040~045, FR-080~082, FR-090~091 (11개)
   # 의존성: Epic 1 완료 후 병렬 진행 가능
   # ==========================================
-  epic-5: backlog
-  5-1-ai-summary-suggestion: backlog
-  5-2-ai-auto-classify-duplicate-detection: backlog
-  5-3-dashboard: backlog
-  5-4-notification-system: backlog
-  5-5-ai-advanced-features: backlog
+  epic-5: contexted
+  5-1-ai-summary-suggestion: drafted
+  5-2-ai-auto-label-duplicate: drafted
+  5-3-dashboard: drafted
+  5-4-notification-system: drafted
+  5-5-ai-advanced-features: drafted
   epic-5-retrospective: optional

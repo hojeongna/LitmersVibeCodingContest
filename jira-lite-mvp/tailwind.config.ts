@@ -24,6 +24,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -51,11 +52,74 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        // Semantic colors
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        info: "hsl(var(--info))",
+        // Priority colors
+        priority: {
+          high: {
+            bg: "hsl(var(--priority-high-bg))",
+            text: "hsl(var(--priority-high-text))",
+          },
+          medium: {
+            bg: "hsl(var(--priority-medium-bg))",
+            text: "hsl(var(--priority-medium-text))",
+          },
+          low: {
+            bg: "hsl(var(--priority-low-bg))",
+            text: "hsl(var(--priority-low-text))",
+          },
+        },
+        // Kanban column colors
+        column: {
+          backlog: "hsl(var(--column-backlog))",
+          progress: "hsl(var(--column-progress))",
+          review: "hsl(var(--column-review))",
+          done: "hsl(var(--column-done))",
+        },
+        // Label colors
+        label: {
+          bug: {
+            bg: "hsl(var(--label-bug-bg))",
+            text: "hsl(var(--label-bug-text))",
+          },
+          feature: {
+            bg: "hsl(var(--label-feature-bg))",
+            text: "hsl(var(--label-feature-text))",
+          },
+          enhancement: {
+            bg: "hsl(var(--label-enhancement-bg))",
+            text: "hsl(var(--label-enhancement-text))",
+          },
+          docs: {
+            bg: "hsl(var(--label-docs-bg))",
+            text: "hsl(var(--label-docs-text))",
+          },
+        },
+        // Sidebar specific
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          muted: "hsl(var(--sidebar-muted))",
+          hover: "hsl(var(--sidebar-hover))",
+          active: "hsl(var(--sidebar-active))",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      spacing: {
+        sidebar: "240px",
+        "sidebar-collapsed": "60px",
+      },
+      backgroundImage: {
+        "ai-gradient": "linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%)",
       },
     },
   },

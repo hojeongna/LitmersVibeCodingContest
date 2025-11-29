@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 3-6-history-subtasks
+  Generated: 2025-11-29
+  Epic: 3 - 프로젝트 & 이슈 관리
+  FR Coverage: FR-039, FR-039-2
+-->
+<story-context story-key="3-6-history-subtasks" epic="3">
+  <meta>
+    <title>히스토리 &amp; 서브태스크</title>
+    <status>drafted</status>
+    <fr-coverage>FR-039, FR-039-2</fr-coverage>
+    <depends-on>3-3-issue-create-list, 3-4-issue-detail-edit</depends-on>
+  </meta>
+
+  <!-- ============================================
+       SECTION 1: PRD Requirements
+       ============================================ -->
+  <prd-requirements>
+    <requirement id="FR-039" priority="P1">
+      <title>변경 히스토리 조회</title>
+      <description>
+        - 이슈 상세 패널에서 히스토리 탭을 통해 변경 이력 조회
+        - 기록 대상: 상태, 담당자, 우선순위, 제목, 마감일 변경
+        - 표시 정보: 변경 항목, 이전 값, 새 값, 변경자, 변경 일시
+        - 최신순 정렬
+      </description>
+    </requirement>
+    <requirement id="FR-039-2" priority="P1">
+      <title>서브태스크</title>
+      <description>
+        - 이슈 상세 패널에서 서브태스크 추가 (제목 1~200자)
+        - 체크박스로 완료/미완료 토글
+        - 드래그로 서브태스크 순서 변경
+        - 서브태스크 삭제
+        - 이슈당 최대 20개 서브태스크 제한
+        - 이슈 카드에 서브태스크 진행률 표시 (예: 3/5)
+        - 이슈 상세 패널에 서브태스크 진행률 바
+      </description>
+    </requirement>
+  </prd-requirements>
+
+  <!-- ============================================
+       SECTION 2: Architecture Context
+       ============================================ -->
+  <architecture>
+    <database-schema>
+      <table name="issue_history" reference="3-4-issue-detail-edit.context.xml">
+        <column name="id" type="UUID" primary-key="true"/>
+        <column name="issue_id" type="UUID" not-null="true" references="issues"/>
+        <column name="changed_by" type="UUID" not-null="true" references="profiles"/>
+        <column name="field_name" type="VARCHAR(50)" not-null="true"/>
+        <column name="old_value" type="TEXT"/>
+        <column name="new_value" type="TEXT"/>
+        <column name="created_at" type="TIMESTAMPTZ" default="NOW()"/>
+        <index name="idx_issue_history_issue" columns="issue_id"/>
+      </table>
+      <table name="subtasks">
+        <column name="id" type="UUID" primary-key="true"/>
+        <column name="issue_id" type="UUID" not-null="true" references="issues"/>
+        <column name="title" type="VARCHAR(200)" not-null="true"/>
+        <column name="is_completed" type="BOOLEAN" default="false"/>
+        <column name="position" type="INTEGER" not-null="true"/>
+        <column name="created_at" type="TIMESTAMPTZ" default="NOW()"/>
+        <index name="idx_subtasks_issue" columns="issue_id"/>
+      </table>
+    </database-schema>
+
+    <drag-and-drop>
+      <library>@dnd-kit/core, @dnd-kit/sortable</library>
+      <usage>서브태스크 순서 변경</usage>
+      <note>Epic 4 칸반 보드에서 동일한 패턴 재사용 예정</note>
+    </drag-and-drop>
+  </architecture>
+
+  <!-- ============================================
+       SECTION 3: UX Design Specification
+       ============================================ -->
+  <ux-design source="docs/ux-design-specification.md, docs/ux-color-themes.html">
+    <history-timeline>
+      <layout>타임라인 형태 (수직)</layout>
+      <ascii-diagram><![CDATA[
+History
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+● Status: Backlog → In Progress
+  Hojeong • 2 hours ago
+
+● Priority: MEDIUM → HIGH
+  Hojeong • 3 hours ago
+
+● Assignee: Unassigned → Hojeong
+  Admin • Yesterday
+
+● Title: "Fix bug" → "Fix login bug"
+  Hojeong • 2 days ago
+      ]]></ascii-diagram>
+      <item-format>
+        <icon>● (timeline dot)</icon>
+        <content>{field_name}: {old_value} → {new_value}</content>
+        <meta>{changed_by.name} • {relative_time}</meta>
+      </item-format>
+      <empty-state>No history yet</empty-state>
+    </history-timeline>
+
+    <subtask-section>
+      <layout>체크리스트 형태</layout>
+      <ascii-diagram><![CDATA[
+Subtasks (2/4)
+━━━━━━━━━━━━ (50% 진행률 바)
+
+[⋮] ☑ Setup @dnd-kit                    [×]
+[⋮] ☑ Create draggable cards            [×]
+[⋮] ☐ Implement drop zones              [×]
+[⋮] ☐ Add visual feedback               [×]
+
+[+ Add subtask...]
+      ]]></ascii-diagram>
+      <elements>
+        <element name="drag-handle">[⋮] 드래그 핸들</element>
+        <element name="checkbox">☑/☐ 완료 토글</element>
+        <element name="title">제목 (완료 시 취소선 + text-zinc-400)</element>
+        <element name="delete-button">[×] hover 시 표시</element>
+        <element name="add-input">"Add subtask..." placeholder</element>
+      </elements>
+      <progress-bar>
+        <background>bg-zinc-200</background>
+        <fill>bg-indigo-500</fill>
+        <height>4px</height>
+      </progress-bar>
+    </subtask-section>
+
+    <issue-card-progress>
+      <format>{completed}/{total} 예: 2/5</format>
+      <position>마감일 왼쪽</position>
+      <display-condition>서브태스크가 1개 이상일 때만 표시</display-condition>
+    </issue-card-progress>
+
+    <color-theme>
+      <completed-subtask>text-zinc-400 + line-through</completed-subtask>
+      <progress-bar-bg>bg-zinc-200</progress-bar-bg>
+      <progress-bar-fill>bg-indigo-500</progress-bar-fill>
+      <timeline-dot>bg-zinc-400</timeline-dot>
+      <timeline-line>border-zinc-200</timeline-line>
+    </color-theme>
+  </ux-design>
+
+  <!-- ============================================
+       SECTION 4: Existing Codebase Context
+       ============================================ -->
+  <existing-code>
+    <from-story-3-4>
+      <component path="components/issues/issue-detail-panel.tsx">
+        이슈 상세 패널 (히스토리/서브태스크 섹션 추가 필요)
+      </component>
+      <api path="app/api/issues/[issueId]/route.ts">
+        히스토리 기록 로직 (PUT 메서드)
+      </api>
+    </from-story-3-4>
+
+    <from-story-3-3>
+      <component path="components/issues/issue-card.tsx">
+        이슈 카드 (서브태스크 진행률 표시 추가 필요)
+      </component>
+    </from-story-3-3>
+
+    <types path="jira-lite-mvp/lib/supabase/types.ts">
+      <exports>
+        <export name="IssueHistory">히스토리 Row 타입</export>
+        <export name="Subtask">서브태스크 Row 타입</export>
+      </exports>
+    </types>
+
+    <ui-components>
+      <component path="components/ui/checkbox.tsx">Checkbox (완료 토글)</component>
+      <component path="components/ui/tabs.tsx">Tabs (히스토리/댓글 탭)</component>
+      <component path="components/ui/avatar.tsx">Avatar (변경자 표시)</component>
+      <component path="components/ui/input.tsx">Input (서브태스크 추가)</component>
+    </ui-components>
+  </existing-code>
+
+  <!-- ============================================
+       SECTION 5: Files to Create
+       ============================================ -->
+  <files-to-create>
+    <api>
+      <file path="app/api/issues/[issueId]/history/route.ts">
+        <purpose>히스토리 조회 API</purpose>
+        <methods>
+          <method name="GET">
+            <validation>팀 멤버십 검증</validation>
+            <query>
+              ORDER BY created_at DESC
+              JOIN profiles for changed_by
+            </query>
+            <response>{ success: true, data: IssueHistory[] }</response>
+          </method>
+        </methods>
+      </file>
+      <file path="app/api/issues/[issueId]/subtasks/route.ts">
+        <purpose>서브태스크 목록 조회(GET), 생성(POST)</purpose>
+        <methods>
+          <method name="GET">
+            <query>ORDER BY position ASC</query>
+          </method>
+          <method name="POST">
+            <body>title (1~200자)</body>
+            <validation>이슈당 20개 제한</validation>
+            <logic>position = MAX(issue subtasks) + 1</logic>
+          </method>
+        </methods>
+      </file>
+      <file path="app/api/subtasks/[subtaskId]/route.ts">
+        <purpose>개별 서브태스크 수정(PUT), 삭제(DELETE)</purpose>
+        <methods>
+          <method name="PUT">
+            <body>title?, is_completed?</body>
+          </method>
+          <method name="DELETE">Soft delete 아님 (실제 삭제)</method>
+        </methods>
+      </file>
+      <file path="app/api/subtasks/[subtaskId]/reorder/route.ts">
+        <purpose>서브태스크 순서 변경</purpose>
+        <methods>
+          <method name="PUT">
+            <body>newPosition (0-based)</body>
+            <logic>같은 이슈 내 다른 서브태스크 position 재정렬</logic>
+          </method>
+        </methods>
+      </file>
+    </api>
+
+    <hooks>
+      <file path="hooks/use-issue-history.ts">
+        <exports>
+          <hook name="useIssueHistory">
+            <cache-key>['issue-history', issueId]</cache-key>
+          </hook>
+        </exports>
+      </file>
+      <file path="hooks/use-subtasks.ts">
+        <exports>
+          <hook name="useSubtasks">서브태스크 목록 조회</hook>
+          <hook name="useCreateSubtask">생성 mutation</hook>
+          <hook name="useUpdateSubtask">수정 mutation (제목, 완료)</hook>
+          <hook name="useDeleteSubtask">삭제 mutation</hook>
+          <hook name="useReorderSubtasks">순서 변경 mutation</hook>
+        </exports>
+        <cache-key>['subtasks', issueId]</cache-key>
+        <optimistic-update>true</optimistic-update>
+      </file>
+    </hooks>
+
+    <components>
+      <file path="components/issues/issue-history.tsx">
+        <purpose>히스토리 타임라인 UI</purpose>
+        <features>
+          <feature>타임라인 레이아웃</feature>
+          <feature>필드별 아이콘 (상태, 담당자, 우선순위 등)</feature>
+          <feature>상대 시간 표시 (2 hours ago)</feature>
+          <feature>변경자 아바타 + 이름</feature>
+          <feature>빈 상태 처리</feature>
+        </features>
+        <formatting>
+          <format field="status">{old} → {new} (상태명)</format>
+          <format field="assignee">{old} → {new} (프로필 이름 또는 Unassigned)</format>
+          <format field="priority">{old} → {new} (배지 색상)</format>
+          <format field="title">"{old}" → "{new}"</format>
+          <format field="due_date">{old} → {new} (날짜 포맷)</format>
+        </formatting>
+      </file>
+      <file path="components/issues/subtask-section.tsx">
+        <purpose>서브태스크 섹션 컨테이너</purpose>
+        <children>
+          <child>헤더 "Subtasks (2/4)"</child>
+          <child>진행률 바</child>
+          <child>SubtaskItem 목록 (DnD context)</child>
+          <child>서브태스크 추가 입력 필드</child>
+        </children>
+      </file>
+      <file path="components/issues/subtask-item.tsx">
+        <purpose>개별 서브태스크 아이템</purpose>
+        <elements>
+          <element>드래그 핸들 (@dnd-kit/sortable)</element>
+          <element>체크박스</element>
+          <element>제목 (완료 시 취소선)</element>
+          <element>삭제 버튼 (hover 시)</element>
+        </elements>
+      </file>
+      <file path="components/issues/progress-bar.tsx">
+        <purpose>진행률 바 컴포넌트</purpose>
+        <props>
+          <prop name="completed" type="number"/>
+          <prop name="total" type="number"/>
+        </props>
+        <visual>가로 바, bg-zinc-200 배경, bg-indigo-500 채움</visual>
+      </file>
+    </components>
+
+    <extend-existing>
+      <file path="components/issues/issue-detail-panel.tsx" mode="extend">
+        <add>히스토리 탭/섹션</add>
+        <add>서브태스크 섹션</add>
+      </file>
+      <file path="components/issues/issue-card.tsx" mode="extend">
+        <add>서브태스크 진행률 표시 (예: 2/5)</add>
+        <condition>subtasks.length > 0일 때만</condition>
+      </file>
+      <file path="app/api/issues/[issueId]/route.ts" mode="extend">
+        <add>GET 응답에 subtasks 배열 포함</add>
+        <add>완료 개수/전체 개수 계산</add>
+      </file>
+    </extend-existing>
+  </files-to-create>
+
+  <!-- ============================================
+       SECTION 6: @dnd-kit Implementation Guide
+       ============================================ -->
+  <dnd-kit-guide>
+    <packages>
+      <package name="@dnd-kit/core"/>
+      <package name="@dnd-kit/sortable"/>
+      <package name="@dnd-kit/utilities"/>
+    </packages>
+    <pattern><![CDATA[
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Item
+function SortableSubtaskItem({ subtask }: { subtask: Subtask }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: subtask.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <button {...attributes} {...listeners}>⋮</button>
+      {/* rest of item */}
+    </div>
+  );
+}
+
+// Container
+function SubtaskSection({ subtasks }: { subtasks: Subtask[] }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      // reorder API call
+    }
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={subtasks.map(s => s.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        {subtasks.map(subtask => (
+          <SortableSubtaskItem key={subtask.id} subtask={subtask} />
+        ))}
+      </SortableContext>
+    </DndContext>
+  );
+}
+    ]]></pattern>
+  </dnd-kit-guide>
+
+  <!-- ============================================
+       SECTION 7: Acceptance Criteria Checklist
+       ============================================ -->
+  <acceptance-criteria>
+    <ac id="1" status="pending">이슈 상세 패널에서 히스토리 탭으로 변경 이력 조회</ac>
+    <ac id="2" status="pending">히스토리에 상태, 담당자, 우선순위, 제목, 마감일 변경 기록</ac>
+    <ac id="3" status="pending">히스토리 항목에 변경 항목, 이전 값, 새 값, 변경자, 변경 일시 표시</ac>
+    <ac id="4" status="pending">히스토리 최신순 정렬</ac>
+    <ac id="5" status="pending">이슈 상세 패널에서 서브태스크 추가 (제목 1~200자)</ac>
+    <ac id="6" status="pending">체크박스로 서브태스크 완료/미완료 토글</ac>
+    <ac id="7" status="pending">드래그로 서브태스크 순서 변경</ac>
+    <ac id="8" status="pending">서브태스크 삭제</ac>
+    <ac id="9" status="pending">이슈당 최대 20개 서브태스크 제한</ac>
+    <ac id="10" status="pending">이슈 카드에 서브태스크 진행률 표시 (예: 3/5)</ac>
+    <ac id="11" status="pending">이슈 상세 패널에 서브태스크 진행률 바</ac>
+  </acceptance-criteria>
+
+  <!-- ============================================
+       SECTION 8: Dependencies
+       ============================================ -->
+  <dependencies>
+    <story-dependency id="3-3-issue-create-list" status="drafted" required="true">
+      이슈 카드 컴포넌트
+    </story-dependency>
+    <story-dependency id="3-4-issue-detail-edit" status="drafted" required="true">
+      이슈 상세 패널, 히스토리 기록 로직
+    </story-dependency>
+    <package-dependency name="@dnd-kit/core" version="^6.x">드래그 앤 드롭</package-dependency>
+    <package-dependency name="@dnd-kit/sortable" version="^8.x">정렬 가능 리스트</package-dependency>
+    <package-dependency name="@dnd-kit/utilities" version="^3.x">유틸리티</package-dependency>
+    <package-dependency name="date-fns" version="^3.x">상대 시간 (formatDistanceToNow)</package-dependency>
+  </dependencies>
+
+  <!-- ============================================
+       SECTION 9: Notes for Epic 4
+       ============================================ -->
+  <notes-for-epic-4>
+    <note>
+      이 스토리에서 @dnd-kit를 서브태스크 순서 변경에 처음 사용합니다.
+      Epic 4 (4-2-drag-and-drop)에서 동일한 패턴을 칸반 보드 이슈 카드 이동에 재사용합니다.
+    </note>
+    <reusable-patterns>
+      <pattern>DndContext 설정</pattern>
+      <pattern>useSortable 훅 사용법</pattern>
+      <pattern>handleDragEnd 이벤트 처리</pattern>
+      <pattern>낙관적 UI 업데이트</pattern>
+    </reusable-patterns>
+  </notes-for-epic-4>
+</story-context>

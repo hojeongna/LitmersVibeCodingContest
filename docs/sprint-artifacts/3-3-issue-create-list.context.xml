@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 3-3-issue-create-list
+  Generated: 2025-11-29
+  Epic: 3 - 프로젝트 & 이슈 관리
+  FR Coverage: FR-030, FR-031, FR-037, FR-038
+-->
+<story-context story-key="3-3-issue-create-list" epic="3">
+  <meta>
+    <title>이슈 생성 &amp; 목록</title>
+    <status>drafted</status>
+    <fr-coverage>FR-030, FR-031, FR-037, FR-038</fr-coverage>
+  </meta>
+
+  <!-- ============================================
+       SECTION 1: PRD Requirements
+       ============================================ -->
+  <prd-requirements>
+    <requirement id="FR-030" priority="P0">
+      <title>이슈 생성</title>
+      <description>
+        - 제목(필수, 1~200자), 설명(선택, 최대 5000자)
+        - 우선순위(HIGH/MEDIUM/LOW), 라벨, 담당자, 마감일
+        - 프로젝트 키 기반 ID 자동 부여 (예: JL-1)
+        - 프로젝트당 최대 200개 이슈 제한
+        - 생성 시 기본 상태는 'Backlog'
+      </description>
+    </requirement>
+    <requirement id="FR-031" priority="P0">
+      <title>이슈 목록 조회</title>
+      <description>
+        - ID, 제목, 상태, 우선순위, 담당자, 마감일 표시
+        - 이슈 클릭 시 상세 패널 표시
+      </description>
+    </requirement>
+    <requirement id="FR-037" priority="P1">
+      <title>우선순위 색상</title>
+      <description>
+        - HIGH: 빨강 (#FEE2E2 bg, #DC2626 text)
+        - MEDIUM: 노랑 (#FEF3C7 bg, #D97706 text)
+        - LOW: 초록 (#DCFCE7 bg, #16A34A text)
+      </description>
+    </requirement>
+    <requirement id="FR-038" priority="P1">
+      <title>라벨/태그</title>
+      <description>
+        - 프로젝트당 최대 20개 라벨
+        - 이슈당 최대 5개 라벨
+        - 커스텀 라벨 생성 (이름, 색상)
+        - 기본 라벨: Bug, Feature, Enhancement, Docs
+      </description>
+    </requirement>
+    <requirement id="FR-070" priority="P0">
+      <title>팀 멤버십 검증</title>
+      <description>모든 API에서 팀 멤버십 검증 필수</description>
+    </requirement>
+  </prd-requirements>
+
+  <!-- ============================================
+       SECTION 2: Architecture Context
+       ============================================ -->
+  <architecture>
+    <api-patterns>
+      <pattern name="Response Format">
+        <success>{ success: true, data: {...} }</success>
+        <error>{ success: false, error: { code: 'ERROR_CODE', message: '...' } }</error>
+      </pattern>
+      <pattern name="Authentication">Supabase Auth + RLS</pattern>
+      <pattern name="State Management">Zustand + TanStack Query</pattern>
+    </api-patterns>
+
+    <database-schema>
+      <table name="issues">
+        <column name="id" type="UUID" primary-key="true"/>
+        <column name="project_id" type="UUID" not-null="true" references="projects"/>
+        <column name="owner_id" type="UUID" not-null="true" references="profiles"/>
+        <column name="assignee_id" type="UUID" references="profiles"/>
+        <column name="status_id" type="UUID" not-null="true" references="statuses"/>
+        <column name="issue_number" type="INTEGER" not-null="true" unique-with="project_id"/>
+        <column name="title" type="VARCHAR(200)" not-null="true"/>
+        <column name="description" type="TEXT" max-length="5000"/>
+        <column name="priority" type="VARCHAR(10)" check="HIGH|MEDIUM|LOW" default="MEDIUM"/>
+        <column name="due_date" type="DATE"/>
+        <column name="position" type="INTEGER" not-null="true"/>
+        <column name="created_at" type="TIMESTAMPTZ" default="NOW()"/>
+        <column name="updated_at" type="TIMESTAMPTZ" default="NOW()"/>
+        <column name="deleted_at" type="TIMESTAMPTZ" nullable="true"/>
+      </table>
+      <table name="labels">
+        <column name="id" type="UUID" primary-key="true"/>
+        <column name="project_id" type="UUID" not-null="true" references="projects"/>
+        <column name="name" type="VARCHAR(30)" not-null="true"/>
+        <column name="color" type="VARCHAR(7)" not-null="true" comment="HEX color"/>
+        <unique-constraint columns="project_id,name"/>
+      </table>
+      <table name="issue_labels">
+        <column name="issue_id" type="UUID" not-null="true" references="issues"/>
+        <column name="label_id" type="UUID" not-null="true" references="labels"/>
+        <primary-key columns="issue_id,label_id"/>
+      </table>
+      <table name="statuses">
+        <column name="id" type="UUID" primary-key="true"/>
+        <column name="project_id" type="UUID" not-null="true" references="projects"/>
+        <column name="name" type="VARCHAR(50)" not-null="true"/>
+        <column name="color" type="VARCHAR(7)"/>
+        <column name="position" type="INTEGER" not-null="true"/>
+        <column name="wip_limit" type="INTEGER" nullable="true"/>
+        <column name="is_default" type="BOOLEAN" default="false"/>
+      </table>
+    </database-schema>
+
+    <tech-stack>
+      <frontend>Next.js 15 App Router + TypeScript</frontend>
+      <styling>Tailwind CSS + shadcn/ui</styling>
+      <forms>react-hook-form + zod</forms>
+      <state>Zustand + TanStack Query</state>
+      <database>Supabase (PostgreSQL)</database>
+    </tech-stack>
+  </architecture>
+
+  <!-- ============================================
+       SECTION 3: UX Design Specification
+       ============================================ -->
+  <ux-design source="docs/ux-design-specification.md, docs/ux-color-themes.html">
+    <design-system>
+      <framework>shadcn/ui + Tailwind CSS + Radix UI</framework>
+      <icons>Lucide Icons</icons>
+    </design-system>
+
+    <color-theme name="Linear Productivity">
+      <primary hex="#5B5FC7" name="Indigo">주요 버튼, 링크, 포커스</primary>
+      <accent hex="#3B82F6" name="Blue">AI 기능, 강조</accent>
+      <text-primary hex="#18181B" name="Zinc 900">제목, 본문</text-primary>
+      <text-secondary hex="#71717A" name="Zinc 500">보조 텍스트</text-secondary>
+      <background hex="#FAFAFA" name="Zinc 50">페이지 배경</background>
+      <surface hex="#FFFFFF" name="White">카드, 모달</surface>
+      <border hex="#E4E4E7" name="Zinc 200">구분선, 테두리</border>
+    </color-theme>
+
+    <priority-colors>
+      <priority level="HIGH" bg="#FEE2E2" text="#DC2626"/>
+      <priority level="MEDIUM" bg="#FEF3C7" text="#D97706"/>
+      <priority level="LOW" bg="#DCFCE7" text="#16A34A"/>
+    </priority-colors>
+
+    <default-labels>
+      <label name="Bug" bg="#FEE2E2" text="#DC2626"/>
+      <label name="Feature" bg="#DBEAFE" text="#2563EB"/>
+      <label name="Enhancement" bg="#F3E8FF" text="#7C3AED"/>
+      <label name="Docs" bg="#D1FAE5" text="#059669"/>
+    </default-labels>
+
+    <issue-card-layout>
+      <ascii-diagram><![CDATA[
++------------------------------------------+
+| JL-12                                    |
+| Implement email notification system      |
+| +--------+  +----------+                 |
+| | MEDIUM |  | Feature  |                 |
+| +--------+  +----------+                 |
+| [Avatar] Hojeong          2/5    Dec 20  |
++------------------------------------------+
+      ]]></ascii-diagram>
+      <elements>
+        <element>이슈 ID (프로젝트키-번호)</element>
+        <element>제목 (최대 2줄)</element>
+        <element>우선순위 배지</element>
+        <element>라벨 태그 (최대 2개, 나머지 +N)</element>
+        <element>담당자 아바타</element>
+        <element>서브태스크 진행률 (Story 3-6에서 추가)</element>
+        <element>마감일</element>
+      </elements>
+    </issue-card-layout>
+
+    <modal-patterns>
+      <size>Medium (560px)</size>
+      <dismiss>외부 클릭, ESC 키, X 버튼</dismiss>
+      <focus>첫 번째 입력 필드 자동 포커스</focus>
+    </modal-patterns>
+  </ux-design>
+
+  <!-- ============================================
+       SECTION 4: Existing Codebase Context
+       ============================================ -->
+  <existing-code>
+    <component path="jira-lite-mvp/components/ui/priority-badge.tsx">
+      <description>우선순위 배지 컴포넌트 (이미 구현됨)</description>
+      <exports>
+        <export name="PriorityBadge" type="component"/>
+        <export name="Priority" type="type">HIGH | MEDIUM | LOW</export>
+        <export name="priorityBadgeVariants" type="cva"/>
+      </exports>
+      <usage>import { PriorityBadge } from "@/components/ui/priority-badge"</usage>
+    </component>
+
+    <component path="jira-lite-mvp/components/ui/label-tag.tsx">
+      <description>라벨 태그 컴포넌트 (이미 구현됨)</description>
+      <exports>
+        <export name="LabelTag" type="component"/>
+        <export name="LabelPreset" type="type">bug | feature | enhancement | docs | custom</export>
+      </exports>
+      <props>
+        <prop name="label" type="string" required="true">라벨 이름</prop>
+        <prop name="preset" type="LabelPreset">프리셋 색상</prop>
+        <prop name="bgColor" type="string">커스텀 배경색 (preset=custom일 때)</prop>
+        <prop name="textColor" type="string">커스텀 텍스트색 (preset=custom일 때)</prop>
+        <prop name="removable" type="boolean">제거 버튼 표시</prop>
+        <prop name="onRemove" type="() => void">제거 핸들러</prop>
+      </props>
+    </component>
+
+    <types path="jira-lite-mvp/lib/supabase/types.ts">
+      <description>Supabase 데이터베이스 타입 정의</description>
+      <exports>
+        <export name="Issue" type="type">이슈 테이블 Row 타입</export>
+        <export name="Label" type="type">라벨 테이블 Row 타입</export>
+        <export name="IssueLabel" type="type">이슈-라벨 연결 테이블</export>
+        <export name="Status" type="type">상태 테이블 Row 타입</export>
+        <export name="IssuePriority" type="type">HIGH | MEDIUM | LOW</export>
+        <export name="Profile" type="type">프로필 테이블 Row 타입</export>
+      </exports>
+    </types>
+
+    <layout path="jira-lite-mvp/components/layout/app-shell.tsx">
+      <description>앱 셸 레이아웃 (Sidebar + Header + Main)</description>
+      <usage>프로젝트 상세 페이지에서 사용</usage>
+    </layout>
+
+    <ui-components>
+      <component name="Button" path="components/ui/button.tsx"/>
+      <component name="Card" path="components/ui/card.tsx"/>
+      <component name="Dialog" path="components/ui/dialog.tsx"/>
+      <component name="Input" path="components/ui/input.tsx"/>
+      <component name="Select" path="components/ui/select.tsx"/>
+      <component name="Textarea" path="components/ui/textarea.tsx"/>
+      <component name="Avatar" path="components/ui/avatar.tsx"/>
+      <component name="Badge" path="components/ui/badge.tsx"/>
+      <component name="Skeleton" path="components/ui/skeleton.tsx"/>
+    </ui-components>
+  </existing-code>
+
+  <!-- ============================================
+       SECTION 5: Files to Create
+       ============================================ -->
+  <files-to-create>
+    <api>
+      <file path="app/api/projects/[projectId]/issues/route.ts">
+        <purpose>이슈 생성(POST) 및 목록 조회(GET)</purpose>
+        <methods>
+          <method name="GET">
+            <params>projectId, page?, limit?</params>
+            <validation>팀 멤버십 검증</validation>
+            <response>{ success: true, data: Issue[], pagination: {...} }</response>
+          </method>
+          <method name="POST">
+            <body>title, description?, priority?, labelIds?, assigneeId?, dueDate?</body>
+            <validation>
+              - 팀 멤버십 검증
+              - 제목 1~200자
+              - 설명 최대 5000자
+              - 프로젝트당 200개 이슈 제한
+              - 라벨 최대 5개
+            </validation>
+            <logic>
+              - issue_number = MAX(project issues) + 1
+              - status_id = Backlog 상태 ID
+              - position = 컬럼 내 최하단
+            </logic>
+          </method>
+        </methods>
+      </file>
+      <file path="app/api/projects/[projectId]/labels/route.ts">
+        <purpose>라벨 생성(POST) 및 목록 조회(GET)</purpose>
+        <methods>
+          <method name="GET">목록 조회</method>
+          <method name="POST">
+            <body>name (1~30자), color (HEX)</body>
+            <validation>프로젝트당 20개 제한</validation>
+          </method>
+        </methods>
+      </file>
+      <file path="app/api/labels/[labelId]/route.ts">
+        <purpose>개별 라벨 수정(PUT) 및 삭제(DELETE)</purpose>
+      </file>
+    </api>
+
+    <components>
+      <file path="components/issues/create-issue-modal.tsx">
+        <purpose>이슈 생성 모달</purpose>
+        <form-fields>
+          <field name="title" type="input" required="true" max="200"/>
+          <field name="description" type="textarea" max="5000"/>
+          <field name="priority" type="select" options="HIGH,MEDIUM,LOW" default="MEDIUM"/>
+          <field name="labelIds" type="multi-select" max="5"/>
+          <field name="assigneeId" type="select" source="teamMembers"/>
+          <field name="dueDate" type="date-picker"/>
+        </form-fields>
+        <libraries>react-hook-form, zod</libraries>
+      </file>
+      <file path="components/issues/issue-card.tsx">
+        <purpose>이슈 카드 컴포넌트</purpose>
+        <props>issue: Issue, labels: Label[], assignee?: Profile, onClick: () => void</props>
+        <uses>PriorityBadge, LabelTag, Avatar</uses>
+      </file>
+      <file path="components/issues/issue-list.tsx">
+        <purpose>이슈 목록 뷰</purpose>
+        <features>
+          <feature>테이블/리스트 형태</feature>
+          <feature>열: ID, 제목, 상태, 우선순위, 담당자, 마감일</feature>
+          <feature>행 클릭 시 상세 패널 열기</feature>
+        </features>
+      </file>
+    </components>
+
+    <hooks>
+      <file path="hooks/use-issues.ts">
+        <exports>
+          <hook name="useIssues">이슈 목록 조회 (useQuery)</hook>
+          <hook name="useCreateIssue">이슈 생성 (useMutation)</hook>
+        </exports>
+        <cache-key>['issues', projectId]</cache-key>
+      </file>
+      <file path="hooks/use-labels.ts">
+        <exports>
+          <hook name="useLabels">라벨 목록 조회</hook>
+          <hook name="useCreateLabel">라벨 생성</hook>
+        </exports>
+        <cache-key>['labels', projectId]</cache-key>
+      </file>
+    </hooks>
+
+    <validations>
+      <file path="lib/validations/issue.ts">
+        <schemas>
+          <schema name="createIssueSchema">
+            <field name="title" type="z.string().min(1).max(200)"/>
+            <field name="description" type="z.string().max(5000).optional()"/>
+            <field name="priority" type="z.enum(['HIGH','MEDIUM','LOW']).default('MEDIUM')"/>
+            <field name="labelIds" type="z.array(z.string().uuid()).max(5).optional()"/>
+            <field name="assigneeId" type="z.string().uuid().optional()"/>
+            <field name="dueDate" type="z.string().date().optional()"/>
+          </schema>
+          <schema name="createLabelSchema">
+            <field name="name" type="z.string().min(1).max(30)"/>
+            <field name="color" type="z.string().regex(/^#[0-9A-Fa-f]{6}$/)"/>
+          </schema>
+        </schemas>
+      </file>
+    </validations>
+  </files-to-create>
+
+  <!-- ============================================
+       SECTION 6: Acceptance Criteria Checklist
+       ============================================ -->
+  <acceptance-criteria>
+    <ac id="1" status="pending">이슈 생성 시 제목(필수 1~200자), 설명(선택 최대 5000자), 우선순위, 라벨, 담당자, 마감일 입력</ac>
+    <ac id="2" status="pending">이슈 생성 시 프로젝트 키 기반 ID 자동 부여 (예: JL-1)</ac>
+    <ac id="3" status="pending">프로젝트당 최대 200개 이슈 제한</ac>
+    <ac id="4" status="pending">이슈 생성 시 기본 상태는 'Backlog'</ac>
+    <ac id="5" status="pending">이슈 목록에서 ID, 제목, 상태, 우선순위, 담당자, 마감일 표시</ac>
+    <ac id="6" status="pending">우선순위별 색상 배지 표시</ac>
+    <ac id="7" status="pending">라벨별 색상 태그 표시</ac>
+    <ac id="8" status="pending">프로젝트당 최대 20개 라벨, 이슈당 최대 5개 라벨 제한</ac>
+    <ac id="9" status="pending">프로젝트 설정에서 커스텀 라벨 생성</ac>
+    <ac id="10" status="pending">이슈 클릭 시 상세 패널 표시</ac>
+  </acceptance-criteria>
+
+  <!-- ============================================
+       SECTION 7: Dependencies
+       ============================================ -->
+  <dependencies>
+    <story-dependency id="3-1-project-crud" status="drafted">프로젝트 상세 페이지 UI</story-dependency>
+    <story-dependency id="3-2-project-advanced-features" status="drafted">마크다운 렌더러 (설명 표시)</story-dependency>
+    <package-dependency name="react-hook-form" version="^7.x">폼 상태 관리</package-dependency>
+    <package-dependency name="zod" version="^3.x">스키마 검증</package-dependency>
+    <package-dependency name="@tanstack/react-query" version="^5.x">서버 상태 관리</package-dependency>
+    <package-dependency name="date-fns" version="^3.x">날짜 포맷팅</package-dependency>
+  </dependencies>
+</story-context>

@@ -1,0 +1,236 @@
+<story-context id="2-4-member-management" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2-4</storyId>
+    <title>멤버 관리</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-4-member-management.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>팀 OWNER 또는 ADMIN</asA>
+    <iWant>팀 멤버 목록을 조회하고, 역할을 변경하고, 멤버를 관리</iWant>
+    <soThat>팀 구성을 효율적으로 관리하고 적절한 권한을 부여할 수 있다</soThat>
+    <tasks>
+      <taskGroup title="Part A: 멤버 목록 API">
+        <task id="1" title="멤버 목록 조회 API" ac="1, 2, 14">
+          <subtask>1.1 app/api/teams/[teamId]/members/route.ts 생성 (GET)</subtask>
+          <subtask>1.2 멤버 목록 + 프로필 정보 JOIN</subtask>
+          <subtask>1.3 역할별 필터링 쿼리 파라미터</subtask>
+          <subtask>1.4 팀 멤버십 검증</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part B: 역할 변경 API">
+        <task id="2" title="역할 변경 API" ac="9, 10, 11, 12, 14">
+          <subtask>2.1 app/api/teams/[teamId]/members/[userId]/route.ts 생성 (PUT, DELETE)</subtask>
+          <subtask>2.2 PUT 핸들러: 역할 변경 (OWNER만)</subtask>
+          <subtask>2.3 소유권 이전 로직 (기존 OWNER → ADMIN)</subtask>
+          <subtask>2.4 활동 로그 기록</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part C: 멤버 퇴장/탈퇴 API">
+        <task id="3" title="강제 퇴장/자발적 탈퇴 API" ac="4, 5, 6, 7, 8">
+          <subtask>3.1 DELETE 핸들러: 강제 퇴장 또는 자발적 탈퇴</subtask>
+          <subtask>3.2 OWNER 퇴장 차단 검증</subtask>
+          <subtask>3.3 ADMIN의 ADMIN 퇴장 차단</subtask>
+          <subtask>3.4 OWNER 탈퇴 차단</subtask>
+          <subtask>3.5 활동 로그 기록</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part D: UI 구현">
+        <task id="4" title="Members 탭 페이지" ac="1, 2, 3">
+          <subtask>4.1 app/(dashboard)/teams/[teamId]/members/page.tsx 생성</subtask>
+          <subtask>4.2 멤버 목록 테이블</subtask>
+          <subtask>4.3 역할 필터 드롭다운</subtask>
+          <subtask>4.4 역할 배지 스타일링</subtask>
+        </task>
+        <task id="5" title="멤버 액션 UI" ac="4, 5, 9, 10">
+          <subtask>5.1 역할 변경 드롭다운 (OWNER만 표시)</subtask>
+          <subtask>5.2 퇴장 버튼 (X)</subtask>
+          <subtask>5.3 역할 변경 확인 모달</subtask>
+          <subtask>5.4 퇴장 확인 모달</subtask>
+        </task>
+        <task id="6" title="소유권 이전 모달" ac="11, 12, 13">
+          <subtask>6.1 components/teams/transfer-ownership-modal.tsx 생성</subtask>
+          <subtask>6.2 경고 메시지 표시</subtask>
+          <subtask>6.3 확인 입력 필드</subtask>
+        </task>
+        <task id="7" title="팀 탈퇴 UI" ac="7, 8">
+          <subtask>7.1 Settings 페이지에 Leave Team 섹션 추가</subtask>
+          <subtask>7.2 탈퇴 확인 모달</subtask>
+          <subtask>7.3 OWNER 탈퇴 불가 안내</subtask>
+        </task>
+      </taskGroup>
+      <taskGroup title="Part E: 훅 및 유틸리티">
+        <task id="8" title="멤버 관리 훅" ac="1, 2">
+          <subtask>8.1 hooks/use-members.ts 생성</subtask>
+          <subtask>8.2 useTeamMembers(teamId, filter?)</subtask>
+          <subtask>8.3 useUpdateMemberRole()</subtask>
+          <subtask>8.4 useRemoveMember()</subtask>
+          <subtask>8.5 useLeaveTeam()</subtask>
+          <subtask>8.6 useTransferOwnership()</subtask>
+        </task>
+      </taskGroup>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" fr="FR-014">팀 멤버 목록에서 이름, 이메일, 역할, 가입일 표시</criterion>
+    <criterion id="AC-2" fr="FR-014">역할별 필터링 가능</criterion>
+    <criterion id="AC-3" fr="FR-014, FR-017">멤버 역할이 배지로 표시 (OWNER: 금색, ADMIN: 파랑, MEMBER: 회색)</criterion>
+    <criterion id="AC-4" fr="FR-015">OWNER는 모든 멤버(ADMIN, MEMBER)를 강제 퇴장 가능</criterion>
+    <criterion id="AC-5" fr="FR-015">ADMIN은 MEMBER만 강제 퇴장 가능</criterion>
+    <criterion id="AC-6" fr="FR-015">OWNER 본인은 강제 퇴장 대상이 될 수 없음</criterion>
+    <criterion id="AC-7" fr="FR-016">ADMIN 또는 MEMBER는 팀을 자발적으로 탈퇴 가능</criterion>
+    <criterion id="AC-8" fr="FR-016">OWNER는 탈퇴 불가</criterion>
+    <criterion id="AC-9" fr="FR-018">OWNER만 멤버의 역할 변경 가능</criterion>
+    <criterion id="AC-10" fr="FR-018">MEMBER ↔ ADMIN 승격/강등 가능</criterion>
+    <criterion id="AC-11" fr="FR-018">OWNER 권한을 다른 ADMIN에게 이전 가능</criterion>
+    <criterion id="AC-12" fr="FR-018">소유권 이전 시 기존 OWNER는 ADMIN으로 변경</criterion>
+    <criterion id="AC-13" fr="FR-018">역할 변경 시 확인 모달 표시</criterion>
+    <criterion id="AC-14" fr="FR-014~018">API 응답 형식이 표준 포맷 준수</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc type="tech-spec" priority="high">
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <relevance>멤버 관리 API, 권한 매트릭스</relevance>
+      </doc>
+    </docs>
+
+    <code>
+      <existingComponents>
+        <component path="jira-lite-mvp/components/ui/avatar.tsx" relevance="멤버 아바타"/>
+        <component path="jira-lite-mvp/components/ui/badge.tsx" relevance="역할 배지"/>
+        <component path="jira-lite-mvp/components/ui/select.tsx" relevance="역할 선택"/>
+        <component path="jira-lite-mvp/components/ui/dialog.tsx" relevance="확인 모달"/>
+        <component path="jira-lite-mvp/lib/supabase/types.ts" relevance="TeamMember, TeamRole 타입"/>
+      </existingComponents>
+
+      <filesToCreate>
+        <file path="jira-lite-mvp/app/api/teams/[teamId]/members/route.ts" purpose="멤버 목록 API"/>
+        <file path="jira-lite-mvp/app/api/teams/[teamId]/members/[userId]/route.ts" purpose="역할 변경/퇴장 API"/>
+        <file path="jira-lite-mvp/app/(dashboard)/teams/[teamId]/members/page.tsx" purpose="Members 탭"/>
+        <file path="jira-lite-mvp/components/teams/member-table.tsx" purpose="멤버 테이블"/>
+        <file path="jira-lite-mvp/components/teams/role-change-modal.tsx" purpose="역할 변경 모달"/>
+        <file path="jira-lite-mvp/components/teams/remove-member-modal.tsx" purpose="퇴장 확인 모달"/>
+        <file path="jira-lite-mvp/components/teams/transfer-ownership-modal.tsx" purpose="소유권 이전 모달"/>
+        <file path="jira-lite-mvp/hooks/use-members.ts" purpose="멤버 관리 훅"/>
+      </filesToCreate>
+    </code>
+  </artifacts>
+
+  <constraints>
+    <constraint type="security">
+      <title>권한 계층 준수</title>
+      <description>
+        - OWNER만 역할 변경 가능
+        - ADMIN은 MEMBER만 퇴장 가능
+        - OWNER는 퇴장/탈퇴 불가
+      </description>
+    </constraint>
+    <constraint type="business">
+      <title>팀당 OWNER 1명</title>
+      <description>소유권 이전 시 기존 OWNER는 자동으로 ADMIN으로 변경</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <api endpoint="GET /api/teams/[teamId]/members">
+      <description>멤버 목록 조회</description>
+      <auth>팀 멤버</auth>
+      <queryParams>role (optional): OWNER | ADMIN | MEMBER</queryParams>
+    </api>
+    <api endpoint="PUT /api/teams/[teamId]/members/[userId]">
+      <description>역할 변경</description>
+      <auth>OWNER만</auth>
+      <request>{ "role": "ADMIN" | "MEMBER" | "OWNER" }</request>
+    </api>
+    <api endpoint="DELETE /api/teams/[teamId]/members/[userId]">
+      <description>멤버 퇴장 또는 탈퇴</description>
+      <auth>OWNER, ADMIN (제한적), 본인 (탈퇴)</auth>
+    </api>
+
+    <hooks>
+      <hook name="useTeamMembers(teamId, filter?)">멤버 목록 조회</hook>
+      <hook name="useUpdateMemberRole()">역할 변경 mutation</hook>
+      <hook name="useRemoveMember()">멤버 퇴장 mutation</hook>
+      <hook name="useLeaveTeam()">팀 탈퇴 mutation</hook>
+      <hook name="useTransferOwnership()">소유권 이전 mutation</hook>
+    </hooks>
+  </interfaces>
+
+  <tests>
+    <ideas>
+      <scenario id="1" ac="1, 2, 3" priority="high">
+        <title>멤버 목록 조회</title>
+        <steps>
+          1. Members 탭 접근
+          2. 멤버 정보 표시 확인 (이름, 이메일, 역할, 가입일)
+          3. 역할 배지 스타일 확인
+          4. 역할 필터 적용 테스트
+        </steps>
+      </scenario>
+      <scenario id="2" ac="4, 5, 6" priority="high">
+        <title>강제 퇴장 권한 테스트</title>
+        <steps>
+          1. OWNER로 ADMIN 퇴장 → 성공
+          2. OWNER로 MEMBER 퇴장 → 성공
+          3. ADMIN으로 MEMBER 퇴장 → 성공
+          4. ADMIN으로 ADMIN 퇴장 → 실패
+          5. OWNER 퇴장 시도 → 실패
+        </steps>
+      </scenario>
+      <scenario id="3" ac="9, 10, 11, 12" priority="high">
+        <title>역할 변경 및 소유권 이전</title>
+        <steps>
+          1. OWNER로 MEMBER → ADMIN 승격
+          2. OWNER로 ADMIN → MEMBER 강등
+          3. OWNER가 ADMIN에게 소유권 이전
+          4. 기존 OWNER가 ADMIN으로 변경됨 확인
+        </steps>
+      </scenario>
+      <scenario id="4" ac="7, 8" priority="high">
+        <title>자발적 탈퇴</title>
+        <steps>
+          1. MEMBER로 팀 탈퇴 → 성공
+          2. ADMIN으로 팀 탈퇴 → 성공
+          3. OWNER로 팀 탈퇴 → 실패 (안내 메시지)
+        </steps>
+      </scenario>
+    </ideas>
+  </tests>
+
+  <designReference>
+    <uxSpecs>
+      <spec title="Members 테이블">
++--------------------------------------------------------------------+
+| [Avatar] Name               Email                  Role    Action  |
++--------------------------------------------------------------------+
+| [HJ]     홍길동            hong@example.com       [OWNER]   -      |
+| [KS]     김서연            kim@example.com        [ADMIN]  [X]     |
+| [PY]     박영희            park@example.com       [MEMBER] [X]     |
++--------------------------------------------------------------------+
+      </spec>
+    </uxSpecs>
+    <roleBadgeStyles>
+      <badge role="OWNER">background: linear-gradient(135deg, #F59E0B, #D97706); color: #1A1A1D;</badge>
+      <badge role="ADMIN">background: #3B82F6; color: #FAFAFA;</badge>
+      <badge role="MEMBER">background: #27272A; color: #A1A1AA;</badge>
+    </roleBadgeStyles>
+    <permissionMatrix>
+      | Action          | OWNER | ADMIN | MEMBER |
+      |-----------------|-------|-------|--------|
+      | View Members    | Yes   | Yes   | Yes    |
+      | Change Role     | Yes   | No    | No     |
+      | Remove OWNER    | No    | No    | No     |
+      | Remove ADMIN    | Yes   | No    | No     |
+      | Remove MEMBER   | Yes   | Yes   | No     |
+      | Leave Team      | No    | Yes   | Yes    |
+      | Transfer Owner  | Yes   | No    | No     |
+    </permissionMatrix>
+  </designReference>
+</story-context>

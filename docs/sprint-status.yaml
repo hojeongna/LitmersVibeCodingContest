@@ -24,21 +24,21 @@ development_status:
 
   # Epic 2: 팀 관리
   epic-2: in-progress
-  2-1-team-create-list: drafted
-  2-2-team-detail-update-delete: backlog
+  2-1-team-create-list: review
+  2-2-team-detail-edit-delete: review
   2-3-member-invite-system: backlog
   2-4-member-management: backlog
   2-5-team-activity-log: backlog
   epic-2-retrospective: backlog
 
   # Epic 3: 프로젝트 & 이슈 관리
-  epic-3: backlog
-  3-1-project-crud: backlog
-  3-2-project-advanced-features: backlog
-  3-3-issue-create-list: backlog
-  3-4-issue-detail-update: backlog
-  3-5-issue-search-filter: backlog
-  3-6-history-subtasks: backlog
+  epic-3: in-progress
+  3-1-project-crud: review
+  3-2-project-advanced-features: review
+  3-3-issue-create-list: review
+  3-4-issue-detail-update: review
+  3-5-issue-search-filter: review
+  3-6-history-subtasks: review
   epic-3-retrospective: backlog
 
   # Epic 4: 칸반 보드 & 댓글

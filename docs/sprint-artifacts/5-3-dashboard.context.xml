@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context story="5-3-dashboard" generated="2025-11-29">
+  <!-- Story Context for Dashboard & Statistics -->
+
+  <story-metadata>
+    <title>개인 대시보드 및 프로젝트 통계</title>
+    <epic>Epic 5 - AI &amp; 대시보드 &amp; 알림</epic>
+    <fr-coverage>FR-080, FR-081, FR-082</fr-coverage>
+    <priority>P2</priority>
+    <estimated-points>5</estimated-points>
+  </story-metadata>
+
+  <acceptance-criteria>
+    <!-- FR-080: 개인 대시보드 -->
+    <criterion id="AC-080-1">로그인 후 대시보드 페이지 접근 가능</criterion>
+    <criterion id="AC-080-2">내 담당 이슈 통계 표시 (진행중/완료/마감임박)</criterion>
+    <criterion id="AC-080-3">마감 7일 이내 이슈 목록 표시</criterion>
+    <criterion id="AC-080-4">이슈 클릭 시 해당 이슈로 이동</criterion>
+    <!-- FR-081: 프로젝트 통계 -->
+    <criterion id="AC-081-1">프로젝트 진행률 표시 (완료/전체)</criterion>
+    <criterion id="AC-081-2">상태별 이슈 분포 차트 (파이/바)</criterion>
+    <criterion id="AC-081-3">우선순위별 분포 표시</criterion>
+    <!-- FR-082: 활동 트렌드 -->
+    <criterion id="AC-082-1">최근 7일 생성/완료 이슈 트렌드 라인 차트</criterion>
+    <criterion id="AC-082-2">기간 필터 변경 가능 (7일/30일)</criterion>
+  </acceptance-criteria>
+
+  <technical-specification>
+    <architecture>
+      <decision id="ADR-001">Next.js App Router - 대시보드는 서버 컴포넌트로 초기 데이터 로딩</decision>
+      <decision id="ADR-005">API Route Handlers - 통계 API 제공</decision>
+    </architecture>
+
+    <api-endpoints>
+      <endpoint method="GET" path="/api/dashboard/personal">
+        <description>개인 대시보드 통계 (FR-080)</description>
+        <query-params>
+          <param name="team_id" type="string" required="true"/>
+        </query-params>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: {
+    myIssues: {
+      total: number,
+      inProgress: number,
+      completed: number,
+      dueSoon: number  // 7일 이내
+    },
+    upcomingDeadlines: Array<{
+      id: string,
+      key: string,  // e.g., "JL-12"
+      title: string,
+      due_date: string,
+      days_remaining: number,
+      is_overdue: boolean,
+      priority: 'HIGH' | 'MEDIUM' | 'LOW',
+      status: { name: string, color: string }
+    }>
+  }
+}
+          ]]>
+        </response>
+      </endpoint>
+
+      <endpoint method="GET" path="/api/dashboard/project/[projectId]">
+        <description>프로젝트 통계 (FR-081, FR-082)</description>
+        <query-params>
+          <param name="period" type="string" default="7d">7d | 30d</param>
+        </query-params>
+        <response>
+          <![CDATA[
+{
+  success: true,
+  data: {
+    progress: {
+      total: number,
+      completed: number,
+      percentage: number
+    },
+    issuesByStatus: Array<{
+      status: string,
+      color: string,
+      count: number
+    }>,
+    issuesByPriority: Array<{
+      priority: 'HIGH' | 'MEDIUM' | 'LOW',
+      count: number
+    }>,
+    activityTrend: Array<{
+      date: string,  // YYYY-MM-DD
+      created: number,
+      completed: number
+    }>
+  }
+}
+          ]]>
+        </response>
+      </endpoint>
+    </api-endpoints>
+
+    <data-queries>
+      <![CDATA[
+-- 개인 담당 이슈 통계
+SELECT
+  COUNT(*) as total,
+  COUNT(*) FILTER (WHERE s.name NOT IN ('Done', 'Closed')) as in_progress,
+  COUNT(*) FILTER (WHERE s.name IN ('Done', 'Closed')) as completed,
+  COUNT(*) FILTER (
+    WHERE due_date IS NOT NULL
+    AND due_date <= NOW() + INTERVAL '7 days'
+    AND s.name NOT IN ('Done', 'Closed')
+  ) as due_soon
+FROM issues i
+JOIN statuses s ON i.status_id = s.id
+WHERE i.assignee_id = :user_id
+  AND i.deleted_at IS NULL;
+
+-- 마감 임박 이슈 목록
+SELECT
+  i.id,
+  i.title,
+  i.due_date,
+  i.priority,
+  s.name as status_name,
+  s.color as status_color,
+  (i.due_date - CURRENT_DATE) as days_remaining,
+  (i.due_date < CURRENT_DATE) as is_overdue
+FROM issues i
+JOIN statuses s ON i.status_id = s.id
+WHERE i.assignee_id = :user_id
+  AND i.deleted_at IS NULL
+  AND i.due_date IS NOT NULL
+  AND i.due_date <= NOW() + INTERVAL '7 days'
+  AND s.name NOT IN ('Done', 'Closed')
+ORDER BY i.due_date ASC
+LIMIT 10;
+
+-- 프로젝트 진행률
+SELECT
+  COUNT(*) as total,
+  COUNT(*) FILTER (WHERE s.name IN ('Done', 'Closed')) as completed
+FROM issues i
+JOIN statuses s ON i.status_id = s.id
+WHERE i.project_id = :project_id
+  AND i.deleted_at IS NULL;
+
+-- 상태별 분포
+SELECT
+  s.name as status,
+  s.color,
+  COUNT(*) as count
+FROM issues i
+JOIN statuses s ON i.status_id = s.id
+WHERE i.project_id = :project_id
+  AND i.deleted_at IS NULL
+GROUP BY s.id, s.name, s.color, s.position
+ORDER BY s.position;
+
+-- 활동 트렌드 (7일)
+SELECT
+  d.date,
+  COALESCE(created.count, 0) as created,
+  COALESCE(completed.count, 0) as completed
+FROM generate_series(
+  CURRENT_DATE - INTERVAL '6 days',
+  CURRENT_DATE,
+  '1 day'
+) d(date)
+LEFT JOIN (
+  SELECT DATE(created_at) as date, COUNT(*) as count
+  FROM issues
+  WHERE project_id = :project_id AND deleted_at IS NULL
+  GROUP BY DATE(created_at)
+) created ON d.date = created.date
+LEFT JOIN (
+  SELECT DATE(ih.created_at) as date, COUNT(*) as count
+  FROM issue_history ih
+  JOIN issues i ON ih.issue_id = i.id
+  WHERE i.project_id = :project_id
+    AND ih.field_name = 'status'
+    AND ih.new_value IN ('Done', 'Closed')
+  GROUP BY DATE(ih.created_at)
+) completed ON d.date = completed.date
+ORDER BY d.date;
+      ]]>
+    </data-queries>
+  </technical-specification>
+
+  <implementation-guide>
+    <file-structure>
+      <![CDATA[
+jira-lite-mvp/
+├── app/
+│   ├── (dashboard)/
+│   │   ├── dashboard/
+│   │   │   └── page.tsx            # 대시보드 메인 페이지
+│   │   └── projects/
+│   │       └── [projectId]/
+│   │           └── stats/
+│   │               └── page.tsx    # 프로젝트 통계 페이지 (선택)
+│   └── api/
+│       └── dashboard/
+│           ├── personal/
+│           │   └── route.ts        # GET /api/dashboard/personal
+│           └── project/
+│               └── [projectId]/
+│                   └── route.ts    # GET /api/dashboard/project/[id]
+├── components/
+│   └── dashboard/
+│       ├── StatsCard.tsx           # 통계 카드 (숫자 + 라벨)
+│       ├── MyIssuesStats.tsx       # 내 이슈 통계 그리드
+│       ├── UpcomingDeadlines.tsx   # 마감 임박 이슈 목록
+│       ├── ProjectProgress.tsx     # 프로젝트 진행률 바
+│       ├── IssuesByStatusChart.tsx # 상태별 분포 차트
+│       ├── IssuesByPriorityChart.tsx # 우선순위별 분포 차트
+│       ├── ActivityTrendChart.tsx  # 활동 트렌드 라인 차트
+│       └── index.ts
+└── hooks/
+    ├── use-dashboard-stats.ts      # 대시보드 데이터 훅
+    └── use-project-stats.ts        # 프로젝트 통계 훅
+      ]]>
+    </file-structure>
+
+    <component-specs>
+      <component name="StatsCard">
+        <location>components/dashboard/StatsCard.tsx</location>
+        <props>
+          <![CDATA[
+interface StatsCardProps {
+  title: string
+  value: number
+  icon?: React.ReactNode
+  trend?: {
+    value: number
+    direction: 'up' | 'down' | 'neutral'
+  }
+  variant?: 'default' | 'warning' | 'success'
+  onClick?: () => void
+}
+          ]]>
+        </props>
+        <features>
+          <item>큰 숫자 + 라벨</item>
+          <item>아이콘 표시 (선택)</item>
+          <item>트렌드 화살표 (선택)</item>
+          <item>변형: default, warning (마감임박), success (완료)</item>
+        </features>
+      </component>
+
+      <component name="UpcomingDeadlines">
+        <location>components/dashboard/UpcomingDeadlines.tsx</location>
+        <props>
+          <![CDATA[
+interface UpcomingDeadlinesProps {
+  deadlines: Array<{
+    id: string
+    key: string
+    title: string
+    due_date: string
+    days_remaining: number
+    is_overdue: boolean
+    priority: 'HIGH' | 'MEDIUM' | 'LOW'
+    status: { name: string; color: string }
+  }>
+  onIssueClick: (issueId: string) => void
+}
+          ]]>
+        </props>
+        <features>
+          <item>마감일별 정렬된 이슈 목록</item>
+          <item>남은 일수 / 지난 일수 표시</item>
+          <item>Overdue 이슈 빨간색 강조</item>
+          <item>우선순위 뱃지</item>
+          <item>클릭 시 이슈 상세로 이동</item>
+        </features>
+      </component>
+
+      <component name="IssuesByStatusChart">
+        <location>components/dashboard/IssuesByStatusChart.tsx</location>
+        <props>
+          <![CDATA[
+interface IssuesByStatusChartProps {
+  data: Array<{
+    status: string
+    color: string
+    count: number
+  }>
+  chartType?: 'pie' | 'bar'
+}
+          ]]>
+        </props>
+        <features>
+          <item>Recharts PieChart 또는 BarChart</item>
+          <item>상태 색상 반영</item>
+          <item>호버 시 정확한 수치 툴팁</item>
+          <item>범례 표시</item>
+        </features>
+      </component>
+
+      <component name="ActivityTrendChart">
+        <location>components/dashboard/ActivityTrendChart.tsx</location>
+        <props>
+          <![CDATA[
+interface ActivityTrendChartProps {
+  data: Array<{
+    date: string
+    created: number
+    completed: number
+  }>
+  period: '7d' | '30d'
+  onPeriodChange: (period: '7d' | '30d') => void
+}
+          ]]>
+        </props>
+        <features>
+          <item>Recharts LineChart (2개 라인: 생성/완료)</item>
+          <item>기간 선택 탭 (7일/30일)</item>
+          <item>X축: 날짜, Y축: 이슈 수</item>
+          <item>호버 시 날짜별 상세 툴팁</item>
+        </features>
+      </component>
+    </component-specs>
+
+    <code-samples>
+      <sample name="dashboard-page">
+        <![CDATA[
+// app/(dashboard)/dashboard/page.tsx
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import {
+  MyIssuesStats,
+  UpcomingDeadlines,
+  ProjectProgress,
+  IssuesByStatusChart,
+  ActivityTrendChart
+} from '@/components/dashboard'
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth/login')
+  }
+
+  // 사용자의 첫 번째 팀 가져오기
+  const { data: membership } = await supabase
+    .from('team_members')
+    .select('team_id, teams(id, name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  if (!membership) {
+    return <EmptyState message="팀에 가입해주세요" />
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-bold">대시보드</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MyIssuesStats teamId={membership.team_id} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UpcomingDeadlines teamId={membership.team_id} />
+        <IssuesByStatusChart teamId={membership.team_id} />
+      </div>
+
+      <ActivityTrendChart teamId={membership.team_id} />
+    </div>
+  )
+}
+        ]]>
+      </sample>
+
+      <sample name="stats-card-component">
+        <![CDATA[
+// components/dashboard/StatsCard.tsx
+'use client'
+
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
+
+interface StatsCardProps {
+  title: string
+  value: number
+  icon?: React.ReactNode
+  trend?: {
+    value: number
+    direction: 'up' | 'down' | 'neutral'
+  }
+  variant?: 'default' | 'warning' | 'success'
+  onClick?: () => void
+}
+
+export function StatsCard({
+  title,
+  value,
+  icon,
+  trend,
+  variant = 'default',
+  onClick
+}: StatsCardProps) {
+  const variantStyles = {
+    default: 'bg-white',
+    warning: 'bg-amber-50 border-amber-200',
+    success: 'bg-green-50 border-green-200'
+  }
+
+  const TrendIcon = trend?.direction === 'up'
+    ? ArrowUp
+    : trend?.direction === 'down'
+    ? ArrowDown
+    : Minus
+
+  return (
+    <Card
+      className={cn(
+        'cursor-pointer hover:shadow-md transition-shadow',
+        variantStyles[variant]
+      )}
+      onClick={onClick}
+    >
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-zinc-500">{title}</p>
+            <p className="text-3xl font-bold mt-1">{value}</p>
+            {trend && (
+              <div className={cn(
+                'flex items-center text-sm mt-2',
+                trend.direction === 'up' && 'text-green-600',
+                trend.direction === 'down' && 'text-red-600',
+                trend.direction === 'neutral' && 'text-zinc-500'
+              )}>
+                <TrendIcon className="w-4 h-4 mr-1" />
+                <span>{trend.value}%</span>
+              </div>
+            )}
+          </div>
+          {icon && (
+            <div className="text-zinc-400">{icon}</div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+        ]]>
+      </sample>
+
+      <sample name="activity-trend-chart">
+        <![CDATA[
+// components/dashboard/ActivityTrendChart.tsx
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts'
+
+interface ActivityTrendChartProps {
+  data: Array<{
+    date: string
+    created: number
+    completed: number
+  }>
+  period: '7d' | '30d'
+  onPeriodChange: (period: '7d' | '30d') => void
+}
+
+export function ActivityTrendChart({
+  data,
+  period,
+  onPeriodChange
+}: ActivityTrendChartProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-lg font-semibold">활동 트렌드</CardTitle>
+        <Tabs value={period} onValueChange={(v) => onPeriodChange(v as '7d' | '30d')}>
+          <TabsList>
+            <TabsTrigger value="7d">7일</TabsTrigger>
+            <TabsTrigger value="30d">30일</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) => new Date(value).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+              stroke="#71717a"
+            />
+            <YAxis stroke="#71717a" />
+            <Tooltip
+              labelFormatter={(value) => new Date(value).toLocaleDateString('ko-KR')}
+              contentStyle={{ borderRadius: 8, border: '1px solid #e4e4e7' }}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="created"
+              name="생성"
+              stroke="#3B82F6"
+              strokeWidth={2}
+              dot={{ fill: '#3B82F6', r: 4 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="completed"
+              name="완료"
+              stroke="#22C55E"
+              strokeWidth={2}
+              dot={{ fill: '#22C55E', r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+}
+        ]]>
+      </sample>
+    </code-samples>
+  </implementation-guide>
+
+  <ux-design-reference>
+    <design-system>
+      <framework>shadcn/ui + Tailwind CSS + Radix UI</framework>
+      <charts>Recharts</charts>
+      <icons>Lucide Icons</icons>
+    </design-system>
+
+    <dashboard-layout>
+      <![CDATA[
+<!-- 대시보드 레이아웃 (ux-design-directions.html 참조) -->
++------------------+------------------------------------------------+
+| Sidebar          | Dashboard Grid                                 |
+|                  | [My Issues Stats] [Project Progress]           |
+|                  | [Status Chart]    [Activity Trend]             |
+|                  | [Due Soon List - Full Width]                   |
++------------------+------------------------------------------------+
+      ]]>
+    </dashboard-layout>
+
+    <color-theme name="Linear Productivity">
+      <primary>#5B5FC7 (Indigo)</primary>
+      <accent>#3B82F6 (Blue)</accent>
+      <success>#22C55E</success>
+      <warning>#F59E0B</warning>
+      <error>#EF4444</error>
+      <background>#FAFAFA</background>
+    </color-theme>
+
+    <chart-colors>
+      <![CDATA[
+// 상태별 차트 색상 (statuses 테이블의 color 사용)
+// 기본 상태 색상:
+- Backlog: #71717A (Zinc 500)
+- In Progress: #3B82F6 (Blue)
+- Review: #F59E0B (Amber)
+- Done: #22C55E (Green)
+
+// 우선순위별 차트 색상:
+- HIGH: #EF4444 (Red)
+- MEDIUM: #F59E0B (Amber)
+- LOW: #22C55E (Green)
+
+// 트렌드 라인 색상:
+- Created: #3B82F6 (Blue)
+- Completed: #22C55E (Green)
+      ]]>
+    </chart-colors>
+
+    <deadline-item-style>
+      <![CDATA[
+<!-- 마감 임박 이슈 아이템 -->
+.deadline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.deadline-item:hover {
+  background: #fafafa;
+}
+
+.deadline-item.overdue {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+}
+
+.days-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.days-badge.overdue {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.days-badge.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.days-badge.safe {
+  background: #dcfce7;
+  color: #16a34a;
+}
+      ]]>
+    </deadline-item-style>
+  </ux-design-reference>
+
+  <existing-codebase>
+    <relevant-files>
+      <file path="jira-lite-mvp/app/(dashboard)/layout.tsx">
+        <description>대시보드 레이아웃 (AppShell 사용)</description>
+      </file>
+      <file path="jira-lite-mvp/components/layout/sidebar.tsx">
+        <description>사이드바 컴포넌트</description>
+      </file>
+      <file path="jira-lite-mvp/components/ui/card.tsx">
+        <description>카드 컴포넌트 (shadcn/ui)</description>
+      </file>
+      <file path="jira-lite-mvp/components/ui/tabs.tsx">
+        <description>탭 컴포넌트 (shadcn/ui)</description>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/types.ts">
+        <description>DB 타입 정의</description>
+      </file>
+    </relevant-files>
+
+    <existing-types>
+      <![CDATA[
+// lib/supabase/types.ts에서 발췌
+export type Issue = Tables<'issues'>
+export type Status = Tables<'statuses'>
+export type IssuePriority = 'HIGH' | 'MEDIUM' | 'LOW'
+      ]]>
+    </existing-types>
+  </existing-codebase>
+
+  <dependencies>
+    <npm-packages>
+      <package name="recharts" version="^3.5.1">차트 라이브러리</package>
+    </npm-packages>
+  </dependencies>
+
+  <testing-guidance>
+    <unit-tests>
+      <test>StatsCard 숫자 포맷팅 정상 동작</test>
+      <test>마감일 계산 로직 (days_remaining, is_overdue)</test>
+      <test>진행률 계산 로직 (completed/total * 100)</test>
+    </unit-tests>
+
+    <integration-tests>
+      <test>GET /api/dashboard/personal - 내 이슈 통계 반환</test>
+      <test>GET /api/dashboard/personal - 마감 임박 이슈 목록 반환</test>
+      <test>GET /api/dashboard/project/[id] - 프로젝트 통계 반환</test>
+      <test>GET /api/dashboard/project/[id]?period=30d - 30일 트렌드 반환</test>
+    </integration-tests>
+
+    <e2e-scenarios>
+      <scenario>로그인 → 대시보드 → 통계 로딩 → 차트 렌더링</scenario>
+      <scenario>마감 임박 이슈 클릭 → 이슈 상세 페이지 이동</scenario>
+      <scenario>기간 탭 변경 (7일 → 30일) → 차트 업데이트</scenario>
+    </e2e-scenarios>
+  </testing-guidance>
+
+  <notes>
+    <note priority="high">대시보드 초기 로딩 속도 중요 - 서버 컴포넌트 활용</note>
+    <note priority="high">차트 데이터 캐싱 고려 (5분 TTL)</note>
+    <note priority="medium">반응형: 모바일에서 1열, 태블릿 2열, 데스크톱 4열</note>
+    <note priority="medium">빈 상태 처리 (이슈 없을 때 안내 메시지)</note>
+  </notes>
+</story-context>
