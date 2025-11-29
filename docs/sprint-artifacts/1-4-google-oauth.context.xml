@@ -1,0 +1,421 @@
+<story-context id="1-4-google-oauth" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>4</storyId>
+    <title>Google OAuth</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-4-google-oauth.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>사용자</asA>
+    <iWant>Google 계정으로 간편하게 로그인</iWant>
+    <soThat>별도 비밀번호 없이 빠르게 서비스를 이용할 수 있다</soThat>
+    <tasks>
+      <part id="A" name="Supabase Google OAuth 설정">
+        <task id="1" name="Supabase Console에서 Google OAuth Provider 활성화" ac="2">
+          <subtask id="1.1">Supabase Dashboard > Authentication > Providers > Google 활성화</subtask>
+          <subtask id="1.2">Google Cloud Console에서 OAuth 2.0 클라이언트 ID 생성</subtask>
+          <subtask id="1.3">Client ID와 Client Secret을 Supabase에 입력</subtask>
+          <subtask id="1.4">Authorized redirect URI 설정 (https://[project-ref].supabase.co/auth/v1/callback)</subtask>
+        </task>
+      </part>
+      <part id="B" name="로그인 페이지에 Google 버튼 추가">
+        <task id="2" name="Google OAuth 버튼 UI 구현" ac="1">
+          <subtask id="2.1">로그인 페이지(app/(auth)/login/page.tsx)에 "Continue with Google" 버튼 추가</subtask>
+          <subtask id="2.2">회원가입 페이지(app/(auth)/signup/page.tsx)에도 동일 버튼 추가</subtask>
+          <subtask id="2.3">Google 아이콘 SVG 포함 (공식 브랜드 가이드라인 준수)</subtask>
+          <subtask id="2.4">버튼 스타일: 흰색 배경, 회색 테두리, Google 로고</subtask>
+          <subtask id="2.5">"or continue with" 구분선 추가</subtask>
+        </task>
+      </part>
+      <part id="C" name="Google OAuth 로그인 연동">
+        <task id="3" name="Supabase OAuth 호출 구현" ac="2,3">
+          <subtask id="3.1">Google 버튼 클릭 핸들러 구현</subtask>
+          <subtask id="3.2">supabase.auth.signInWithOAuth({ provider: 'google' }) 호출</subtask>
+          <subtask id="3.3">redirectTo 옵션으로 콜백 URL 지정</subtask>
+          <subtask id="3.4">로딩 상태 표시 (버튼 비활성화 + 스피너)</subtask>
+        </task>
+        <task id="4" name="OAuth 콜백 처리" ac="3,4">
+          <subtask id="4.1">app/auth/callback/route.ts 확인/수정</subtask>
+          <subtask id="4.2">code를 세션으로 교환 (exchangeCodeForSession)</subtask>
+          <subtask id="4.3">성공 시 대시보드(/)로 리다이렉트</subtask>
+          <subtask id="4.4">에러 시 로그인 페이지로 리다이렉트 + 에러 파라미터</subtask>
+        </task>
+      </part>
+      <part id="D" name="신규 사용자 프로필 자동 생성">
+        <task id="5" name="프로필 자동 생성 트리거" ac="4">
+          <subtask id="5.1">Supabase Database Trigger 확인 (Story 1.1에서 생성)</subtask>
+          <subtask id="5.2">auth.users INSERT 시 profiles 테이블에 자동 생성</subtask>
+          <subtask id="5.3">Google 사용자의 full_name, email, avatar_url 메타데이터 저장</subtask>
+          <subtask id="5.4">트리거 SQL 검증/생성</subtask>
+        </task>
+      </part>
+      <part id="E" name="에러 처리">
+        <task id="6" name="OAuth 에러 처리" ac="6">
+          <subtask id="6.1">콜백에서 에러 파라미터 감지</subtask>
+          <subtask id="6.2">에러 코드별 사용자 메시지 매핑</subtask>
+          <subtask id="6.3">Toast로 에러 메시지 표시</subtask>
+          <subtask id="6.4">에러 케이스: 사용자가 Google 팝업 닫음, 접근 거부, 네트워크 오류</subtask>
+        </task>
+      </part>
+      <part id="F" name="테스트 및 검증">
+        <task id="7" name="E2E 테스트 시나리오" ac="1-7">
+          <subtask id="7.1">신규 사용자 Google 로그인 플로우</subtask>
+          <subtask id="7.2">기존 사용자 Google 재로그인 플로우</subtask>
+          <subtask id="7.3">Google 로그인 후 로그아웃 플로우</subtask>
+          <subtask id="7.4">에러 케이스 처리 확인</subtask>
+        </task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" fr="FR-004">로그인 페이지에 "Continue with Google" 버튼 표시</criterion>
+    <criterion id="AC-2" fr="FR-004">Google 버튼 클릭 시 Google 로그인 팝업/리다이렉트 동작</criterion>
+    <criterion id="AC-3" fr="FR-004">Google 로그인 성공 시 대시보드(/)로 리다이렉트</criterion>
+    <criterion id="AC-4" fr="FR-004">신규 Google 사용자의 이름/이메일이 profiles 테이블에 자동 저장</criterion>
+    <criterion id="AC-5" fr="FR-004">기존 Google 사용자 재로그인 시 정상 세션 복원</criterion>
+    <criterion id="AC-6" fr="FR-004">OAuth 에러 발생 시 사용자 친화적 에러 메시지 표시</criterion>
+    <criterion id="AC-7" fr="FR-002">Google 로그인 사용자도 로그아웃 정상 동작</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc type="ux-design" path="docs/ux-design-specification.md" relevance="high">
+        <summary>전체 UX 사양서 - 디자인 시스템, 색상 팔레트, 버튼 스타일 정의</summary>
+        <keyInfo>
+          - Primary Color: #5B5FC7 (Indigo)
+          - Accent Color: #3B82F6 (Blue)
+          - Font: Inter
+          - Google 버튼: 흰색 배경, 회색 테두리 (#E4E4E7), border-radius: 8px
+          - Login 페이지: 좌측 브랜드 섹션 + 우측 폼 섹션 레이아웃
+        </keyInfo>
+      </doc>
+      <doc type="ux-mockup" path="docs/ux-design-directions.html" relevance="critical">
+        <summary>인터랙티브 UI 목업 - Login 화면의 Google OAuth 버튼 위치 및 스타일 확인</summary>
+        <keyInfo>
+          - Login 탭에서 Google 버튼 위치 확인 가능
+          - "or continue with" 구분선 아래에 Google 버튼 배치
+          - Google SVG 아이콘 포함된 버튼 스타일 참조
+          - CSS 변수: --primary: #5B5FC7, --border: #E4E4E7
+        </keyInfo>
+      </doc>
+      <doc type="ux-color-theme" path="docs/ux-color-themes.html" relevance="high">
+        <summary>색상 테마 시각화 - 버튼 스타일, Secondary 버튼 스타일 참조</summary>
+        <keyInfo>
+          - Linear Productivity Theme
+          - btn-secondary: background #f4f4f5, border #e4e4e7
+          - Google 버튼은 Secondary 스타일 기반
+          - Dark mode 지원 시 참조
+        </keyInfo>
+      </doc>
+      <doc type="architecture" path="docs/architecture.md" relevance="high">
+        <summary>시스템 아키텍처 - 인증 흐름, 프로젝트 구조</summary>
+        <keyInfo>
+          - OAuth Provider: Supabase Auth
+          - 인증 흐름: Google 버튼 클릭 → Supabase OAuth → Google 승인 → 콜백 → 세션 교환 → 대시보드
+          - 프로젝트 구조: app/(auth)/login, app/auth/callback
+        </keyInfo>
+      </doc>
+      <doc type="tech-spec" path="docs/sprint-artifacts/tech-spec-epic-1.md" relevance="high">
+        <summary>Epic 1 기술 사양 - OAuth API 사용법, 에러 코드 매핑</summary>
+        <keyInfo>
+          - signInWithOAuth API 사용법
+          - exchangeCodeForSession 콜백 처리
+          - 에러 코드별 메시지 매핑
+        </keyInfo>
+      </doc>
+      <doc type="prd" path="docs/prd.md" relevance="medium">
+        <summary>제품 요구사항 - FR-004 Google OAuth 요구사항</summary>
+        <keyInfo>FR-004: Google OAuth 로그인 지원</keyInfo>
+      </doc>
+      <doc type="epics" path="docs/epics.md" relevance="medium">
+        <summary>Epic 분해 - Story 1.4 정의</summary>
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/components/login-form.tsx" status="existing" relevance="critical">
+        <summary>현재 로그인 폼 컴포넌트 - Google 버튼 추가 필요</summary>
+        <keyElements>
+          - 이메일/비밀번호 폼 구현됨
+          - supabase.auth.signInWithPassword 사용
+          - Card 컴포넌트 기반 레이아웃
+          - 에러 상태 처리 패턴 (useState + error message)
+          - isLoading 상태 관리 패턴
+        </keyElements>
+        <modifications>
+          - "or continue with" 구분선 추가
+          - Google OAuth 버튼 추가
+          - handleGoogleLogin 핸들러 추가
+        </modifications>
+      </file>
+      <file path="jira-lite-mvp/components/sign-up-form.tsx" status="existing" relevance="high">
+        <summary>회원가입 폼 컴포넌트 - Google 버튼 추가 필요</summary>
+        <keyElements>
+          - 이메일/비밀번호 폼 구현됨
+          - supabase.auth.signUp 사용
+          - login-form.tsx와 동일한 패턴
+        </keyElements>
+        <modifications>
+          - Google OAuth 버튼 추가 (login-form과 동일)
+        </modifications>
+      </file>
+      <file path="jira-lite-mvp/app/auth/confirm/route.ts" status="existing" relevance="high">
+        <summary>현재 이메일 OTP 확인 라우트 - OAuth 콜백과 별도</summary>
+        <keyElements>
+          - token_hash, type 파라미터 처리
+          - supabase.auth.verifyOtp 사용
+          - 에러 시 /auth/error로 리다이렉트
+        </keyElements>
+        <note>OAuth 콜백은 별도 파일(app/auth/callback/route.ts)에 구현 필요</note>
+      </file>
+      <file path="jira-lite-mvp/app/auth/callback/route.ts" status="new" relevance="critical">
+        <summary>OAuth 콜백 라우트 - 신규 생성 필요</summary>
+        <implementation>
+          - code 파라미터 추출
+          - exchangeCodeForSession 호출
+          - 성공 시 / (대시보드)로 리다이렉트
+          - 에러 시 /auth/login?error=... 로 리다이렉트
+        </implementation>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/client.ts" status="existing" relevance="high">
+        <summary>브라우저용 Supabase 클라이언트</summary>
+        <keyElements>
+          - createBrowserClient 사용
+          - 환경변수: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+        </keyElements>
+        <usage>Google OAuth 호출 시 사용</usage>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/server.ts" status="existing" relevance="high">
+        <summary>서버용 Supabase 클라이언트</summary>
+        <keyElements>
+          - createServerClient 사용
+          - cookies 핸들링 포함
+        </keyElements>
+        <usage>OAuth 콜백 라우트에서 사용</usage>
+      </file>
+      <file path="jira-lite-mvp/supabase/migrations/001_initial_schema.sql" status="existing" relevance="high">
+        <summary>초기 DB 스키마 - profiles 테이블 및 트리거 포함</summary>
+        <keyElements>
+          - profiles 테이블: id, name, avatar_url, created_at, updated_at, deleted_at
+          - handle_new_user() 트리거 함수: auth.users INSERT 시 profiles 자동 생성
+          - Google 메타데이터 처리: raw_user_meta_data->>'name', raw_user_meta_data->>'avatar_url'
+        </keyElements>
+        <validation>트리거가 Google OAuth 메타데이터(full_name)도 처리하는지 확인 필요</validation>
+      </file>
+      <file path="jira-lite-mvp/app/auth/login/page.tsx" status="existing" relevance="high">
+        <summary>로그인 페이지 - LoginForm 컴포넌트 사용</summary>
+      </file>
+      <file path="jira-lite-mvp/app/auth/sign-up/page.tsx" status="existing" relevance="high">
+        <summary>회원가입 페이지 - SignUpForm 컴포넌트 사용</summary>
+      </file>
+    </code>
+    <dependencies>
+      <package name="@supabase/supabase-js" version="latest" usage="OAuth API: signInWithOAuth, exchangeCodeForSession"/>
+      <package name="@supabase/ssr" version="latest" usage="Server/Client Supabase 클라이언트"/>
+      <package name="next" version="latest" usage="App Router, API Routes"/>
+      <package name="react" version="^19.0.0" usage="UI 컴포넌트"/>
+      <external name="Google Cloud Console" usage="OAuth 2.0 Client ID/Secret 생성"/>
+      <external name="Supabase Dashboard" usage="Google OAuth Provider 설정"/>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="security">
+      <description>OAuth 콜백에서 code 파라미터 검증 필수</description>
+      <implementation>code가 없거나 에러 파라미터가 있으면 에러 처리</implementation>
+    </constraint>
+    <constraint type="ux">
+      <description>Google 브랜드 가이드라인 준수</description>
+      <implementation>공식 Google 로고 SVG 사용, 버튼 텍스트 "Continue with Google"</implementation>
+    </constraint>
+    <constraint type="design-system">
+      <description>Linear Productivity 테마 적용</description>
+      <implementation>Primary: #5B5FC7, Border: #E4E4E7, Font: Inter</implementation>
+    </constraint>
+    <constraint type="architecture">
+      <description>Supabase Auth 사용 필수</description>
+      <implementation>직접 Google OAuth API 호출 금지, Supabase signInWithOAuth 사용</implementation>
+    </constraint>
+    <constraint type="database">
+      <description>RLS 정책 준수</description>
+      <implementation>profiles 테이블 RLS 활성화됨, authenticated 사용자만 접근</implementation>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface type="supabase-oauth">
+      <name>signInWithOAuth</name>
+      <description>Google OAuth 로그인 시작</description>
+      <code><![CDATA[
+const { data, error } = await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: `${window.location.origin}/auth/callback`,
+    queryParams: {
+      access_type: 'offline',
+      prompt: 'consent',
+    },
+  },
+});
+      ]]></code>
+    </interface>
+    <interface type="supabase-callback">
+      <name>exchangeCodeForSession</name>
+      <description>OAuth 콜백에서 세션 교환</description>
+      <code><![CDATA[
+// app/auth/callback/route.ts
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  const error = requestUrl.searchParams.get('error');
+  const origin = requestUrl.origin;
+
+  if (error) {
+    return NextResponse.redirect(`${origin}/auth/login?error=${error}`);
+  }
+
+  if (code) {
+    const supabase = await createClient();
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      return NextResponse.redirect(`${origin}/auth/login?error=exchange_failed`);
+    }
+  }
+
+  return NextResponse.redirect(`${origin}/`);
+}
+      ]]></code>
+    </interface>
+    <interface type="ui-component">
+      <name>GoogleOAuthButton</name>
+      <description>Google OAuth 버튼 컴포넌트</description>
+      <code><![CDATA[
+<button
+  type="button"
+  onClick={handleGoogleLogin}
+  disabled={isLoading}
+  className="w-full flex items-center justify-center gap-3 px-4 py-3
+             bg-white border border-zinc-200 rounded-lg
+             text-zinc-900 font-medium
+             hover:bg-zinc-50 transition-colors
+             disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+  Continue with Google
+</button>
+      ]]></code>
+    </interface>
+    <interface type="ui-component">
+      <name>Divider</name>
+      <description>"or continue with" 구분선</description>
+      <code><![CDATA[
+<div className="relative my-6">
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-zinc-200" />
+  </div>
+  <div className="relative flex justify-center text-sm">
+    <span className="px-4 bg-white text-zinc-500">or continue with</span>
+  </div>
+</div>
+      ]]></code>
+    </interface>
+    <interface type="database-trigger">
+      <name>handle_new_user</name>
+      <description>신규 사용자 프로필 자동 생성 트리거</description>
+      <code><![CDATA[
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, avatar_url)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', NEW.email),
+    NEW.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+      ]]></code>
+      <note>현재 트리거는 'name' 키만 확인함. Google은 'full_name'을 사용할 수 있으므로 COALESCE 순서 검증 필요</note>
+    </interface>
+    <interface type="error-mapping">
+      <name>OAuthErrorMessages</name>
+      <description>에러 코드별 사용자 메시지</description>
+      <mapping>
+        <error code="access_denied" message="Google 계정 접근이 거부되었습니다"/>
+        <error code="user_cancelled" message="로그인이 취소되었습니다"/>
+        <error code="exchange_failed" message="인증 처리 중 오류가 발생했습니다"/>
+        <error code="network_error" message="네트워크 오류가 발생했습니다. 다시 시도해주세요"/>
+        <error code="server_error" message="일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요"/>
+      </mapping>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <standard type="naming">테스트 파일: *.test.ts 또는 *.spec.ts</standard>
+      <standard type="structure">Given-When-Then 패턴 사용</standard>
+      <standard type="coverage">핵심 플로우 및 에러 케이스 커버</standard>
+    </standards>
+    <locations>
+      <location path="jira-lite-mvp/__tests__/auth/" description="인증 관련 테스트"/>
+      <location path="jira-lite-mvp/e2e/" description="E2E 테스트 (선택)"/>
+    </locations>
+    <ideas>
+      <testCase id="TC-1" ac="AC-1">
+        <name>Google OAuth 버튼 렌더링</name>
+        <scenario>로그인 페이지 접속 시 "Continue with Google" 버튼이 표시됨</scenario>
+        <type>unit</type>
+      </testCase>
+      <testCase id="TC-2" ac="AC-2">
+        <name>Google OAuth 시작</name>
+        <scenario>Google 버튼 클릭 시 supabase.auth.signInWithOAuth 호출</scenario>
+        <type>unit</type>
+        <mock>supabase.auth.signInWithOAuth</mock>
+      </testCase>
+      <testCase id="TC-3" ac="AC-3">
+        <name>OAuth 콜백 성공</name>
+        <scenario>code 파라미터와 함께 콜백 라우트 호출 시 세션 교환 후 대시보드로 리다이렉트</scenario>
+        <type>integration</type>
+      </testCase>
+      <testCase id="TC-4" ac="AC-4">
+        <name>신규 사용자 프로필 생성</name>
+        <scenario>Google 로그인 성공 시 profiles 테이블에 사용자 정보 자동 저장</scenario>
+        <type>integration</type>
+        <note>Supabase 트리거 동작 확인</note>
+      </testCase>
+      <testCase id="TC-5" ac="AC-5">
+        <name>기존 사용자 재로그인</name>
+        <scenario>이미 가입한 Google 계정으로 재로그인 시 기존 세션 복원</scenario>
+        <type>e2e</type>
+      </testCase>
+      <testCase id="TC-6" ac="AC-6">
+        <name>OAuth 에러 처리</name>
+        <scenario>access_denied 에러 발생 시 사용자 친화적 메시지 표시</scenario>
+        <type>unit</type>
+      </testCase>
+      <testCase id="TC-7" ac="AC-7">
+        <name>로그아웃 동작</name>
+        <scenario>Google 로그인 사용자가 로그아웃 시 세션 종료</scenario>
+        <type>e2e</type>
+      </testCase>
+      <testCase id="TC-8" ac="AC-1">
+        <name>회원가입 페이지 Google 버튼</name>
+        <scenario>회원가입 페이지에서도 Google 버튼이 동일하게 동작</scenario>
+        <type>unit</type>
+      </testCase>
+    </ideas>
+  </tests>
+</story-context>

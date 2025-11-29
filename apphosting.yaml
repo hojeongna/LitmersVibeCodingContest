@@ -1,6 +1,9 @@
 # Firebase App Hosting Configuration
 # https://firebase.google.com/docs/app-hosting
 
+# Next.js 앱이 jira-lite-mvp 서브디렉토리에 있음
+rootDirectory: jira-lite-mvp
+
 runConfig:
   cpu: 1
   memoryMiB: 512
@@ -15,10 +18,10 @@ env:
   - variable: NEXT_PUBLIC_APP_URL
     value: https://litmersvibecodingcontest.web.app
 
-  # Secret environment variables (설정 필요: firebase apphosting:secrets:set)
-  - variable: SUPABASE_SERVICE_ROLE_KEY
-    secret: supabase-service-role-key
-  - variable: OPENAI_API_KEY
-    secret: openai-api-key
-  - variable: RESEND_API_KEY
-    secret: resend-api-key
+  # Secret environment variables (나중에 추가: firebase apphosting:secrets:set)
+  # - variable: SUPABASE_SERVICE_ROLE_KEY
+  #   secret: supabase-service-role-key
+  # - variable: OPENAI_API_KEY
+  #   secret: openai-api-key
+  # - variable: RESEND_API_KEY
+  #   secret: resend-api-key

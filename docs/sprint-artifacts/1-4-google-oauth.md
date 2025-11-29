@@ -289,7 +289,7 @@ supabase/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [1-4-google-oauth.context.xml](./1-4-google-oauth.context.xml) - Generated: 2025-11-29
 
 ### Agent Model Used
 
