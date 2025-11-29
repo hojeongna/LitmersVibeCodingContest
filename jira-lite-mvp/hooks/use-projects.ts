@@ -144,6 +144,7 @@ export function useDeleteProject() {
     mutationFn: async (projectId: string) => {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -171,6 +172,7 @@ export function useArchiveProject(projectId: string) {
     mutationFn: async () => {
       const response = await fetch(`/api/projects/${projectId}/archive`, {
         method: 'PUT',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -202,6 +204,7 @@ export function useFavoriteProject(projectId: string) {
     mutationFn: async () => {
       const response = await fetch(`/api/projects/${projectId}/favorite`, {
         method: 'PUT',
+        credentials: 'include',
       });
 
       if (!response.ok) {
