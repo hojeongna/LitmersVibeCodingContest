@@ -11,12 +11,19 @@ import { ListSkeleton } from '@/components/issues/list-skeleton';
 import { useKanban } from '@/hooks/use-kanban';
 import type { ViewMode } from '@/types/view';
 
+import { useProject } from '@/hooks/use-projects';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { CreateIssueModal } from '@/components/issues/create-issue-modal';
+
 export default function BoardPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
   const searchParams = useSearchParams();
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+  const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
 
   const { data, isLoading } = useKanban(projectId);
+  const { data: project } = useProject(projectId);
 
   // Get current view from URL or localStorage
   const urlView = searchParams.get('view') as ViewMode;
@@ -46,6 +53,10 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
       <div className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between">
           <ViewToggle projectId={projectId} />
+          <Button className="gap-2" onClick={() => setIsCreateIssueOpen(true)}>
+            <Plus className="h-4 w-4" />
+            새 이슈
+          </Button>
         </div>
       </div>
 
@@ -67,6 +78,16 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
         open={!!selectedIssueId}
         onClose={() => setSelectedIssueId(null)}
       />
+
+      {/* Create Issue Modal */}
+      {project && (
+        <CreateIssueModal
+          open={isCreateIssueOpen}
+          onOpenChange={setIsCreateIssueOpen}
+          projectId={projectId}
+          teamId={project.team.id}
+        />
+      )}
     </div>
   );
 }

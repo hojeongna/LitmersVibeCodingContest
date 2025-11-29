@@ -9,6 +9,13 @@ import { ProjectCreateModal } from "@/components/projects/project-create-modal";
 import { useProjects } from "@/hooks/use-projects";
 import { useTeams } from "@/hooks/use-teams";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function DashboardPage() {
   const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
@@ -31,6 +38,8 @@ export default function DashboardPage() {
     ? teams?.find(t => t.id === selectedProject.team_id)
     : teams?.[0];
 
+  const [isProjectSelectOpen, setIsProjectSelectOpen] = useState(false);
+
   const handleCreateIssue = () => {
     // 프로젝트가 없으면 프로젝트 생성 모달 열기
     if (activeProjects.length === 0) {
@@ -39,11 +48,20 @@ export default function DashboardPage() {
       return;
     }
     
-    // 첫 번째 프로젝트를 기본 선택
-    if (!selectedProjectId && activeProjects.length > 0) {
+    // 프로젝트가 하나면 바로 선택하고 이슈 생성 모달 열기
+    if (activeProjects.length === 1) {
       setSelectedProjectId(activeProjects[0].id);
+      setIsCreateIssueOpen(true);
+      return;
     }
-    
+
+    // 프로젝트가 여러 개면 선택 모달 열기
+    setIsProjectSelectOpen(true);
+  };
+
+  const handleProjectSelect = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setIsProjectSelectOpen(false);
     setIsCreateIssueOpen(true);
   };
 
@@ -137,6 +155,33 @@ export default function DashboardPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Project Selection Dialog */}
+      <Dialog open={isProjectSelectOpen} onOpenChange={setIsProjectSelectOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>프로젝트 선택</DialogTitle>
+            <DialogDescription>
+              이슈를 생성할 프로젝트를 선택해주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {activeProjects.map((project) => (
+              <Button
+                key={project.id}
+                variant="outline"
+                className="justify-start h-auto py-3 px-4"
+                onClick={() => handleProjectSelect(project.id)}
+              >
+                <div className="flex flex-col items-start gap-1">
+                  <span className="font-medium">{project.name}</span>
+                  <span className="text-xs text-muted-foreground">{project.key}</span>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modals */}
       {selectedProject && selectedTeam && (

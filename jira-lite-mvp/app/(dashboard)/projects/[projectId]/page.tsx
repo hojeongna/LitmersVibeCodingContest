@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { useState, use } from 'react';
 import { useProject } from '@/hooks/use-projects';
 import { useFavoriteProject } from '@/hooks/use-projects';
 import { Button } from '@/components/ui/button';
@@ -9,18 +9,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MarkdownRenderer } from '@/components/shared/markdown-renderer';
-import { Star, Settings, FolderKanban, BarChart3, Clock } from 'lucide-react';
+import { Star, Settings, FolderKanban, BarChart3, Clock, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { CreateIssueModal } from '@/components/issues/create-issue-modal';
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
   const router = useRouter();
   const { data: project, isLoading } = useProject(projectId);
   const favoriteMutation = useFavoriteProject(projectId);
+  const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,6 +93,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ projec
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <Button className="gap-2" onClick={() => setIsCreateIssueOpen(true)}>
+            <Plus className="h-4 w-4" />
+            새 이슈
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/projects/${projectId}/board`}>
               <FolderKanban className="mr-2 h-4 w-4" />
@@ -199,7 +205,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ projec
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Button asChild>
+            <Button className="gap-2" onClick={() => setIsCreateIssueOpen(true)}>
+              <Plus className="h-4 w-4" />
+              새 이슈 만들기
+            </Button>
+            <Button variant="outline" asChild>
               <Link href={`/projects/${projectId}/board`}>
                 <FolderKanban className="mr-2 h-4 w-4" />
                 칸반 보드 열기
@@ -214,6 +224,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ projec
           </div>
         </CardContent>
       </Card>
+
+      <CreateIssueModal
+        open={isCreateIssueOpen}
+        onOpenChange={setIsCreateIssueOpen}
+        projectId={project.id}
+        teamId={project.team.id}
+      />
     </div>
   );
 }
