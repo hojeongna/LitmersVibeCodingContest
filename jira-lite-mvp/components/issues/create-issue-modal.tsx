@@ -42,7 +42,7 @@ const createIssueSchema = z.object({
     .string()
     .max(5000, '설명은 최대 5000자까지 입력 가능합니다')
     .optional(),
-  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']).default('MEDIUM'),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']),
   statusId: z.string().optional(),
   assigneeId: z.string().optional(),
   dueDate: z.string().optional(),
@@ -106,7 +106,7 @@ export function CreateIssueModal({
   const onSubmit = async (data: CreateIssueForm) => {
     try {
       // 기본 상태 찾기 (Backlog)
-      const defaultStatus = statusData?.statuses?.find((s) => s.name === 'Backlog');
+      const defaultStatus = statusData?.find((s) => s.name === 'Backlog');
       const statusId = data.statusId || defaultStatus?.id;
 
       await createMutation.mutateAsync({

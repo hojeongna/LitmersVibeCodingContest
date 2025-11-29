@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   FolderKanban,
   Settings,
-  Users,
   Bell,
   ChevronDown,
   Plus,
@@ -75,7 +74,6 @@ function SidebarContent() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
-  const [unreadNotifications] = useState(3);
 
   const { data: teams, isLoading: teamsLoading } = useTeams();
   const { data: allProjects, isLoading: projectsLoading } = useProjects();
@@ -341,37 +339,16 @@ function SidebarContent() {
         >
           <Bell className="h-4 w-4 shrink-0" />
           <span className="truncate">알림</span>
-          {unreadNotifications > 0 && (
-            <Badge
-              variant="destructive"
-              className="ml-auto h-5 min-w-[20px] px-1.5 text-xs"
-            >
-              {unreadNotifications > 99 ? "99+" : unreadNotifications}
-            </Badge>
-          )}
         </Link>
 
-        {/* Team Settings */}
-        <Link
-          href="/settings/team"
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-            isActive("/settings/team")
-              ? "bg-sidebar-active text-white"
-              : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
-          )}
-          onClick={() => setIsMobileOpen(false)}
-        >
-          <Users className="h-4 w-4 shrink-0" />
-          <span className="truncate">팀 설정</span>
-        </Link>
+
 
         {/* Settings */}
         <Link
           href="/settings"
           className={cn(
             "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-            isActive("/settings") && !isActive("/settings/team")
+            isActive("/settings")
               ? "bg-sidebar-active text-white"
               : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
           )}

@@ -1,8 +1,34 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, FolderKanban, Users, BarChart3 } from "lucide-react";
+import { CreateIssueModal } from "@/components/issues/create-issue-modal";
+import { ProjectCreateModal } from "@/components/projects/project-create-modal";
+import { useProjects } from "@/hooks/use-projects";
+import { useTeams } from "@/hooks/use-teams";
 
 export default function DashboardPage() {
+  const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  
+  const { data: projects } = useProjects();
+  const { data: teams } = useTeams();
+  
+  // 첫 번째 활성 프로젝트와 팀 가져오기
+  const firstProject = projects?.find(p => !p.is_archived);
+  const firstTeam = teams?.[0];
+
+  const handleCreateIssue = () => {
+    // 프로젝트가 없으면 프로젝트 생성 모달 열기
+    if (!firstProject) {
+      setIsCreateProjectOpen(true);
+      return;
+    }
+    setIsCreateIssueOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -13,7 +39,7 @@ export default function DashboardPage() {
             프로젝트와 이슈를 한눈에 확인하세요.
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleCreateIssue}>
           <Plus className="h-4 w-4" />
           새 이슈
         </Button>
@@ -87,12 +113,28 @@ export default function DashboardPage() {
           <p className="text-sm text-muted-foreground mb-4 max-w-sm">
             프로젝트를 만들어 이슈를 관리하고, AI의 도움을 받아 더 효율적으로 작업하세요.
           </p>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsCreateProjectOpen(true)}>
             <Plus className="h-4 w-4" />
             프로젝트 만들기
           </Button>
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      {firstProject && firstTeam && (
+        <CreateIssueModal
+          open={isCreateIssueOpen}
+          onOpenChange={setIsCreateIssueOpen}
+          projectId={firstProject.id}
+          teamId={firstTeam.id}
+        />
+      )}
+      
+      <ProjectCreateModal
+        open={isCreateProjectOpen}
+        onOpenChange={setIsCreateProjectOpen}
+        defaultTeamId={firstTeam?.id}
+      />
     </div>
   );
 }
