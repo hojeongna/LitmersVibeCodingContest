@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 import { NextResponse } from 'next/server';
 import type { KanbanColumn } from '@/types/kanban';
 
@@ -6,12 +7,9 @@ import type { KanbanColumn } from '@/types/kanban';
 export async function GET(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -39,7 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('status', 'active')
       .single();
 
