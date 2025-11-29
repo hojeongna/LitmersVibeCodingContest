@@ -11,6 +11,7 @@ import {
   Plus,
   Menu,
   X,
+  Archive,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
@@ -108,10 +109,20 @@ function SidebarContent() {
   // 활성 프로젝트만 필터링 (아카이브되지 않은 것)
   const activeProjects = allProjects?.filter((p) => !p.is_archived) || [];
 
+  // 아카이브된 프로젝트
+  const archivedProjects = allProjects?.filter((p) => p.is_archived) || [];
+
   // 현재 선택된 팀의 프로젝트만 표시
   const teamProjects = selectedTeam
     ? activeProjects.filter((p) => p.team_id === selectedTeam.id)
     : [];
+
+  // 현재 선택된 팀의 아카이브된 프로젝트
+  const teamArchivedProjects = selectedTeam
+    ? archivedProjects.filter((p) => p.team_id === selectedTeam.id)
+    : [];
+
+  const [showArchived, setShowArchived] = useState(false);
 
   const NavLink = ({ item }: { item: NavItem }) => (
     <Link
@@ -287,7 +298,7 @@ function SidebarContent() {
                 {teamProjects.map((project) => (
                   <Link
                     key={project.id}
-                    href={`/projects/${project.id}/board`}
+                    href={`/projects/${project.id}`}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       pathname.includes(`/projects/${project.id}`)
@@ -321,6 +332,53 @@ function SidebarContent() {
                   <Plus className="mr-2 h-3.5 w-3.5" />
                   프로젝트 만들기
                 </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Archive Section */}
+        {selectedTeam && teamArchivedProjects.length > 0 && (
+          <div className="pt-4">
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium uppercase tracking-wider text-sidebar-muted hover:text-sidebar-foreground transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Archive className="h-3.5 w-3.5" />
+                <span>아카이브</span>
+              </div>
+              <ChevronDown
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  showArchived && "rotate-180"
+                )}
+              />
+            </button>
+            {showArchived && (
+              <div className="space-y-1 mt-1">
+                {teamArchivedProjects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/projects/${project.id}`}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors opacity-60",
+                      pathname.includes(`/projects/${project.id}`)
+                        ? "bg-sidebar-active text-white"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
+                    )}
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    <FolderKanban className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{project.name}</span>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs text-sidebar-muted border-sidebar-muted/30"
+                    >
+                      {project.key}
+                    </Badge>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
