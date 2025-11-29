@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
 import { createTeamSchema } from "@/lib/validations/team";
 import { TeamWithRole } from "@/types/team";
 
@@ -18,13 +19,13 @@ function errorResponse(code: string, message: string, status: number = 400) {
 // GET /api/teams - Get list of teams for current user
 export async function GET() {
   try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Check Firebase authentication
+    const { user, error: authError } = await verifyFirebaseAuth();
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
     }
+
+    const supabase = createAdminClient();
 
     // Fetch teams the user is a member of with their role
     const { data: teamMembers, error: fetchError } = await supabase
@@ -40,7 +41,7 @@ export async function GET() {
           deleted_at
         )
       `)
-      .eq("user_id", user.id)
+      .eq("user_id", user.uid)
       .is("teams.deleted_at", null);
 
     if (fetchError) {
@@ -65,13 +66,13 @@ export async function GET() {
 // POST /api/teams - Create a new team
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Check Firebase authentication
+    const { user, error: authError } = await verifyFirebaseAuth();
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
     }
+
+    const supabase = createAdminClient();
 
     // Parse and validate request body
     let body: unknown;
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
       .from("teams")
       .insert({
         name: name.trim(),
-        owner_id: user.id,
+        owner_id: user.uid,
       })
       .select()
       .single();
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       .from("team_members")
       .insert({
         team_id: team.id,
-        user_id: user.id,
+        user_id: user.uid,
         role: "OWNER",
       });
 

@@ -1,6 +1,6 @@
 # Story 3.2: 프로젝트 고급 기능 (마크다운, 아카이브, 즐겨찾기)
 
-Status: review
+Status: completed
 
 ## Story
 
@@ -205,14 +205,71 @@ Story 3-1이 drafted 상태이므로 아직 구현 컨텍스트가 없습니다.
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+docs/sprint-artifacts/3-2-project-advanced-features.context.xml
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
+N/A - 구현 완료, 에러 없음
+
 ### Completion Notes List
 
+**구현 완료 (2024-01-XX):**
+
+1. **마크다운 지원 (100% 완료)**
+   - ✅ `components/shared/markdown-renderer.tsx` - react-markdown + rehype-sanitize
+   - ✅ 프로젝트 상세/설정 페이지에 적용
+   - ✅ XSS 방지 설정 (HTML 정제)
+   - ✅ 지원 문법: 헤더, 볼드, 이탤릭, 리스트, 코드블록, 링크
+
+2. **아카이브 기능 (100% 완료)**
+   - ✅ `PUT /api/projects/[projectId]/archive` - 아카이브 토글 API
+   - ✅ `useArchiveProject(projectId)` - 아카이브 mutation hook
+   - ✅ 프로젝트 설정 페이지에 아카이브/복원 버튼
+   - ✅ 프로젝트 목록 페이지 Active/Archived 탭
+   - ✅ Sidebar에서 아카이브 프로젝트 자동 필터링
+
+3. **즐겨찾기 기능 (100% 완료)**
+   - ✅ `PUT /api/projects/[projectId]/favorite` - 즐겨찾기 토글 API
+   - ✅ `useFavoriteProject(projectId)` - 즐겨찾기 mutation hook (optimistic updates)
+   - ✅ 프로젝트 카드/상세 페이지에 별 아이콘
+   - ✅ 즐겨찾기 프로젝트 목록 상단 정렬
+   - ✅ Sidebar 즉시 반영
+
+4. **모든 AC 달성 (10/10)**
+   - ✅ AC-1: 마크다운 입력
+   - ✅ AC-2: 마크다운 렌더링
+   - ✅ AC-3: XSS 방지
+   - ✅ AC-4: 아카이브 기능
+   - ✅ AC-5: 아카이브 프로젝트 숨김
+   - ✅ AC-6: 아카이브 별도 조회
+   - ✅ AC-7: 복원 기능
+   - ✅ AC-8: 즐겨찾기 추가/제거
+   - ✅ AC-9: Sidebar 즉시 반영
+   - ✅ AC-10: 즐겨찾기 우선 표시
+
+**주요 구현 패턴:**
+- react-markdown + rehype-sanitize로 안전한 렌더링
+- Optimistic updates로 즐겨찾기 즉시 반영
+- API 레이어에서 권한 검증 (OWNER, ADMIN, 프로젝트 소유자)
+
 ### File List
+
+**API Routes:**
+- `app/api/projects/[projectId]/archive/route.ts` - 아카이브 토글
+- `app/api/projects/[projectId]/favorite/route.ts` - 즐겨찾기 토글
+
+**Components:**
+- `components/shared/markdown-renderer.tsx` - 마크다운 렌더러 (재사용 가능)
+
+**Hooks (use-projects.ts 확장):**
+- `useArchiveProject(projectId)` - 아카이브 mutation
+- `useFavoriteProject(projectId)` - 즐겨찾기 mutation
+
+**Pages (확장):**
+- 프로젝트 상세/설정 페이지에 마크다운 렌더러 적용
+- 프로젝트 목록 페이지에 탭 추가
+- Sidebar에 즐겨찾기 아이콘 추가

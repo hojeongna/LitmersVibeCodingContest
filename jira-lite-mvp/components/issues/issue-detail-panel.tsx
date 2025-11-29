@@ -11,10 +11,10 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
 import { CommentSection } from './comment-section';
+import { AISummaryPanel } from '@/components/ai/ai-summary-panel';
 
 interface Issue {
   id: string;
-  issue_number: number;
   title: string;
   description: string | null;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -25,6 +25,8 @@ interface Issue {
   due_date: string | null;
   created_at: string;
   updated_at: string;
+  ai_summary: string | null;
+  ai_suggestions: any | null;
 }
 
 interface IssueDetailPanelProps {
@@ -76,7 +78,7 @@ export function IssueDetailPanel({ issueId, projectId, open, onClose }: IssueDet
           <>
             <SheetHeader>
               <SheetTitle>
-                <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">JL-{issue.issue_number}</span>
+                <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">{issue.id.slice(0, 8)}</span>
               </SheetTitle>
             </SheetHeader>
 
@@ -168,10 +170,14 @@ export function IssueDetailPanel({ issueId, projectId, open, onClose }: IssueDet
               {/* Comments */}
               <CommentSection issueId={issue.id} issueReporterId={issue.owner?.id} />
 
-              {/* Placeholder for AI Summary */}
-              <div className="rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">🤖 AI 요약 (Epic 5에서 구현 예정)</p>
-              </div>
+              {/* AI Summary & Suggestions */}
+              <AISummaryPanel 
+                issueId={issue.id} 
+                title={issue.title} 
+                description={issue.description || ''} 
+                initialSummary={issue.ai_summary}
+                initialSuggestions={issue.ai_suggestions}
+              />
             </div>
           </>
         )}

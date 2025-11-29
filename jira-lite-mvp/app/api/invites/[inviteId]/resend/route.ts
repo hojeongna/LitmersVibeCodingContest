@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendTeamInvite } from "@/lib/email/templates/team-invite";
+import { logActivity } from "@/lib/services/activity";
 
 // Standard error response
 function errorResponse(
@@ -97,11 +99,43 @@ export async function POST(
       );
     }
 
-    // TODO: Resend invitation email via Resend
-    // await sendTeamInvite({ email: invite.email, token: invite.token, teamId: invite.team_id });
+    // Get team info and inviter profile for email
+    const { data: team } = await supabase
+      .from("teams")
+      .select("name")
+      .eq("id", invite.team_id)
+      .single();
 
-    // TODO: Log activity
-    // await ActivityLogService.log('invite_resent', { teamId: invite.team_id, email: invite.email });
+    const { data: inviterProfile } = await supabase
+      .from("profiles")
+      .select("name, email")
+      .eq("id", user.id)
+      .single();
+
+    // Resend invitation email via Resend
+    try {
+      await sendTeamInvite({
+        email: invite.email,
+        teamName: team?.name || "팀",
+        inviterName: inviterProfile?.name || inviterProfile?.email || "팀 관리자",
+        token: invite.token,
+        role: invite.role,
+      });
+    } catch (emailError) {
+      console.error("Failed to resend invite email:", emailError);
+      // Don't fail the request if email fails
+    }
+
+    // Log activity
+    try {
+      await logActivity(invite.team_id, user.id, "member_invited", "member", undefined, {
+        email: invite.email,
+        role: invite.role,
+        resent: true,
+      });
+    } catch (logError) {
+      console.error("Failed to log activity:", logError);
+    }
 
     return NextResponse.json({
       success: true,

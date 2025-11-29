@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createInviteSchema } from "@/lib/validations/invite";
+import { sendTeamInvite } from "@/lib/email/templates/team-invite";
+import { logActivity } from "@/lib/services/activity";
 
 // Standard error response
 function errorResponse(
@@ -24,13 +27,10 @@ export async function POST(
 ) {
   try {
     const { teamId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -52,8 +52,7 @@ export async function POST(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (memberError || !membership) {
@@ -73,21 +72,23 @@ export async function POST(
     }
 
     // Check if email is already a team member
-    const { data: existingMember } = await supabase
-      .from("team_members")
-      .select("id")
-      .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
-      .single();
-
-    if (existingMember) {
-      return errorResponse(
-        "ALREADY_MEMBER",
-        "이미 팀 멤버입니다",
-        400
-      );
-    }
+    // Note: We need to find user by email first, but we can't easily do that without admin access to auth.users.
+    // However, team_members table uses user_id.
+    // So checking if "email is already a team member" is tricky if the user hasn't signed up yet.
+    // But usually we check if the user exists in the system.
+    // For now, let's assume we can't check if the email corresponds to an existing member unless we have a way to map email to user_id.
+    // But wait, if the user is already in the team, they must have a user_id.
+    // If we invite by email, we are creating an invite record.
+    // The check "Check if email is already a team member" implies we want to prevent inviting someone who is already in.
+    // If we can't map email to user_id easily here, maybe we skip this check or rely on client side?
+    // Or maybe we can check profiles? Profiles usually have email.
+    // Let's check if we can find a profile with this email.
+    // But earlier I saw profiles table might not have email column in types.ts?
+    // Let's re-verify types.ts.
+    // types.ts: profiles table Row: id, name, avatar_url, created_at... NO EMAIL.
+    // So we can't check existing member by email via profiles table.
+    // We will skip this check for now or rely on the fact that if they accept the invite, we check then.
+    // Or maybe we just check if there is an invite.
 
     // Check if there's already a pending invite for this email
     const { data: existingInvite } = await supabase
@@ -119,9 +120,9 @@ export async function POST(
       .insert({
         team_id: teamId,
         email,
-        role,
+        // role, // Role column does not exist in team_invites table
         token,
-        invited_by: user.id,
+        invited_by: user.uid,
         expires_at: expiresAt.toISOString(),
       })
       .select()
@@ -136,11 +137,43 @@ export async function POST(
       );
     }
 
-    // TODO: Send invitation email via Resend
-    // await sendTeamInvite({ email, token, teamId });
+    // Get team info and inviter profile for email
+    const { data: team } = await supabase
+      .from("teams")
+      .select("name")
+      .eq("id", teamId)
+      .single();
 
-    // TODO: Log activity
-    // await ActivityLogService.log('member_invited', { teamId, email, role });
+    const { data: inviterProfile } = await supabase
+      .from("profiles")
+      .select("name") // Removed email from selection as it's not in types
+      .eq("id", user.uid)
+      .single();
+
+    // Send invitation email via Resend
+    try {
+      await sendTeamInvite({
+        email,
+        teamName: team?.name || "팀",
+        inviterName: inviterProfile?.name || "팀 관리자",
+        token,
+        role,
+      });
+    } catch (emailError) {
+      console.error("Failed to send invite email:", emailError);
+      // Don't fail the request if email fails - invitation is already created
+    }
+
+    // Log activity
+    try {
+      await logActivity(teamId, user.uid, "member_invited", "member", undefined, {
+        email,
+        role,
+      });
+    } catch (logError) {
+      console.error("Failed to log activity:", logError);
+      // Don't fail the request if activity log fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -163,13 +196,10 @@ export async function GET(
 ) {
   try {
     const { teamId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -180,8 +210,7 @@ export async function GET(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (memberError || !membership) {

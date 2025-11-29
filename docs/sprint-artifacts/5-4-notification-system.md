@@ -54,7 +54,7 @@ so that **팀 활동을 실시간으로 파악하고 적시에 대응할 수 있
 ## Tasks / Subtasks
 
 ### Task 1: DB 스키마 생성
-- [ ] 1.1 `notifications` 테이블 마이그레이션 생성
+- [x] 1.1 `notifications` 테이블 마이그레이션 생성
   ```sql
   CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -69,31 +69,31 @@ so that **팀 활동을 실시간으로 파악하고 적시에 대응할 수 있
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
   ```
-- [ ] 1.2 인덱스 생성 (user_id, read, created_at)
-- [ ] 1.3 RLS 정책 적용
+- [x] 1.2 인덱스 생성 (user_id, read, created_at)
+- [x] 1.3 RLS 정책 적용
 
 ### Task 2: 알림 서비스 구현
-- [ ] 2.1 `lib/notifications/service.ts` 생성
-- [ ] 2.2 `createNotification()` 함수
-- [ ] 2.3 `markAsRead()` 함수
-- [ ] 2.4 `markAllAsRead()` 함수
-- [ ] 2.5 알림 타입 enum 정의
+- [x] 2.1 `lib/notifications/service.ts` 생성
+- [x] 2.2 `createNotification()` 함수
+- [x] 2.3 `markAsRead()` 함수
+- [x] 2.4 `markAllAsRead()` 함수
+- [x] 2.5 알림 타입 enum 정의
 
 ### Task 3: API Routes
-- [ ] 3.1 `app/api/notifications/route.ts` - GET (목록)
-- [ ] 3.2 `app/api/notifications/[id]/read/route.ts` - PATCH
-- [ ] 3.3 `app/api/notifications/read-all/route.ts` - POST
+- [x] 3.1 `app/api/notifications/route.ts` - GET (목록)
+- [x] 3.2 `app/api/notifications/[id]/read/route.ts` - PATCH
+- [x] 3.3 `app/api/notifications/read-all/route.ts` - POST
 
 ### Task 4: 알림 트리거 통합
-- [ ] 4.1 이슈 생성/수정 API에 알림 트리거 추가
-- [ ] 4.2 댓글 생성 API에 알림 트리거 추가
+- [x] 4.1 이슈 생성/수정 API에 알림 트리거 추가
+- [x] 4.2 댓글 생성 API에 알림 트리거 추가
 - [ ] 4.3 팀 초대 API에 알림 트리거 추가
 
 ### Task 5: UI 컴포넌트
-- [ ] 5.1 `components/notifications/notification-bell.tsx`
-- [ ] 5.2 `components/notifications/notification-dropdown.tsx`
-- [ ] 5.3 `components/notifications/notification-item.tsx`
-- [ ] 5.4 `components/notifications/notification-list.tsx`
+- [x] 5.1 `components/notifications/notification-bell.tsx`
+- [ ] 5.2 `components/notifications/notification-dropdown.tsx` (Integrated into bell)
+- [x] 5.3 `components/notifications/notification-item.tsx`
+- [x] 5.4 `components/notifications/notification-list.tsx`
 
 ### Task 6: 알림 센터 페이지
 - [ ] 6.1 `app/(dashboard)/notifications/page.tsx`
@@ -101,10 +101,10 @@ so that **팀 활동을 실시간으로 파악하고 적시에 대응할 수 있
 - [ ] 6.3 필터링 UI (선택)
 
 ### Task 7: Realtime 구독
-- [ ] 7.1 `hooks/use-notifications.ts` 생성
-- [ ] 7.2 Supabase Realtime 구독 설정
-- [ ] 7.3 새 알림 시 상태 업데이트
-- [ ] 7.4 연결 끊김 시 재연결 처리
+- [x] 7.1 `hooks/use-notifications.ts` 생성
+- [x] 7.2 Supabase Realtime 구독 설정
+- [x] 7.3 새 알림 시 상태 업데이트
+- [x] 7.4 연결 끊김 시 재연결 처리
 
 ## Dev Notes
 
@@ -285,3 +285,12 @@ export function NotificationBell() {
 ### Debug Log References
 ### Completion Notes List
 ### File List
+- supabase/migrations/004_create_notifications.sql
+- types/notification.ts
+- lib/notifications/service.ts
+- app/api/notifications/route.ts
+- app/api/notifications/[id]/read/route.ts
+- app/api/notifications/read-all/route.ts
+- app/api/projects/[projectId]/issues/route.ts
+- app/api/issues/[issueId]/route.ts
+- app/api/issues/[issueId]/comments/route.ts

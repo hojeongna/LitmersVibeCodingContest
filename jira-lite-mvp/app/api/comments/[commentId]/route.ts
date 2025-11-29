@@ -1,17 +1,16 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 
 // PUT /api/comments/[commentId] - 댓글 수정
 export async function PUT(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     const { commentId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -46,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ comm
     }
 
     // 본인 댓글만 수정 가능
-    if (comment.author_id !== user.id) {
+    if (comment.author_id !== user.uid) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: '본인 댓글만 수정할 수 있습니다' } },
         { status: 403 }
@@ -97,12 +96,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ comm
 export async function DELETE(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     const { commentId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -127,15 +123,14 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ c
     }
 
     // 권한 검증: 본인 OR 이슈 reporter OR 팀 OWNER/ADMIN
-    let canDelete = comment.author_id === user.id || comment.issue.owner_id === user.id;
+    let canDelete = comment.author_id === user.uid || comment.issue.owner_id === user.uid;
 
     if (!canDelete) {
       const { data: membership } = await supabase
         .from('team_members')
         .select('role')
         .eq('team_id', comment.issue.project.team_id)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
+        .eq('user_id', user.uid)
         .single();
 
       canDelete = !!(membership && (membership.role === 'OWNER' || membership.role === 'ADMIN'));

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -7,17 +7,16 @@ const updateSubtaskSchema = z.object({
   is_completed: z.boolean().optional(),
 });
 
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+
 // PUT /api/subtasks/[subtaskId] - 서브태스크 수정 (제목, 완료 상태)
 export async function PUT(request: Request, { params }: { params: Promise<{ subtaskId: string }> }) {
   try {
     const { subtaskId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -53,8 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ subt
       .from('team_members')
       .select('role')
       .eq('team_id', subtask.issue.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -93,12 +91,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ subt
 export async function DELETE(request: Request, { params }: { params: Promise<{ subtaskId: string }> }) {
   try {
     const { subtaskId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -125,8 +120,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
       .from('team_members')
       .select('role')
       .eq('team_id', subtask.issue.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {

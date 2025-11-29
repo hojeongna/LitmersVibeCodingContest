@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/services/activity";
 
 // Standard error response
 function errorResponse(
@@ -16,7 +17,7 @@ function errorResponse(
   );
 }
 
-// POST /api/invites/[token]/accept - Accept invitation
+// POST /api/invites/accept/[token] - Accept invitation
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -123,8 +124,15 @@ export async function POST(
       // This is a non-critical error
     }
 
-    // TODO: Log activity
-    // await ActivityLogService.log('member_joined', { teamId: invite.team_id, userId: user.id, role: invite.role });
+    // Log activity
+    await logActivity(
+      invite.team_id,
+      user.id,
+      "member_joined",
+      "member",
+      user.id,
+      { email: invite.email, role: invite.role }
+    );
 
     return NextResponse.json({
       success: true,
@@ -134,7 +142,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("POST /api/invites/[token]/accept error:", error);
+    console.error("POST /api/invites/accept/[token] error:", error);
     return errorResponse(
       "INTERNAL_ERROR",
       "초대를 수락하는 중 오류가 발생했습니다",

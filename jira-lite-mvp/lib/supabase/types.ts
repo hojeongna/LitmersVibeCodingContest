@@ -330,6 +330,9 @@ export type Database = {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          ai_summary: string | null
+          ai_suggestions: Json | null
+          ai_generated_at: string | null
         }
         Insert: {
           id?: string
@@ -345,6 +348,9 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          ai_summary?: string | null
+          ai_suggestions?: Json | null
+          ai_generated_at?: string | null
         }
         Update: {
           id?: string
@@ -360,6 +366,9 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          ai_summary?: string | null
+          ai_suggestions?: Json | null
+          ai_generated_at?: string | null
         }
         Relationships: [
           {
@@ -620,9 +629,11 @@ export type Database = {
           user_id: string
           type: string
           title: string
-          message: string | null
-          link: string | null
-          is_read: boolean
+          body: string | null
+          issue_id: string | null
+          team_id: string | null
+          actor_id: string | null
+          read: boolean
           created_at: string
         }
         Insert: {
@@ -630,9 +641,11 @@ export type Database = {
           user_id: string
           type: string
           title: string
-          message?: string | null
-          link?: string | null
-          is_read?: boolean
+          body?: string | null
+          issue_id?: string | null
+          team_id?: string | null
+          actor_id?: string | null
+          read?: boolean
           created_at?: string
         }
         Update: {
@@ -640,15 +653,38 @@ export type Database = {
           user_id?: string
           type?: string
           title?: string
-          message?: string | null
-          link?: string | null
-          is_read?: boolean
+          body?: string | null
+          issue_id?: string | null
+          team_id?: string | null
+          actor_id?: string | null
+          read?: boolean
           created_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

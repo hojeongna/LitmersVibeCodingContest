@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/services/activity";
 
 // Standard error response
 function errorResponse(
@@ -23,13 +25,10 @@ export async function GET(
 ) {
   try {
     const { teamId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -51,8 +50,7 @@ export async function GET(
       `
       )
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (memberError || !teamMember) {
@@ -100,13 +98,10 @@ export async function PUT(
 ) {
   try {
     const { teamId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -138,8 +133,7 @@ export async function PUT(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (memberError || !membership) {
@@ -179,6 +173,16 @@ export async function PUT(
       );
     }
 
+    // Log activity
+    await logActivity(
+      teamId,
+      user.uid,
+      "team_updated",
+      "team",
+      teamId,
+      { oldName: name, newName: updatedTeam.name }
+    );
+
     return NextResponse.json({
       success: true,
       data: updatedTeam,
@@ -200,13 +204,10 @@ export async function DELETE(
 ) {
   try {
     const { teamId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -217,8 +218,7 @@ export async function DELETE(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (memberError || !membership) {
@@ -254,17 +254,27 @@ export async function DELETE(
       );
     }
 
+    // Get team name before deletion for logging
+    const { data: team } = await supabase
+      .from("teams")
+      .select("name")
+      .eq("id", teamId)
+      .single();
+
     // Soft delete related data
     // Note: Projects and issues will be handled by database triggers or cascade
-    // For now, we'll manually soft delete team members
-    await supabase
-      .from("team_members")
-      .update({ deleted_at: now })
-      .eq("team_id", teamId)
-      .is("deleted_at", null);
+    // We do NOT soft delete team_members as the table doesn't support it.
+    // They will become orphaned or we rely on team.deleted_at check.
 
-    // TODO: Log activity (will be implemented in Story 2.5)
-    // await ActivityLogService.log('team_deleted', { teamId, teamName });
+    // Log activity
+    await logActivity(
+      teamId,
+      user.uid,
+      "team_deleted",
+      "team",
+      teamId,
+      { teamName: team?.name }
+    );
 
     return NextResponse.json({
       success: true,

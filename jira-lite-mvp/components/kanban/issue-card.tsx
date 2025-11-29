@@ -39,7 +39,7 @@ export function IssueCard({ issue, onClick, className }: IssueCardProps) {
     >
       {/* Header - Issue ID & Priority */}
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">JL-{issue.issue_number}</span>
+        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{issue.id.slice(0, 8)}</span>
         <PriorityBadge priority={issue.priority} />
       </div>
 

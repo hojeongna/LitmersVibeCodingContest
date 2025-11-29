@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { updateUserProfile } from "@/lib/firebase/auth";
-import { storage } from "@/lib/firebase/config";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,23 +72,38 @@ export default function ProfilePage() {
 
       // Upload avatar if selected
       if (selectedFile) {
-        const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `avatars/${user.uid}/avatar.${fileExt}`;
-        const storageRef = ref(storage, fileName);
+        const formData = new FormData();
+        formData.append("file", selectedFile);
 
-        // Upload file to Firebase Storage
-        await uploadBytes(storageRef, selectedFile, {
-          cacheControl: "public, max-age=3600",
+        const response = await fetch("/api/users/avatar", {
+          method: "POST",
+          body: formData,
         });
 
-        // Get download URL
-        avatarUrl = await getDownloadURL(storageRef);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || "이미지 업로드에 실패했습니다");
+        }
+
+        const result = await response.json();
+        avatarUrl = result.data.url;
       }
 
       // Update user profile in Firebase Auth
       await updateUserProfile({
         displayName: data.name,
         ...(avatarUrl && { photoURL: avatarUrl }),
+      });
+
+      // Force token refresh to get new claims (photoURL)
+      const newToken = await user.getIdToken(true);
+      
+      // Update cookie
+      document.cookie = `firebase-auth-token=${newToken}; path=/; max-age=3600; SameSite=Lax`;
+
+      // Sync to Supabase
+      await fetch('/api/auth/sync-profile', {
+        method: 'POST',
       });
 
       toast.success("프로필이 저장되었습니다");

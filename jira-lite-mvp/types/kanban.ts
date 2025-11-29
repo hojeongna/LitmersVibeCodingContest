@@ -13,7 +13,6 @@ export interface Status {
 
 export interface IssueCard {
   id: string;
-  issue_number: number;
   title: string;
   status_id: string;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -29,6 +28,7 @@ export interface IssueCard {
     color: string;
   }>;
   due_date: string | null;
+  created_at: string;
   subtask_count: number;
   subtask_completed: number;
 }

@@ -1,19 +1,19 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+import { notifyComment } from '@/lib/notifications/service';
 
 // GET /api/issues/[issueId]/comments - 댓글 목록 조회
 export async function GET(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -41,8 +41,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ issu
       .from('team_members')
       .select('role')
       .eq('team_id', issue.project.team_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -112,13 +111,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ issu
 export async function POST(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -156,8 +152,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ iss
       .from('team_members')
       .select('role')
       .eq('team_id', issue.project.team_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -172,7 +167,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ iss
       .from('comments')
       .insert({
         issue_id: issueId,
-        author_id: user.id,
+        author_id: user.uid,
         content,
       })
       .select(
@@ -193,6 +188,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ iss
         { status: 500 }
       );
     }
+
+    // 알림 발송
+    notifyComment(
+        issueId,
+        user.uid,
+        issue.owner_id,
+        issue.assignee_id,
+        issue.project.team_id,
+        content,
+        user.name
+    ).catch(console.error)
 
     return NextResponse.json({
       success: true,

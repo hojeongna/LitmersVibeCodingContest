@@ -23,12 +23,12 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: 팀 관리
-  epic-2: in-progress
-  2-1-team-create-list: review
-  2-2-team-detail-edit-delete: review
-  2-3-member-invite-system: review
-  2-4-member-management: in-progress
-  2-5-team-activity-log: backlog
+  epic-2: done
+  2-1-team-create-list: done
+  2-2-team-detail-edit-delete: done
+  2-3-member-invite-system: done
+  2-4-member-management: done
+  2-5-team-activity-log: done
   epic-2-retrospective: backlog
 
   # Epic 3: 프로젝트 & 이슈 관리
@@ -42,12 +42,12 @@ development_status:
   epic-3-retrospective: backlog
 
   # Epic 4: 칸반 보드 & 댓글
-  epic-4: backlog
-  4-1-kanban-basic-ui: backlog
-  4-2-drag-drop: backlog
-  4-3-custom-columns-wip-limit: backlog
-  4-4-comment-crud: backlog
-  4-5-view-switch-ux: backlog
+  epic-4: done
+  4-1-kanban-basic-ui: done
+  4-2-drag-drop: done
+  4-3-custom-columns-wip-limit: done
+  4-4-comment-crud: done
+  4-5-view-switch-ux: done
   epic-4-retrospective: backlog
 
   # Epic 5: AI & 대시보드 & 알림

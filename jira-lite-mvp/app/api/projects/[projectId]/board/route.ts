@@ -75,6 +75,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
         priority,
         position,
         due_date,
+        created_at,
         assignee:profiles!issues_assignee_id_fkey(id, name, avatar_url),
         labels:issue_labels(label:labels(id, name, color))
       `
@@ -116,7 +117,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
         .filter((issue) => issue.status_id === status.id)
         .map((issue) => ({
           id: issue.id,
-          issue_number: issue.issue_number,
           title: issue.title,
           status_id: issue.status_id,
           priority: issue.priority as 'HIGH' | 'MEDIUM' | 'LOW',
@@ -124,6 +124,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
           assignee: issue.assignee as any,
           labels: issue.labels?.map((l: any) => l.label) || [],
           due_date: issue.due_date,
+          created_at: issue.created_at,
           subtask_count: subtaskStats[issue.id]?.total || 0,
           subtask_completed: subtaskStats[issue.id]?.completed || 0,
         }));

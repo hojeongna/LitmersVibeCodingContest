@@ -1,6 +1,6 @@
 # Story 5.3: 대시보드
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -48,31 +48,31 @@ so that **내 업무 상태를 파악하고 프로젝트 진행 상황을 모니
 ## Tasks / Subtasks
 
 ### Task 1: 대시보드 통계 서비스
-- [ ] 1.1 `lib/dashboard/stats.ts` 생성
-- [ ] 1.2 개인 이슈 통계 쿼리 함수
-- [ ] 1.3 프로젝트 진행률 계산 함수
-- [ ] 1.4 기간별 트렌드 데이터 집계 함수
+- [x] 1.1 `lib/dashboard/stats.ts` 생성
+- [x] 1.2 개인 이슈 통계 쿼리 함수
+- [x] 1.3 프로젝트 진행률 계산 함수
+- [x] 1.4 기간별 트렌드 데이터 집계 함수
 
 ### Task 2: API Routes 구현
-- [ ] 2.1 `app/api/dashboard/personal/route.ts`
-- [ ] 2.2 `app/api/projects/[projectId]/stats/route.ts`
-- [ ] 2.3 `app/api/teams/[teamId]/stats/route.ts`
+- [x] 2.1 `app/api/dashboard/personal/route.ts`
+- [x] 2.2 `app/api/projects/[projectId]/stats/route.ts`
+- [x] 2.3 `app/api/teams/[teamId]/stats/route.ts`
 
 ### Task 3: 대시보드 UI 컴포넌트
-- [ ] 3.1 `components/dashboard/stats-card.tsx` - 통계 카드
-- [ ] 3.2 `components/dashboard/status-pie-chart.tsx` - 상태별 파이 차트
-- [ ] 3.3 `components/dashboard/activity-line-chart.tsx` - 활동 트렌드
-- [ ] 3.4 `components/dashboard/upcoming-deadlines.tsx` - 마감 임박 목록
-- [ ] 3.5 `components/dashboard/member-stats.tsx` - 멤버별 통계
+- [x] 3.1 `components/dashboard/stats-card.tsx` - 통계 카드
+- [x] 3.2 `components/dashboard/status-pie-chart.tsx` - 상태별 파이 차트
+- [x] 3.3 `components/dashboard/activity-line-chart.tsx` - 활동 트렌드
+- [x] 3.4 `components/dashboard/upcoming-deadlines.tsx` - 마감 임박 목록
+- [x] 3.5 `components/dashboard/member-stats.tsx` - 멤버별 통계
 
 ### Task 4: 대시보드 페이지 구현
-- [ ] 4.1 `app/(dashboard)/dashboard/page.tsx` - 개인 대시보드
-- [ ] 4.2 `app/(dashboard)/projects/[projectId]/dashboard/page.tsx`
-- [ ] 4.3 `app/(dashboard)/teams/[teamId]/stats/page.tsx`
+- [x] 4.1 `app/(dashboard)/dashboard/page.tsx` - 개인 대시보드
+- [x] 4.2 `app/(dashboard)/projects/[projectId]/dashboard/page.tsx`
+- [x] 4.3 `app/(dashboard)/teams/[teamId]/stats/page.tsx`
 
 ### Task 5: 차트 테마 적용
-- [ ] 5.1 Recharts 커스텀 테마 설정
-- [ ] 5.2 Linear Productivity 컬러 팔레트 적용
+- [x] 5.1 Recharts 커스텀 테마 설정
+- [x] 5.2 Linear Productivity 컬러 팔레트 적용
   - Primary: #5B5FC7
   - Accent: #3B82F6
   - Success: #22C55E
@@ -189,3 +189,18 @@ export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) 
 ### Debug Log References
 ### Completion Notes List
 ### File List
+
+- lib/dashboard/stats.ts
+- app/api/dashboard/personal/route.ts
+- app/api/projects/[projectId]/stats/route.ts
+- app/api/teams/[teamId]/stats/route.ts
+- components/dashboard/stats-card.tsx
+- components/dashboard/status-pie-chart.tsx
+- components/dashboard/activity-line-chart.tsx
+- components/dashboard/upcoming-deadlines.tsx
+- components/dashboard/member-stats.tsx
+- components/dashboard/project-activity-chart-wrapper.tsx
+- app/(dashboard)/dashboard/page.tsx
+- app/(dashboard)/projects/[projectId]/dashboard/page.tsx
+- app/(dashboard)/teams/[teamId]/stats/page.tsx
+- lib/dashboard/chart-colors.ts

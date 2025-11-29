@@ -1,17 +1,17 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { updateIssueSchema } from '@/lib/validations/issue';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+import { notifyAssignment } from '@/lib/notifications/service';
 
 // GET /api/issues/[issueId] - 이슈 상세 조회
 export async function GET(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ issu
         assignee:profiles(id, name, email, avatar_url),
         owner:profiles!issues_owner_id_fkey(id, name),
         labels:issue_labels(label:labels(id, name, color)),
-        subtasks(id, title, is_completed, position)
+        subtasks(id, title, is_completed, position, issue_id, created_at, updated_at)
       `
       )
       .eq('id', issueId)
@@ -58,13 +58,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ issu
 export async function PUT(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -101,8 +98,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
       .from('team_members')
       .select('role')
       .eq('team_id', oldIssue.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -144,7 +140,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
     if (updateData.statusId && updateData.statusId !== oldIssue.status_id) {
       historyRecords.push({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'status',
         old_value: oldIssue.status_id,
         new_value: updateData.statusId,
@@ -154,17 +150,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
     if (updateData.assigneeId !== undefined && updateData.assigneeId !== oldIssue.assignee_id) {
       historyRecords.push({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'assignee',
         old_value: oldIssue.assignee_id,
         new_value: updateData.assigneeId,
       });
+
+      // 알림 발송 (담당자 변경 시)
+      if (updateData.assigneeId) {
+          notifyAssignment(
+              issueId,
+              updateData.assigneeId,
+              user.uid,
+              oldIssue.project.team.id,
+              updateData.title || oldIssue.title,
+              user.name
+          ).catch(console.error)
+      }
     }
 
     if (updateData.priority && updateData.priority !== oldIssue.priority) {
       historyRecords.push({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'priority',
         old_value: oldIssue.priority,
         new_value: updateData.priority,
@@ -174,7 +182,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
     if (updateData.title && updateData.title !== oldIssue.title) {
       historyRecords.push({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'title',
         old_value: oldIssue.title,
         new_value: updateData.title,
@@ -184,7 +192,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
     if (updateData.dueDate !== undefined && updateData.dueDate !== oldIssue.due_date) {
       historyRecords.push({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'due_date',
         old_value: oldIssue.due_date,
         new_value: updateData.dueDate,
@@ -232,12 +240,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
 export async function DELETE(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -265,12 +270,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       .from('team_members')
       .select('role')
       .eq('team_id', issue.project.team_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
-    const isIssueOwner = issue.owner_id === user.id;
-    const isProjectOwner = issue.project.owner_id === user.id;
+    const isIssueOwner = issue.owner_id === user.uid;
+    const isProjectOwner = issue.project.owner_id === user.uid;
     const isAdmin = membership?.role === 'OWNER' || membership?.role === 'ADMIN';
 
     if (!isIssueOwner && !isProjectOwner && !isAdmin) {

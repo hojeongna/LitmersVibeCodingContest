@@ -29,7 +29,9 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamList } from "@/components/teams/team-list";
 import { TeamCreateModal } from "@/components/teams/team-create-modal";
+import { ProjectCreateModal } from "@/components/projects/project-create-modal";
 import { useTeams } from "@/hooks/use-teams";
+import { useProjects } from "@/hooks/use-projects";
 import { getTeamColor } from "@/types/team";
 
 interface NavItem {
@@ -38,16 +40,6 @@ interface NavItem {
   icon: React.ElementType;
   badge?: number;
 }
-
-interface Project {
-  id: string;
-  name: string;
-  key: string;
-}
-
-const mockProjects: Project[] = [
-  { id: "1", name: "Jira Lite MVP", key: "JL" },
-];
 
 const mainNavItems: NavItem[] = [
   { label: "대시보드", href: "/", icon: LayoutDashboard },
@@ -81,10 +73,12 @@ function SidebarContent() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
   const [unreadNotifications] = useState(3);
 
   const { data: teams, isLoading: teamsLoading } = useTeams();
+  const { data: allProjects, isLoading: projectsLoading } = useProjects();
 
   // Get active team from URL
   const getActiveTeamId = (): string | null => {
@@ -111,6 +105,14 @@ function SidebarContent() {
   const handleCreateTeamSuccess = (teamId: string) => {
     router.push(`/teams/${teamId}`);
   };
+
+  // 활성 프로젝트만 필터링 (아카이브되지 않은 것)
+  const activeProjects = allProjects?.filter((p) => !p.is_archived) || [];
+
+  // 현재 선택된 팀의 프로젝트만 표시
+  const teamProjects = selectedTeam
+    ? activeProjects.filter((p) => p.team_id === selectedTeam.id)
+    : [];
 
   const NavLink = ({ item }: { item: NavItem }) => (
     <Link
@@ -151,7 +153,7 @@ function SidebarContent() {
           <Button
             variant="outline"
             className="w-full justify-start text-sidebar-foreground border-sidebar-muted/30 hover:bg-sidebar-hover"
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => setIsCreateTeamModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
             첫 팀 만들기
@@ -213,7 +215,7 @@ function SidebarContent() {
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setIsCreateModalOpen(true)}>
+            <DropdownMenuItem onClick={() => setIsCreateTeamModalOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               새 팀 만들기
             </DropdownMenuItem>
@@ -257,44 +259,69 @@ function SidebarContent() {
         </div>
 
         {/* Projects Section */}
-        <div className="pt-4">
-          <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-sidebar-muted">
-              프로젝트
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 text-sidebar-muted hover:text-sidebar-foreground"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-          <div className="space-y-1">
-            {mockProjects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}`}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  pathname.includes(`/projects/${project.id}`)
-                    ? "bg-sidebar-active text-white"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
-                )}
-                onClick={() => setIsMobileOpen(false)}
+        {selectedTeam && (
+          <div className="pt-4">
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-sidebar-muted">
+                프로젝트
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 text-sidebar-muted hover:text-sidebar-foreground"
+                onClick={() => setIsCreateProjectModalOpen(true)}
               >
-                <FolderKanban className="h-4 w-4 shrink-0" />
-                <span className="truncate">{project.name}</span>
-                <Badge
-                  variant="outline"
-                  className="ml-auto text-xs text-sidebar-muted border-sidebar-muted/30"
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            {projectsLoading ? (
+              <div className="space-y-1 px-3">
+                <Skeleton className="h-8 w-full bg-sidebar-muted/20" />
+                <Skeleton className="h-8 w-full bg-sidebar-muted/20" />
+              </div>
+            ) : teamProjects.length > 0 ? (
+              <div className="space-y-1">
+                {teamProjects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/projects/${project.id}/board`}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      pathname.includes(`/projects/${project.id}`)
+                        ? "bg-sidebar-active text-white"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
+                    )}
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    <FolderKanban className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{project.name}</span>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs text-sidebar-muted border-sidebar-muted/30"
+                    >
+                      {project.key}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-2">
+                <p className="text-xs text-sidebar-muted text-center">
+                  프로젝트가 없습니다
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-2 text-sidebar-foreground"
+                  onClick={() => setIsCreateProjectModalOpen(true)}
                 >
-                  {project.key}
-                </Badge>
-              </Link>
-            ))}
+                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  프로젝트 만들기
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </nav>
 
       <Separator className="bg-sidebar-muted/30" />
@@ -357,9 +384,16 @@ function SidebarContent() {
 
       {/* Create Team Modal */}
       <TeamCreateModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        open={isCreateTeamModalOpen}
+        onOpenChange={setIsCreateTeamModalOpen}
         onSuccess={handleCreateTeamSuccess}
+      />
+
+      {/* Create Project Modal */}
+      <ProjectCreateModal
+        open={isCreateProjectModalOpen}
+        onOpenChange={setIsCreateProjectModalOpen}
+        defaultTeamId={selectedTeam?.id}
       />
     </>
   );

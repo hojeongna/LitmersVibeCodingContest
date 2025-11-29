@@ -1,6 +1,6 @@
 # Story 5.1: AI 요약 & 제안
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -47,56 +47,56 @@ so that **복잡한 이슈를 빠르게 파악하고 효과적인 해결 방향�
 ## Tasks / Subtasks
 
 ### Task 1: AI 서비스 모듈 구축 (AC: #1)
-- [ ] 1.1 `lib/ai/openai-client.ts` 생성 - OpenAI 클라이언트 초기화
-- [ ] 1.2 `lib/ai/prompts.ts` 생성 - 프롬프트 템플릿 정의
+- [x] 1.1 `lib/ai/openai-client.ts` 생성 - OpenAI 클라이언트 초기화
+- [x] 1.2 `lib/ai/prompts.ts` 생성 - 프롬프트 템플릿 정의
   - ISSUE_SUMMARY 프롬프트 (한국어 지원)
   - ISSUE_SUGGESTION 프롬프트
-- [ ] 1.3 `lib/ai/utils.ts` 생성 - 재시도 로직, 타임아웃 처리
-- [ ] 1.4 환경변수 검증 및 에러 핸들링
+- [x] 1.3 `lib/ai/utils.ts` 생성 - 재시도 로직, 타임아웃 처리
+- [x] 1.4 환경변수 검증 및 에러 핸들링
 
 ### Task 2: DB 스키마 확장 (AC: #2, #3)
-- [ ] 2.1 issues 테이블에 AI 컬럼 추가 마이그레이션 생성
+- [x] 2.1 issues 테이블에 AI 컬럼 추가 마이그레이션 생성
   ```sql
   ALTER TABLE issues ADD COLUMN IF NOT EXISTS ai_summary TEXT;
   ALTER TABLE issues ADD COLUMN IF NOT EXISTS ai_suggestions JSONB DEFAULT '[]';
   ALTER TABLE issues ADD COLUMN IF NOT EXISTS ai_generated_at TIMESTAMPTZ;
   ```
-- [ ] 2.2 TypeScript 타입 재생성 (`supabase gen types typescript`)
+- [x] 2.2 TypeScript 타입 재생성 (`supabase gen types typescript`)
 
 ### Task 3: AI Summary API 구현 (AC: #2, #4)
-- [ ] 3.1 `app/api/ai/summary/route.ts` 생성
-- [ ] 3.2 인증 및 팀 멤버십 검증
-- [ ] 3.3 description 길이 검증 (10자 이상)
-- [ ] 3.4 OpenAI ChatCompletion 호출
-- [ ] 3.5 결과 DB 저장 및 캐싱
-- [ ] 3.6 에러 응답 처리 (RATE_LIMIT, DESCRIPTION_TOO_SHORT, AI_ERROR)
+- [x] 3.1 `app/api/ai/summary/route.ts` 생성
+- [x] 3.2 인증 및 팀 멤버십 검증
+- [x] 3.3 description 길이 검증 (10자 이상)
+- [x] 3.4 OpenAI ChatCompletion 호출
+- [x] 3.5 결과 DB 저장 및 캐싱
+- [x] 3.6 에러 응답 처리 (RATE_LIMIT, DESCRIPTION_TOO_SHORT, AI_ERROR)
 
 ### Task 4: AI Suggestions API 구현 (AC: #3, #4)
-- [ ] 4.1 `app/api/ai/suggestions/route.ts` 생성
-- [ ] 4.2 인증 및 검증 로직
-- [ ] 4.3 OpenAI 해결 전략 프롬프트 호출
-- [ ] 4.4 결과 파싱 및 저장
+- [x] 4.1 `app/api/ai/suggestions/route.ts` 생성
+- [x] 4.2 인증 및 검증 로직
+- [x] 4.3 OpenAI 해결 전략 프롬프트 호출
+- [x] 4.4 결과 파싱 및 저장
 
 ### Task 5: AI Panel 컴포넌트 구현 (AC: #2, #3, #5)
-- [ ] 5.1 `components/ai/ai-summary-panel.tsx` 생성
+- [x] 5.1 `components/ai/ai-summary-panel.tsx` 생성
   - AI Panel 컨테이너 (그라데이션 배경)
   - AI 아이콘 + 제목
   - 요약 콘텐츠 영역
   - 액션 버튼 (Regenerate, Get Suggestions)
-- [ ] 5.2 `components/ai/ai-loading.tsx` 생성 - 로딩 상태 UI
-- [ ] 5.3 `components/ai/ai-button.tsx` 생성 - AI 버튼 컴포넌트 (그라데이션)
+- [x] 5.2 `components/ai/ai-loading.tsx` 생성 - 로딩 상태 UI
+- [x] 5.3 `components/ai/ai-button.tsx` 생성 - AI 버튼 컴포넌트 (그라데이션)
 
 ### Task 6: 이슈 상세 패널에 AI Panel 통합 (AC: #2, #3)
-- [ ] 6.1 `components/issues/issue-detail-panel.tsx` 수정
-- [ ] 6.2 AI Panel을 description 섹션 아래에 배치
-- [ ] 6.3 AI 요약/제안 상태 관리 (TanStack Query 또는 useState)
-- [ ] 6.4 description 변경 시 캐시 무효화 처리
+- [x] 6.1 `components/issues/issue-detail-panel.tsx` 수정
+- [x] 6.2 AI Panel을 description 섹션 아래에 배치
+- [x] 6.3 AI 요약/제안 상태 관리 (TanStack Query 또는 useState)
+- [x] 6.4 description 변경 시 캐시 무효화 처리
 
 ### Task 7: 테스트 및 검증
-- [ ] 7.1 AI Summary API 수동 테스트
-- [ ] 7.2 AI Suggestions API 수동 테스트
-- [ ] 7.3 UI 동작 검증 (로딩, 성공, 에러 상태)
-- [ ] 7.4 description 10자 미만 시 비활성화 검증
+- [x] 7.1 AI Summary API 수동 테스트
+- [x] 7.2 AI Suggestions API 수동 테스트
+- [x] 7.3 UI 동작 검증 (로딩, 성공, 에러 상태)
+- [x] 7.4 description 10자 미만 시 비활성화 검증
 
 ## Dev Notes
 
@@ -262,4 +262,17 @@ const testIssue = {
 ### Completion Notes List
 
 ### File List
+
+- lib/ai/openai-client.ts
+- lib/ai/prompts.ts
+- lib/ai/utils.ts
+- supabase/migrations/003_add_ai_columns.sql
+- lib/supabase/types.ts
+- lib/ai/rate-limiter.ts
+- app/api/ai/summary/route.ts
+- app/api/ai/suggestions/route.ts
+- components/ai/ai-button.tsx
+- components/ai/ai-loading.tsx
+- components/ai/ai-summary-panel.tsx
+- components/issues/issue-detail-panel.tsx
 

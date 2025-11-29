@@ -90,8 +90,8 @@ export async function DELETE(
       );
     }
 
-    // TODO: Log activity
-    // await ActivityLogService.log('invite_cancelled', { teamId: invite.team_id, email: invite.email });
+    // Note: Invite cancellation is not logged per Story 2.5 AC
+    // If needed in future, add 'invite_cancelled' to ActivityAction type
 
     return NextResponse.json({
       success: true,

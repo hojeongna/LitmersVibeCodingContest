@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -6,17 +6,16 @@ const createSubtaskSchema = z.object({
   title: z.string().min(1, '제목은 필수입니다').max(200, '제목은 최대 200자까지 입력 가능합니다'),
 });
 
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+
 // POST /api/issues/[issueId]/subtasks - 서브태스크 생성
 export async function POST(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(

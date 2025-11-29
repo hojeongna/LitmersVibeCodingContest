@@ -70,14 +70,15 @@ development_status:
   # Epic 3: 프로젝트 & 이슈 관리
   # FR Coverage: FR-020~027, FR-030~039-2 (19개)
   # 의존성: Epic 1 완료 후 병렬 진행 가능
+  # Status: 100% 완료 (6/6 stories done)
   # ==========================================
   epic-3: contexted
-  3-1-project-crud: ready-for-dev
-  3-2-project-advanced-features: ready-for-dev
-  3-3-issue-create-list: ready-for-dev
-  3-4-issue-detail-edit: ready-for-dev
-  3-5-issue-search-filter: ready-for-dev
-  3-6-history-subtasks: ready-for-dev
+  3-1-project-crud: done
+  3-2-project-advanced-features: done
+  3-3-issue-create-list: done
+  3-4-issue-detail-edit: done
+  3-5-issue-search-filter: done
+  3-6-history-subtasks: done
   epic-3-retrospective: optional
 
   # ==========================================
@@ -99,9 +100,9 @@ development_status:
   # 의존성: Epic 1 완료 후 병렬 진행 가능
   # ==========================================
   epic-5: contexted
-  5-1-ai-summary-suggestion: drafted
-  5-2-ai-auto-label-duplicate: drafted
-  5-3-dashboard: drafted
-  5-4-notification-system: drafted
-  5-5-ai-advanced-features: drafted
+  5-1-ai-summary-suggestion: review
+  5-2-ai-auto-label-duplicate: review
+  5-3-dashboard: review
+  5-4-notification-system: ready-for-dev
+  5-5-ai-advanced-features: ready-for-dev
   epic-5-retrospective: optional

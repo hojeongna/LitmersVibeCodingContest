@@ -1,18 +1,18 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createIssueSchema } from '@/lib/validations/issue';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+import { notifyAssignment } from '@/lib/notifications/service';
 
 // POST /api/projects/[projectId]/issues - 이슈 생성
 export async function POST(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -48,8 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -73,17 +72,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       );
     }
 
-    // issue_number 자동 생성 (AC-2)
-    const { data: maxIssue } = await supabase
-      .from('issues')
-      .select('issue_number')
-      .eq('project_id', projectId)
-      .order('issue_number', { ascending: false })
-      .limit(1)
-      .single();
-
-    const issueNumber = (maxIssue?.issue_number || 0) + 1;
-
     // 기본 상태(Backlog) 조회 (AC-4)
     const { data: defaultStatus } = await supabase
       .from('statuses')
@@ -101,20 +89,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
 
     const { title, description, priority, assigneeId, dueDate, labelIds } = validation.data;
 
-    // 이슈 생성
+    // 이슈 생성 - position은 현재 이슈 개수 + 1
     const { data: issue, error: insertError } = await supabase
       .from('issues')
       .insert({
         project_id: projectId,
-        owner_id: user.id,
+        owner_id: user.uid,
         assignee_id: assigneeId || null,
         status_id: defaultStatus.id,
-        issue_number: issueNumber,
         title,
         description: description || null,
         priority,
         due_date: dueDate || null,
-        position: issueNumber,
+        position: (count || 0) + 1,
       })
       .select()
       .single();
@@ -133,6 +120,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
         .insert(labelIds.map((labelId) => ({ issue_id: issue.id, label_id: labelId })));
     }
 
+    // 알림 발송 (담당자 지정 시)
+    if (assigneeId) {
+        // 비동기로 실행 (await 하지 않음)
+        notifyAssignment(
+            issue.id,
+            assigneeId,
+            user.uid,
+            project.team.id,
+            title,
+            user.name
+        ).catch(console.error)
+    }
+
     return NextResponse.json({ success: true, data: issue }, { status: 201 });
   } catch (error) {
     console.error('POST /api/projects/[projectId]/issues error:', error);
@@ -147,13 +147,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
 export async function GET(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { searchParams } = new URL(request.url);
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -200,7 +197,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
 
     // 우선순위 필터 (AC-4)
     if (priorityFilter.length > 0) {
-      query = query.in('priority', priorityFilter);
+      query = query.in('priority', priorityFilter as any[]);
     }
 
     // 담당자 필터 (AC-5)

@@ -24,13 +24,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Listen for auth changes
-    const unsubscribe = onAuthStateChange((user) => {
+    const unsubscribe = onAuthStateChange(async (user) => {
       setUser(user);
       setLoading(false);
 
-      // Clear error on successful auth
+      // Store or clear Firebase ID token in cookie
       if (user) {
         setError(null);
+        try {
+          // Get the ID token
+          const idToken = await user.getIdToken();
+          // Store in cookie for server-side access
+          document.cookie = `firebase-auth-token=${idToken}; path=/; max-age=3600; SameSite=Lax`;
+
+          // Sync profile to Supabase database
+          await fetch('/api/auth/sync-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).catch((err) => {
+            console.error('Failed to sync profile:', err);
+          });
+        } catch (err) {
+          console.error('Failed to get ID token:', err);
+        }
+      } else {
+        // Clear the cookie on sign out
+        document.cookie = 'firebase-auth-token=; path=/; max-age=0';
       }
     });
 

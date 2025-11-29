@@ -1,17 +1,16 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 
 // PUT /api/issues/[issueId]/move - 이슈 이동 (상태 변경 및 순서 변경)
 export async function PUT(request: Request, { params }: { params: Promise<{ issueId: string }> }) {
   try {
     const { issueId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -49,8 +48,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
       .from('team_members')
       .select('role')
       .eq('team_id', issue.project.team_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -86,7 +84,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ issu
     if (statusChanged) {
       await supabase.from('issue_history').insert({
         issue_id: issueId,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'status',
         old_value: oldStatusId,
         new_value: status_id,

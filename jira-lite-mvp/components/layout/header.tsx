@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export function HeaderSkeleton() {
   return (
@@ -113,6 +114,9 @@ export function Header({ title, actions }: HeaderProps) {
 
         {/* Custom Actions Slot */}
         {actions}
+
+        {/* Notification Bell */}
+        <NotificationBell />
 
         {/* Theme Toggle */}
         <Button

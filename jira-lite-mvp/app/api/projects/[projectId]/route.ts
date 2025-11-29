@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { updateProjectSchema } from '@/lib/validations/project';
 import { NextResponse } from 'next/server';
 
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
+
 // GET /api/projects/[projectId] - 프로젝트 상세 조회
 export async function GET(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
@@ -9,10 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     const supabase = await createClient();
 
     // 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -48,7 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('status', 'active')
       .single();
 
@@ -79,7 +78,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
 
     const projectData = {
       ...project,
-      isFavorite: project.project_favorites?.some((fav: any) => fav.user_id === user.id) || false,
+      isFavorite: project.project_favorites?.some((fav: any) => fav.user_id === user.uid) || false,
       issueStats: statusCounts,
     };
 
@@ -101,10 +100,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
     const body = await request.json();
 
     // 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -148,7 +144,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('status', 'active')
       .single();
 
@@ -159,7 +155,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
       );
     }
 
-    const isOwner = project.owner_id === user.id;
+    const isOwner = project.owner_id === user.uid;
     const isAdmin = membership.role === 'OWNER' || membership.role === 'ADMIN';
 
     if (!isOwner && !isAdmin) {
@@ -210,10 +206,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ p
     const supabase = await createClient();
 
     // 인증 확인
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -242,7 +235,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ p
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('status', 'active')
       .single();
 
@@ -253,7 +246,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ p
       );
     }
 
-    const isOwner = project.owner_id === user.id;
+    const isOwner = project.owner_id === user.uid;
     const isAdmin = membership.role === 'OWNER' || membership.role === 'ADMIN';
 
     if (!isOwner && !isAdmin) {

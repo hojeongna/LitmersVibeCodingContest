@@ -1,17 +1,16 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 
 // PUT /api/statuses/[statusId] - 상태 수정
 export async function PUT(request: Request, { params }: { params: Promise<{ statusId: string }> }) {
   try {
     const { statusId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -63,8 +62,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ stat
       .from('team_members')
       .select('role')
       .eq('team_id', status.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
@@ -116,12 +114,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ stat
 export async function DELETE(request: Request, { params }: { params: Promise<{ statusId: string }> }) {
   try {
     const { statusId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -157,8 +152,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
       .from('team_members')
       .select('role')
       .eq('team_id', status.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
@@ -206,7 +200,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
     if (movedIssues && movedIssues.length > 0) {
       const historyRecords = movedIssues.map((issue) => ({
         issue_id: issue.id,
-        changed_by: user.id,
+        changed_by: user.uid,
         field_name: 'status',
         old_value: statusId,
         new_value: backlogStatus.id,

@@ -1,6 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 
 const updateLabelSchema = z.object({
   name: z.string().min(1, '라벨 이름은 필수입니다').max(30, '라벨 이름은 최대 30자까지 입력 가능합니다').optional(),
@@ -11,13 +13,10 @@ const updateLabelSchema = z.object({
 export async function PUT(request: Request, { params }: { params: Promise<{ labelId: string }> }) {
   try {
     const { labelId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -53,8 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ labe
       .from('team_members')
       .select('role')
       .eq('team_id', label.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {
@@ -107,12 +105,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ labe
 export async function DELETE(request: Request, { params }: { params: Promise<{ labelId: string }> }) {
   try {
     const { labelId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -139,8 +134,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ l
       .from('team_members')
       .select('role')
       .eq('team_id', label.project.team.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('user_id', user.uid)
       .single();
 
     if (!membership) {

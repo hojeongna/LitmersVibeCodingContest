@@ -1,6 +1,6 @@
 # Story 5.2: AI 자동 분류 & 중복 탐지
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -45,33 +45,33 @@ so that **이슈 분류 시간을 절약하고 중복 이슈 생성을 방지할
 ## Tasks / Subtasks
 
 ### Task 1: AI 분류 프롬프트 추가
-- [ ] 1.1 `lib/ai/prompts.ts`에 LABEL_SUGGEST 프롬프트 추가
-- [ ] 1.2 프로젝트 라벨 목록을 컨텍스트로 제공
-- [ ] 1.3 JSON 형식 응답 파싱 로직
+- [x] 1.1 `lib/ai/prompts.ts`에 LABEL_SUGGEST 프롬프트 추가
+- [x] 1.2 프로젝트 라벨 목록을 컨텍스트로 제공
+- [x] 1.3 JSON 형식 응답 파싱 로직
 
 ### Task 2: AI Classify API 구현
-- [ ] 2.1 `app/api/ai/classify/route.ts` 생성
-- [ ] 2.2 프로젝트 라벨 목록 조회
-- [ ] 2.3 OpenAI 호출 및 라벨 매칭
-- [ ] 2.4 신뢰도 점수 계산/반환
+- [x] 2.1 `app/api/ai/classify/route.ts` 생성
+- [x] 2.2 프로젝트 라벨 목록 조회
+- [x] 2.3 OpenAI 호출 및 라벨 매칭
+- [x] 2.4 신뢰도 점수 계산/반환
 
 ### Task 3: 중복 탐지 프롬프트 및 API
-- [ ] 3.1 `lib/ai/prompts.ts`에 DUPLICATE_DETECT 프롬프트 추가
-- [ ] 3.2 `app/api/ai/duplicates/route.ts` 생성
-- [ ] 3.3 같은 프로젝트의 최근 이슈 50개 조회
-- [ ] 3.4 텍스트 유사도 비교 (OpenAI Embedding 또는 텍스트 비교)
-- [ ] 3.5 유사도 80% 이상 필터링
+- [x] 3.1 `lib/ai/prompts.ts`에 DUPLICATE_DETECT 프롬프트 추가
+- [x] 3.2 `app/api/ai/duplicates/route.ts` 생성
+- [x] 3.3 같은 프로젝트의 최근 이슈 50개 조회
+- [x] 3.4 텍스트 유사도 비교 (OpenAI Embedding 또는 텍스트 비교)
+- [x] 3.5 유사도 80% 이상 필터링
 
 ### Task 4: UI 컴포넌트 구현
-- [ ] 4.1 `components/ai/ai-label-suggestion.tsx` - 라벨 추천 UI
-- [ ] 4.2 `components/ai/duplicate-warning.tsx` - 중복 경고 UI
-- [ ] 4.3 이슈 생성 폼에 통합
+- [x] 4.1 `components/ai/ai-label-suggestion.tsx` - 라벨 추천 UI
+- [x] 4.2 `components/ai/duplicate-warning.tsx` - 중복 경고 UI
+- [x] 4.3 이슈 생성 폼에 통합
 
 ### Task 5: 이슈 폼 통합
-- [ ] 5.1 `components/issues/issue-form.tsx` 수정
-- [ ] 5.2 라벨 선택 영역에 AI 추천 버튼 추가
-- [ ] 5.3 제목/설명 입력 시 중복 체크 트리거
-- [ ] 5.4 debounce 적용 (500ms)
+- [x] 5.1 `components/issues/create-issue-modal.tsx` 수정
+- [x] 5.2 라벨 선택 영역에 AI 추천 버튼 추가
+- [x] 5.3 제목/설명 입력 시 중복 체크 트리거
+- [x] 5.4 debounce 적용 (500ms)
 
 ## Dev Notes
 
@@ -173,3 +173,11 @@ Only return issues with similarity > 0.8
 ### Debug Log References
 ### Completion Notes List
 ### File List
+
+- lib/ai/prompts.ts
+- app/api/ai/classify/route.ts
+- app/api/ai/duplicates/route.ts
+- hooks/use-debounce.ts
+- components/ai/ai-label-suggestion.tsx
+- components/ai/duplicate-warning.tsx
+- components/issues/create-issue-modal.tsx

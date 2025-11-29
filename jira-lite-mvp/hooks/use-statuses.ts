@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import type { Status, CreateStatusRequest, UpdateStatusRequest, DeleteStatusResponse } from '@/types/status';
 
 export function useStatuses(projectId: string) {
-  return useQuery<{ statuses: Status[] }>({
+  return useQuery<Status[]>({
     queryKey: ['statuses', projectId],
     queryFn: async () => {
       const response = await fetch(`/api/projects/${projectId}/statuses`);
@@ -11,7 +11,7 @@ export function useStatuses(projectId: string) {
         throw new Error('Failed to fetch statuses');
       }
       const result = await response.json();
-      return result.data;
+      return result.data.statuses;
     },
     staleTime: 60 * 1000, // 1분
     refetchOnWindowFocus: true,
