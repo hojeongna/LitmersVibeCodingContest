@@ -75,7 +75,7 @@ export function useRealtimeKanban({ projectId, enabled = true }: RealtimeKanbanO
         {
           event: '*',
           schema: 'public',
-          table: 'issue_statuses',
+          table: 'statuses',
           filter: `project_id=eq.${projectId}`,
         },
         (payload) => {
