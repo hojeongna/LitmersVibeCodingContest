@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { ChangePasswordModal } from "@/components/settings/change-password-modal";
+import { DeleteAccountModal } from "@/components/settings/delete-account-modal";
 
 const profileSchema = z.object({
   name: z.string().min(1, "이름을 입력하세요").max(50, "이름은 50자 이내로 입력하세요"),
@@ -29,6 +31,8 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
 
   const {
     register,
@@ -256,7 +260,11 @@ export default function ProfilePage() {
                 </p>
               )}
             </div>
-            <Button variant="outline" disabled={isOAuthUser}>
+            <Button
+              variant="outline"
+              disabled={isOAuthUser}
+              onClick={() => setChangePasswordOpen(true)}
+            >
               비밀번호 변경
             </Button>
           </div>
@@ -281,16 +289,23 @@ export default function ProfilePage() {
             </div>
             <Button
               variant="destructive"
-              onClick={() => {
-                // TODO: 계정 삭제 모달 열기
-                toast.error("계정 삭제 기능은 현재 개발 중입니다");
-              }}
+              onClick={() => setDeleteAccountOpen(true)}
             >
               계정 삭제
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      <ChangePasswordModal
+        open={changePasswordOpen}
+        onOpenChange={setChangePasswordOpen}
+      />
+      <DeleteAccountModal
+        open={deleteAccountOpen}
+        onOpenChange={setDeleteAccountOpen}
+      />
     </div>
   );
 }

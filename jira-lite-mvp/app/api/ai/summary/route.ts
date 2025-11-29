@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Generate summary
     const summary = await withRetry(async () => {
         const response = await openai.chat.completions.create({
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
                 content: PROMPTS.ISSUE_SUMMARY.userTemplate(issue.title, issue.description!)
               }
             ],
-            max_tokens: 300,
+            max_completion_tokens: 300,
             temperature: 0.7,
         })
         return response.choices[0].message.content || ''

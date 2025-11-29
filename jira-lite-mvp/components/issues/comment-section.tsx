@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useComments } from '@/hooks/use-comments';
 import { CommentInput } from './comment-input';
 import { CommentItem } from './comment-item';
+import { CommentSummary } from '@/components/ai/comment-summary';
 
 interface CommentSectionProps {
   issueId: string;
@@ -51,6 +52,9 @@ export function CommentSection({ issueId, currentUser, issueReporterId, userRole
         <MessageSquare className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
         <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">댓글 ({totalCount})</h3>
       </div>
+
+      {/* AI Comment Summary */}
+      <CommentSummary issueId={issueId} commentCount={totalCount} className="mt-0" />
 
       {/* Comment List */}
       <div className="space-y-1 divide-y divide-zinc-200 dark:divide-zinc-800">

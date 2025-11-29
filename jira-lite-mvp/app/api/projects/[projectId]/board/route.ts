@@ -51,7 +51,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     }
 
     // 프로젝트의 모든 상태 조회 (position 순)
-    const { data: statuses, error: statusError } = await supabase
+    let { data: statuses, error: statusError } = await supabase
       .from('statuses')
       .select('*')
       .eq('project_id', projectId)
@@ -62,6 +62,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
         { success: false, error: { code: 'DATABASE_ERROR', message: '상태 목록 조회 실패' } },
         { status: 500 }
       );
+    }
+
+    // 상태가 없으면 기본 상태 자동 생성 (기존 프로젝트 호환)
+    if (!statuses || statuses.length === 0) {
+      const defaultStatuses = [
+        { project_id: projectId, name: 'Backlog', color: '#6B7280', position: 0, is_default: true },
+        { project_id: projectId, name: 'In Progress', color: '#3B82F6', position: 1, is_default: false },
+        { project_id: projectId, name: 'Review', color: '#F59E0B', position: 2, is_default: false },
+        { project_id: projectId, name: 'Done', color: '#10B981', position: 3, is_default: false },
+      ];
+
+      await supabase.from('statuses').insert(defaultStatuses);
+
+      // 다시 조회
+      const { data: createdStatuses } = await supabase
+        .from('statuses')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('position', { ascending: true });
+
+      statuses = createdStatuses;
     }
 
     // 프로젝트의 모든 이슈 조회 (각 상태별로 position 순)

@@ -145,6 +145,23 @@ export async function POST(request: Request) {
       );
     }
 
+    // 기본 상태 자동 생성 (Backlog, In Progress, Review, Done)
+    const defaultStatuses = [
+      { project_id: project.id, name: 'Backlog', color: '#6B7280', position: 0, is_default: true },
+      { project_id: project.id, name: 'In Progress', color: '#3B82F6', position: 1, is_default: false },
+      { project_id: project.id, name: 'Review', color: '#F59E0B', position: 2, is_default: false },
+      { project_id: project.id, name: 'Done', color: '#10B981', position: 3, is_default: false },
+    ];
+
+    const { error: statusError } = await supabase
+      .from('statuses')
+      .insert(defaultStatuses);
+
+    if (statusError) {
+      console.error('Default statuses creation failed:', statusError);
+      // 상태 생성 실패해도 프로젝트는 생성됨 - 경고만 로그
+    }
+
     return NextResponse.json({ success: true, data: project }, { status: 201 });
   } catch (error) {
     console.error('POST /api/projects error:', error);

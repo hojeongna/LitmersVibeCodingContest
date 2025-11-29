@@ -11,6 +11,7 @@ import {
 import { NotificationList } from './notification-list'
 import { useNotifications } from '@/hooks/use-notifications'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 export function NotificationBell() {
   const { unreadCount, markAllAsRead } = useNotifications()
@@ -55,6 +56,15 @@ export function NotificationBell() {
           )}
         </div>
         <NotificationList onClose={() => setIsOpen(false)} />
+        <div className="p-3 border-t">
+          <Link
+            href="/notifications"
+            className="block text-center text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            onClick={() => setIsOpen(false)}
+          >
+            View All Notifications
+          </Link>
+        </div>
       </PopoverContent>
     </Popover>
   )

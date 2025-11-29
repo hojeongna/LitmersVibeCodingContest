@@ -1,6 +1,6 @@
 # Story 4.3: 커스텀 컬럼 & WIP Limit
 
-Status: review
+Status: done
 
 ## Story
 

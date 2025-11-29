@@ -9,7 +9,7 @@ export const createInviteSchema = z.object({
     .toLowerCase()
     .trim(),
   role: z.enum(["ADMIN", "MEMBER"], {
-    errorMap: () => ({ message: "역할은 ADMIN 또는 MEMBER여야 합니다" }),
+    message: "역할은 ADMIN 또는 MEMBER여야 합니다",
   }),
 });
 

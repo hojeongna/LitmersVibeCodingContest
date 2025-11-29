@@ -1,6 +1,6 @@
 # Story 4.2: Drag & Drop 기능
 
-Status: review
+Status: done
 
 ## Story
 

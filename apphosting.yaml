@@ -18,10 +18,14 @@ env:
   - variable: NEXT_PUBLIC_APP_URL
     value: https://litmersvibecodingcontest.web.app
 
-  # Secret environment variables (나중에 추가: firebase apphosting:secrets:set)
-  # - variable: SUPABASE_SERVICE_ROLE_KEY
-  #   secret: supabase-service-role-key
-  # - variable: OPENAI_API_KEY
-  #   secret: openai-api-key
-  # - variable: RESEND_API_KEY
-  #   secret: resend-api-key
+  # Secret environment variables (firebase apphosting:secrets:set으로 설정)
+  - variable: SUPABASE_SERVICE_ROLE_KEY
+    secret: supabase-service-role-key
+  - variable: OPENAI_API_KEY
+    secret: openai-api-key
+  - variable: FIREBASE_SERVICE_ACCOUNT_KEY
+    secret: firebase-service-account-key
+  - variable: GMAIL_USER
+    secret: gmail-user
+  - variable: GMAIL_APP_PASSWORD
+    secret: gmail-app-password

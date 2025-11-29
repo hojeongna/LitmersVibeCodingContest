@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { adminAuth } from "@/lib/firebase/admin";
 import { TeamRole } from "@/lib/supabase/types";
 
 // Standard error response
@@ -82,9 +83,25 @@ export async function GET(
       .select("id, name, avatar_url")
       .in("id", userIds);
 
-    // Merge members with profiles
+    // Get emails from Firebase Auth
+    const emailMap = new Map<string, string>();
+    await Promise.all(
+      userIds.map(async (uid) => {
+        try {
+          const firebaseUser = await adminAuth.getUser(uid);
+          if (firebaseUser.email) {
+            emailMap.set(uid, firebaseUser.email);
+          }
+        } catch {
+          // User not found in Firebase, skip
+        }
+      })
+    );
+
+    // Merge members with profiles and emails
     const membersWithProfiles = members?.map((member) => {
       const profile = profiles?.find((p) => p.id === member.user_id);
+      const email = emailMap.get(member.user_id);
       return {
         id: member.id,
         user_id: member.user_id,
@@ -93,6 +110,7 @@ export async function GET(
         profile: profile
           ? {
               name: profile.name,
+              email: email || null,
               avatar_url: profile.avatar_url,
             }
           : null,

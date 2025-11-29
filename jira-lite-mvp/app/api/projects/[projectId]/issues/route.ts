@@ -73,12 +73,34 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
     }
 
     // 기본 상태(Backlog) 조회 (AC-4)
-    const { data: defaultStatus } = await supabase
+    let { data: defaultStatus } = await supabase
       .from('statuses')
       .select('id')
       .eq('project_id', projectId)
       .eq('name', 'Backlog')
       .single();
+
+    // 기본 상태가 없으면 자동 생성 (기존 프로젝트 호환)
+    if (!defaultStatus) {
+      const defaultStatuses = [
+        { project_id: projectId, name: 'Backlog', color: '#6B7280', position: 0, is_default: true },
+        { project_id: projectId, name: 'In Progress', color: '#3B82F6', position: 1, is_default: false },
+        { project_id: projectId, name: 'Review', color: '#F59E0B', position: 2, is_default: false },
+        { project_id: projectId, name: 'Done', color: '#10B981', position: 3, is_default: false },
+      ];
+
+      await supabase.from('statuses').insert(defaultStatuses);
+
+      // 다시 조회
+      const { data: createdStatus } = await supabase
+        .from('statuses')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('name', 'Backlog')
+        .single();
+
+      defaultStatus = createdStatus;
+    }
 
     if (!defaultStatus) {
       return NextResponse.json(
@@ -107,8 +129,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       .single();
 
     if (insertError) {
+      console.error('Issue creation failed:', insertError);
       return NextResponse.json(
-        { success: false, error: { code: 'DATABASE_ERROR', message: '이슈 생성 실패' } },
+        { success: false, error: { code: 'DATABASE_ERROR', message: '이슈 생성 실패', details: insertError } },
         { status: 500 }
       );
     }

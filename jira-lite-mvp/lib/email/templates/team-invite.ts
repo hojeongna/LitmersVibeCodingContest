@@ -1,4 +1,4 @@
-import { resend, FROM_EMAIL } from "../resend";
+import { transporter, FROM_EMAIL } from "../gmail";
 
 interface SendTeamInviteParams {
   email: string;
@@ -20,7 +20,7 @@ export async function sendTeamInvite({
   const roleLabel = role === "ADMIN" ? "관리자" : "멤버";
 
   try {
-    const { data, error } = await resend.emails.send({
+    await transporter.sendMail({
       from: FROM_EMAIL,
       to: email,
       subject: `${inviterName}님이 ${teamName} 팀에 초대했습니다`,
@@ -87,12 +87,7 @@ export async function sendTeamInvite({
       `.trim(),
     });
 
-    if (error) {
-      console.error("Failed to send team invite email:", error);
-      throw error;
-    }
-
-    return data;
+    return { success: true };
   } catch (error) {
     console.error("Error sending team invite email:", error);
     throw error;

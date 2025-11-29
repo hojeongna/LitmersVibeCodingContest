@@ -1,22 +1,23 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server'
 import { getPersonalStats } from '@/lib/dashboard/stats'
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { UpcomingDeadlines } from '@/components/dashboard/upcoming-deadlines'
 import { CheckCircle2, Clock, AlertCircle, ListTodo } from 'lucide-react'
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, error } = await verifyFirebaseAuth()
 
-  if (!user) {
+  if (error || !user) {
     redirect('/auth/login')
   }
 
+  const supabase = createAdminClient()
   const { data: membership } = await supabase
     .from('team_members')
     .select('team_id')
-    .eq('user_id', user.id)
+    .eq('user_id', user.uid)
     .limit(1)
     .single()
 
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
     )
   }
 
-  const stats = await getPersonalStats(user.id, membership.team_id)
+  const stats = await getPersonalStats(user.uid, membership.team_id)
 
   return (
     <div className="container mx-auto p-6 space-y-6">

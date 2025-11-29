@@ -20,6 +20,7 @@ development_status:
   1-3-signup-login: done
   1-4-google-oauth: done
   1-5-profile-password-management: done
+  1-6-account-delete: done
   epic-1-retrospective: done
 
   # Epic 2: 팀 관리
@@ -51,10 +52,10 @@ development_status:
   epic-4-retrospective: backlog
 
   # Epic 5: AI & 대시보드 & 알림
-  epic-5: backlog
-  5-1-ai-summary-suggestion: backlog
-  5-2-ai-auto-label-duplicate: backlog
-  5-3-dashboard: backlog
-  5-4-notification-system: backlog
-  5-5-ai-advanced-features: backlog
+  epic-5: done
+  5-1-ai-summary-suggestion: done
+  5-2-ai-auto-label-duplicate: done
+  5-3-dashboard: done
+  5-4-notification-system: done
+  5-5-ai-advanced-features: done
   epic-5-retrospective: backlog

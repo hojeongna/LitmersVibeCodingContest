@@ -1,6 +1,6 @@
 # Story 5.5: AI 고급 기능
 
-Status: review
+Status: done
 
 ## Story
 
@@ -11,36 +11,36 @@ so that **AI 리소스를 효율적으로 관리하고 긴 토론을 빠르게 �
 ## Acceptance Criteria
 
 ### AC-1: AI Rate Limiting (FR-042)
-- [ ] 사용자별 분당 10회 AI 호출 제한
-- [ ] 사용자별 일당 100회 AI 호출 제한
-- [ ] 제한 도달 시 AI 버튼 비활성화
-- [ ] 친화적 안내 메시지 표시:
+- [x] 사용자별 분당 10회 AI 호출 제한
+- [x] 사용자별 일당 100회 AI 호출 제한
+- [x] 제한 도달 시 AI 버튼 비활성화
+- [x] 친화적 안내 메시지 표시:
   - "분당 제한 도달: X초 후 다시 시도하세요"
   - "일일 제한 도달: 내일 다시 시도하세요"
 - [ ] 현재 사용량 표시 (선택): "오늘 X/100 사용"
 
 ### AC-2: AI 댓글 요약 (FR-045)
-- [ ] 댓글이 5개 이상인 이슈에서만 "댓글 요약" 버튼 활성화
-- [ ] 버튼 클릭 시 전체 댓글 스레드 요약 생성
-- [ ] 요약 결과 표시:
+- [x] 댓글이 5개 이상인 이슈에서만 "댓글 요약" 버튼 활성화
+- [x] 버튼 클릭 시 전체 댓글 스레드 요약 생성
+- [x] 요약 결과 표시:
   - 논의 요약 (3~5문장)
   - 주요 결정 사항 (있는 경우)
-- [ ] 새 댓글 추가 시 캐시 무효화
-- [ ] 요약 결과 복사 버튼
+- [x] 새 댓글 추가 시 캐시 무효화
+- [x] 요약 결과 복사 버튼
 
 ### AC-3: Rate Limiting 구현
-- [ ] `ai_usage` 테이블 생성
-- [ ] Rate Limiter 미들웨어/유틸리티 구현
-- [ ] 모든 AI API에 Rate Limit 검증 적용
-- [ ] 429 Too Many Requests 에러 반환
+- [x] `ai_usage` 테이블 생성
+- [x] Rate Limiter 미들웨어/유틸리티 구현
+- [x] 모든 AI API에 Rate Limit 검증 적용
+- [x] 429 Too Many Requests 에러 반환
 
 ### AC-4: API Endpoints
-- [ ] `POST /api/ai/comment-summary` - 댓글 요약
-- [ ] `GET /api/ai/usage` - 현재 사용량 조회
+- [x] `POST /api/ai/comment-summary` - 댓글 요약
+- [x] `GET /api/ai/usage` - 현재 사용량 조회
 
 ### AC-5: 사용량 표시 UI (선택)
-- [ ] 프로필 설정 페이지에 AI 사용량 표시
-- [ ] 또는 AI Panel 하단에 사용량 표시
+- [ ] 프로필 설정 페이지에 AI 사용량 표시 (선택 - API만 존재)
+- [ ] 또는 AI Panel 하단에 사용량 표시 (선택)
 
 ## Tasks / Subtasks
 
@@ -69,7 +69,7 @@ so that **AI 리소스를 효율적으로 관리하고 긴 토론을 빠르게 �
 
 ### Task 5: 댓글 요약 UI
 - [x] 5.1 `components/ai/comment-summary.tsx` 생성
-- [ ] 5.2 이슈 상세 패널 댓글 섹션에 버튼 추가
+- [x] 5.2 이슈 상세 패널 댓글 섹션에 버튼 추가
 - [x] 5.3 요약 결과 표시 모달/패널
 - [x] 5.4 복사 버튼 구현
 
@@ -282,3 +282,87 @@ export function CommentSummary({ issueId, commentCount }: Props) {
 - app/api/ai/usage/route.ts
 - components/ai/comment-summary.tsx
 
+---
+
+## Senior Developer Review (AI)
+
+### Reviewer: hojeong
+### Date: 2025-11-29
+### Outcome: **APPROVE**
+
+### Summary
+Story 5.5의 AI 고급 기능(Rate Limiting, 댓글 요약)이 성공적으로 구현되었습니다. Rate Limiter가 모든 AI API에 적용되어 있고, 댓글 요약 기능은 5개 이상 댓글 검증, 캐싱, 복사 기능 모두 포함되어 있습니다.
+
+### Key Findings
+
+**LOW Severity:**
+- `lib/ai/rate-limiter.ts:23` - `now.setHours(0, 0, 0, 0)`가 now 객체 자체를 수정함. 의도된 동작이지만 가독성을 위해 별도 변수 사용 권장.
+
+### Acceptance Criteria Coverage
+
+| AC# | Description | Status | Evidence |
+|-----|-------------|--------|----------|
+| AC-1 | Rate Limiting - 분당 10회, 일당 100회, 버튼 비활성화, 안내 메시지 | ✅ IMPLEMENTED | `lib/ai/rate-limiter.ts:3-6,41`, `app/api/ai/summary/route.ts:22-40` |
+| AC-2 | 댓글 요약 - 5개 이상, 요약 결과, 복사 버튼 | ✅ IMPLEMENTED | `app/api/ai/comment-summary/route.ts:98-113`, `components/ai/comment-summary.tsx:57-67` |
+| AC-3 | Rate Limiting 구현 - ai_usage 테이블, 미들웨어, 429 에러 | ✅ IMPLEMENTED | `supabase/migrations/005_create_ai_usage.sql`, `lib/ai/rate-limiter.ts` |
+| AC-4 | API Endpoints - comment-summary, usage | ✅ IMPLEMENTED | 2 API route files verified |
+| AC-5 | 사용량 표시 UI (선택) | ⚠️ PARTIAL | API 존재, UI 미구현 (선택 사항) |
+
+**Summary: 4 of 5 acceptance criteria fully implemented, 1 optional**
+
+### Task Completion Validation
+
+| Task | Marked As | Verified As | Evidence |
+|------|-----------|-------------|----------|
+| 1.1 ai_usage 테이블 마이그레이션 | [x] | ✅ VERIFIED | `supabase/migrations/005_create_ai_usage.sql` |
+| 1.2 rate-limiter.ts | [x] | ✅ VERIFIED | `lib/ai/rate-limiter.ts:1-62` |
+| 2.1 분당 사용량 체크 | [x] | ✅ VERIFIED | `lib/ai/rate-limiter.ts:25-30` |
+| 2.2 일당 사용량 체크 | [x] | ✅ VERIFIED | `lib/ai/rate-limiter.ts:31-36` |
+| 2.3 사용량 기록 함수 | [x] | ✅ VERIFIED | `lib/ai/rate-limiter.ts:56-62` |
+| 2.4 남은 시간/횟수 계산 | [x] | ✅ VERIFIED | `lib/ai/rate-limiter.ts:38-53` |
+| 3.1-3.4 기존 AI API Rate Limit | [x] | ✅ VERIFIED | 4 API files include `checkRateLimitWithDetails` |
+| 4.1 comment-summary API | [x] | ✅ VERIFIED | `app/api/ai/comment-summary/route.ts:1-189` |
+| 4.2 댓글 5개 이상 검증 | [x] | ✅ VERIFIED | `app/api/ai/comment-summary/route.ts:98-113` |
+| 4.3 댓글 조회 및 프롬프트 | [x] | ✅ VERIFIED | `app/api/ai/comment-summary/route.ts:91-97,139-156` |
+| 4.4 OpenAI 호출 | [x] | ✅ VERIFIED | `app/api/ai/comment-summary/route.ts:139-156` |
+| 4.5 캐싱 | [x] | ✅ VERIFIED | `app/api/ai/comment-summary/route.ts:115-136,158-169` |
+| 5.1 comment-summary.tsx | [x] | ✅ VERIFIED | `components/ai/comment-summary.tsx:1-116` |
+| 5.2 댓글 섹션에 버튼 추가 | [x] | ✅ VERIFIED | `components/issues/comment-section.tsx:56-57` |
+| 5.3 요약 결과 표시 | [x] | ✅ VERIFIED | `components/ai/comment-summary.tsx:87-113` |
+| 5.4 복사 버튼 | [x] | ✅ VERIFIED | `components/ai/comment-summary.tsx:96-107` |
+| 6.1-6.2 usage API | [x] | ✅ VERIFIED | `app/api/ai/usage/route.ts:1-39` |
+| 7.1-7.2 Rate Limit 에러 UI | [x] | ✅ VERIFIED | `components/ai/comment-summary.tsx:33-39` |
+
+**Summary: 18 of 18 completed tasks verified, 0 questionable, 0 false completions**
+
+### Test Coverage and Gaps
+- Rate Limiter 로직 unit 테스트 권장
+- 캐싱 무효화 테스트 권장
+
+### Architectural Alignment
+- ✅ Rate Limiting 패턴 (ai_usage 테이블 사용)
+- ✅ 캐싱 패턴 (ai_cache 테이블, content hash 기반)
+- ✅ 재시도 로직 (withRetry 사용)
+
+### Security Notes
+- ✅ Rate Limiting으로 API 남용 방지
+- ✅ 팀 멤버십 검증
+- ✅ 429 상태 코드 반환
+
+### Best-Practices and References
+- [OpenAI Rate Limits](https://platform.openai.com/docs/guides/rate-limits)
+- [API Rate Limiting Best Practices](https://cloud.google.com/architecture/rate-limiting-strategies-techniques)
+
+### Action Items
+
+**Advisory Notes:**
+- Note: 사용량 표시 UI(AC-5)는 선택 사항으로, 추후 프로필 페이지나 AI Panel에 추가 가능
+- Note: `startOfDay` 계산에서 `now.setHours()`가 now 객체를 수정하므로 별도 변수 사용 권장
+
+---
+
+## Change Log
+
+| Date | Version | Description |
+|------|---------|-------------|
+| 2025-11-29 | 1.0 | Senior Developer Review notes appended - APPROVED |

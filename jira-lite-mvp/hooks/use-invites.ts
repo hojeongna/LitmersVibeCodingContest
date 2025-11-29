@@ -69,7 +69,7 @@ async function resendInvite(inviteId: string): Promise<TeamInvite> {
 }
 
 async function acceptInvite(token: string): Promise<{ teamId: string }> {
-  const response = await fetch(`/api/invites/${token}/accept`, {
+  const response = await fetch(`/api/invites/accept/${token}`, {
     method: "POST",
   });
 

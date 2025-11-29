@@ -4,7 +4,8 @@ import { useState } from 'react';
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -33,9 +34,14 @@ export function KanbanBoard({ projectId, onIssueClick }: KanbanBoardProps) {
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
-        delay: 150,
+        distance: 5, // 5px 이동 후 드래그 시작
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
         tolerance: 5,
       },
     }),
@@ -181,7 +187,7 @@ export function KanbanBoard({ projectId, onIssueClick }: KanbanBoardProps) {
           />
         ))}
       </div>
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeIssue && (
           <div className="rotate-3 opacity-90 shadow-lg scale-105">
             <IssueCard issue={activeIssue} />

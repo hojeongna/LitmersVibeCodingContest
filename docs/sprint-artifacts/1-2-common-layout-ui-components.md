@@ -1,6 +1,6 @@
 # Story 1.2: 공통 레이아웃 & UI 컴포넌트
 
-Status: review
+Status: done
 
 ## Story
 

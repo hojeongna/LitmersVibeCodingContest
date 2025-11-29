@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     // Detect duplicates
     const duplicates = await withRetry(async () => {
         const response = await openai.chat.completions.create({
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',

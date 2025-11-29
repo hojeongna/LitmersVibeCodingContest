@@ -1,15 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server'
 import { getProjectStats } from '@/lib/dashboard/stats'
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { IssuesByStatusChart } from '@/components/dashboard/status-pie-chart'
 import { ProjectActivityChartWrapper } from '@/components/dashboard/project-activity-chart-wrapper'
 import { CheckCircle2, ListTodo, Percent } from 'lucide-react'
 
-export default async function ProjectDashboardPage({ 
-    params, 
-    searchParams 
-}: { 
+export default async function ProjectDashboardPage({
+    params,
+    searchParams
+}: {
     params: Promise<{ projectId: string }>,
     searchParams: Promise<{ period?: string }>
 }) {
@@ -17,13 +18,13 @@ export default async function ProjectDashboardPage({
   const { period: periodParam } = await searchParams
   const period = (periodParam === '30d' ? '30d' : '7d') as '7d' | '30d'
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, error } = await verifyFirebaseAuth()
 
-  if (!user) {
+  if (error || !user) {
     redirect('/auth/login')
   }
 
+  const supabase = createAdminClient()
   const { data: project } = await supabase
     .from('projects')
     .select('name, team_id')
@@ -38,7 +39,7 @@ export default async function ProjectDashboardPage({
     .from('team_members')
     .select('id')
     .eq('team_id', project.team_id)
-    .eq('user_id', user.id)
+    .eq('user_id', user.uid)
     .single()
   
   if (!membership) {

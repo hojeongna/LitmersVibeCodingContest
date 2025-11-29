@@ -42,13 +42,13 @@
     --warning: 38 92% 50%; /* #F59E0B */
     --info: 217 91% 60%; /* #3B82F6 */
 
-    /* Priority Colors */
-    --priority-high-bg: 0 93% 94%; /* #FEE2E2 */
-    --priority-high-text: 0 72% 51%; /* #DC2626 */
-    --priority-medium-bg: 48 96% 89%; /* #FEF3C7 */
-    --priority-medium-text: 32 95% 44%; /* #D97706 */
-    --priority-low-bg: 142 77% 93%; /* #DCFCE7 */
-    --priority-low-text: 142 76% 36%; /* #16A34A */
+    /* Priority Colors - UX Design Spec */
+    --priority-high-bg: 33 100% 96%; /* #FFF7ED - Orange 50 */
+    --priority-high-text: 25 95% 53%; /* #F97316 - Orange 500 */
+    --priority-medium-bg: 55 92% 95%; /* #FEFCE8 - Yellow 50 */
+    --priority-medium-text: 48 96% 53%; /* #EAB308 - Yellow 500 */
+    --priority-low-bg: 138 76% 97%; /* #F0FDF4 - Green 50 */
+    --priority-low-text: 142 71% 45%; /* #22C55E - Green 500 */
 
     /* Kanban Column Colors */
     --column-backlog: 240 4% 46%; /* Zinc 500 #71717A */
@@ -119,13 +119,13 @@
     --warning: 38 92% 50%;
     --info: 217 91% 60%;
 
-    /* Priority Colors (same in dark) */
-    --priority-high-bg: 0 93% 94%;
-    --priority-high-text: 0 72% 51%;
-    --priority-medium-bg: 48 96% 89%;
-    --priority-medium-text: 32 95% 44%;
-    --priority-low-bg: 142 77% 93%;
-    --priority-low-text: 142 76% 36%;
+    /* Priority Colors - UX Design Spec (same in dark) */
+    --priority-high-bg: 33 100% 96%;
+    --priority-high-text: 25 95% 53%;
+    --priority-medium-bg: 55 92% 95%;
+    --priority-medium-text: 48 96% 53%;
+    --priority-low-bg: 138 76% 97%;
+    --priority-low-text: 142 71% 45%;
 
     /* Kanban Column Colors (same) */
     --column-backlog: 240 4% 46%;

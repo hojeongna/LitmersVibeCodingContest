@@ -1,6 +1,6 @@
 # Story 4.5: 뷰 전환 & UX 개선
 
-Status: review
+Status: done
 
 ## Story
 

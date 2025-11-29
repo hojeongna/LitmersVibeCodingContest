@@ -1,13 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server'
 import { getTeamStats } from '@/lib/dashboard/stats'
 import { MemberStats } from '@/components/dashboard/member-stats'
 import { ProjectActivityChartWrapper } from '@/components/dashboard/project-activity-chart-wrapper'
 
-export default async function TeamStatsPage({ 
-    params, 
-    searchParams 
-}: { 
+export default async function TeamStatsPage({
+    params,
+    searchParams
+}: {
     params: Promise<{ teamId: string }>,
     searchParams: Promise<{ period?: string }>
 }) {
@@ -15,13 +16,13 @@ export default async function TeamStatsPage({
   const { period: periodParam } = await searchParams
   const period = (periodParam === '30d' ? '30d' : '7d') as '7d' | '30d'
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, error } = await verifyFirebaseAuth()
 
-  if (!user) {
+  if (error || !user) {
     redirect('/auth/login')
   }
 
+  const supabase = createAdminClient()
   const { data: team } = await supabase
     .from('teams')
     .select('name')
@@ -36,7 +37,7 @@ export default async function TeamStatsPage({
     .from('team_members')
     .select('id')
     .eq('team_id', teamId)
-    .eq('user_id', user.id)
+    .eq('user_id', user.uid)
     .single()
   
   if (!membership) {

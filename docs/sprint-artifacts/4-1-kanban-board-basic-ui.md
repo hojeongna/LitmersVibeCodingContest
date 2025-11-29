@@ -1,6 +1,6 @@
 # Story 4.1: 칸반 보드 기본 UI
 
-Status: review
+Status: done
 
 ## Story
 

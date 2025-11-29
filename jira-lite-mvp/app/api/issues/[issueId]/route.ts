@@ -25,19 +25,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ issu
       .select(
         `
         *,
-        project:projects!inner(id, name, key),
-        status:statuses(id, name, color),
-        assignee:profiles(id, name, email, avatar_url),
+        project:projects!issues_project_id_fkey(id, name, team_id),
+        status:statuses!issues_status_id_fkey(id, name, color),
+        assignee:profiles!issues_assignee_id_fkey(id, name, email, avatar_url),
         owner:profiles!issues_owner_id_fkey(id, name),
         labels:issue_labels(label:labels(id, name, color)),
-        subtasks(id, title, is_completed, position, issue_id, created_at, updated_at)
+        subtasks(id, title, is_completed, position, issue_id, created_at)
       `
       )
       .eq('id', issueId)
       .is('deleted_at', null)
       .single();
 
-    if (error || !issue) {
+    if (error) {
+      console.error('Issue fetch error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'DATABASE_ERROR', message: error.message } },
+        { status: 500 }
+      );
+    }
+
+    if (!issue) {
       return NextResponse.json(
         { success: false, error: { code: 'NOT_FOUND', message: '이슈를 찾을 수 없습니다' } },
         { status: 404 }

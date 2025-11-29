@@ -20,10 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
         .from('notifications')
-        .select(`
-            *,
-            issue:issues!issue_id(title, project_id)
-        `)
+        .select('*')
         .eq('user_id', user.uid)
         .order('created_at', { ascending: false })
         .limit(limit)
@@ -38,26 +35,42 @@ export async function GET(request: NextRequest) {
 
     // Fetch actor profiles separately
     const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean) as string[])]
-    const actorProfiles: Record<string, any> = {}
-    
+    const actorProfiles: Record<string, { name: string; avatar_url: string | null }>  = {}
+
     if (actorIds.length > 0) {
       const { data: actors } = await supabase
         .from('profiles')
         .select('id, name, avatar_url')
         .in('id', actorIds)
-      
+
       actors?.forEach(actor => {
         actorProfiles[actor.id] = actor
       })
     }
 
-    // Transform notifications with actor data
+    // Fetch issue data separately (if issue_id exists)
+    const issueIds = [...new Set(notifications.map(n => n.issue_id).filter(Boolean) as string[])]
+    const issueData: Record<string, { title: string; project_id: string }> = {}
+
+    if (issueIds.length > 0) {
+      const { data: issues } = await supabase
+        .from('issues')
+        .select('id, title, project_id')
+        .in('id', issueIds)
+
+      issues?.forEach(issue => {
+        issueData[issue.id] = { title: issue.title, project_id: issue.project_id }
+      })
+    }
+
+    // Transform notifications with actor and issue data
     const transformedNotifications = notifications.map(n => ({
         ...n,
         actor: n.actor_id && actorProfiles[n.actor_id] ? {
             name: actorProfiles[n.actor_id].name,
             avatar_url: actorProfiles[n.actor_id].avatar_url
-        } : null
+        } : null,
+        issue: n.issue_id && issueData[n.issue_id] ? issueData[n.issue_id] : null
     }))
 
     return NextResponse.json({ 

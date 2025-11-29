@@ -319,13 +319,15 @@ lib/
 - `app/invite/[token]/page.tsx` (초대 수락 페이지)
 - `hooks/use-invites.ts` (초대 관련 훅)
 - `lib/validations/invite.ts` (Zod 스키마)
+- `lib/email/gmail.ts` (Gmail SMTP 설정)
+- `lib/email/templates/team-invite.ts` (초대 이메일 템플릿)
 
 **수정된 파일:**
 - `types/team.ts` (TeamInvite, CreateInviteInput 타입 추가)
 
-**TODO (향후 구현):**
-- ⏳ 이메일 발송 기능 (Resend 연동)
-- ⏳ 활동 로그 기록 (Activity Log 시스템 구현 후)
+**완료됨 (이전 TODO):**
+- ✅ 이메일 발송 기능 (Gmail SMTP 연동으로 변경)
+- ✅ 활동 로그 기록 (Activity Log 연동 완료)
 
 **기술적 특징:**
 - 토큰 기반 초대 시스템 (crypto.randomUUID())
@@ -345,6 +347,8 @@ lib/
 |------|----------|--------|
 | 2025-11-29 | 스토리 초안 작성 | Story Context Workflow |
 | 2025-11-29 | 스토리 구현 완료 (이메일 발송 제외) | Claude Code |
+| 2025-11-29 | Gmail SMTP 이메일 발송 연동 완료 | Claude Code |
+| 2025-11-29 | Activity Log 연동 완료 | Claude Code |
 
 
 ---
@@ -356,15 +360,19 @@ lib/
 **Outcome:** ✅ APPROVE
 
 ### Summary
-All 11 ACs implemented. 초대 시스템 완료 (이메일 발송 제외). API, UI, 권한 검증 모두 정상 동작.
+All 11 ACs implemented. 초대 시스템 완전 완료. API, UI, 권한 검증, 이메일 발송 모두 정상 동작.
 
 ### AC Coverage: 11/11 ✅
 - Invite API: POST/GET/DELETE/Resend/Accept all implemented
 - 7일 만료, 중복 방지, 토큰 검증 정상
+- Gmail SMTP 이메일 발송 연동 완료
 
-### Notes
-- ⏳ Email 발송 TODO (Resend 연동 대기)
-- ✅ Activity Log integration ready
+### Gmail 연동 변경사항 (2025-11-29)
+- ✅ Resend에서 Gmail SMTP로 이메일 발송 방식 변경
+- ✅ `lib/email/gmail.ts` - Gmail SMTP transporter 설정
+- ✅ `lib/email/templates/team-invite.ts` - 초대 이메일 템플릿 (HTML)
+- ✅ 환경변수: `GMAIL_USER`, `GMAIL_APP_PASSWORD`
+- ✅ Activity Log 연동 완료 (`logActivity` 호출)
 
 ---
 
