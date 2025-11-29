@@ -21,6 +21,19 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
   const searchParams = useSearchParams();
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
+  const [defaultStatusId, setDefaultStatusId] = useState<string | undefined>(undefined);
+
+  const handleAddIssue = (statusId: string) => {
+    setDefaultStatusId(statusId);
+    setIsCreateIssueOpen(true);
+  };
+
+  const handleCreateIssueOpenChange = (open: boolean) => {
+    setIsCreateIssueOpen(open);
+    if (!open) {
+      setDefaultStatusId(undefined);
+    }
+  };
 
   const { data, isLoading } = useKanban(projectId);
   const { data: project } = useProject(projectId);
@@ -65,7 +78,7 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
         {isLoading ? (
           currentView === 'board' ? <KanbanSkeleton /> : <ListSkeleton />
         ) : currentView === 'board' ? (
-          <KanbanBoard projectId={projectId} onIssueClick={setSelectedIssueId} />
+          <KanbanBoard projectId={projectId} onIssueClick={setSelectedIssueId} onAddIssue={handleAddIssue} />
         ) : (
           <ListView issues={allIssues} onIssueClick={setSelectedIssueId} />
         )}
@@ -83,9 +96,10 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
       {project && (
         <CreateIssueModal
           open={isCreateIssueOpen}
-          onOpenChange={setIsCreateIssueOpen}
+          onOpenChange={handleCreateIssueOpenChange}
           projectId={projectId}
           teamId={project.team.id}
+          defaultStatusId={defaultStatusId}
         />
       )}
     </div>

@@ -24,9 +24,10 @@ import { toast } from 'sonner';
 interface KanbanBoardProps {
   projectId: string;
   onIssueClick: (issueId: string) => void;
+  onAddIssue: (statusId: string) => void;
 }
 
-export function KanbanBoard({ projectId, onIssueClick }: KanbanBoardProps) {
+export function KanbanBoard({ projectId, onIssueClick, onAddIssue }: KanbanBoardProps) {
   const { data, isLoading, error } = useKanban(projectId);
   const moveMutation = useMoveIssue(projectId);
 
@@ -183,6 +184,7 @@ export function KanbanBoard({ projectId, onIssueClick }: KanbanBoardProps) {
             key={column.status.id}
             column={column}
             onIssueClick={onIssueClick}
+            onAddIssue={onAddIssue}
             isOver={overColumnId === column.status.id}
           />
         ))}

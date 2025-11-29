@@ -24,9 +24,9 @@ export default function AuthLayout({
         <div className="max-w-md">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-              <span className="text-xl font-bold">J</span>
+              <span className="text-xl font-bold">L</span>
             </div>
-            <h1 className="text-2xl font-bold">Jira Lite</h1>
+            <h1 className="text-2xl font-bold">Litmers</h1>
           </div>
 
           <h2 className="text-3xl font-bold mb-4">
@@ -60,9 +60,9 @@ export default function AuthLayout({
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
               style={{ background: "linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%)" }}
             >
-              <span className="text-lg font-bold">J</span>
+              <span className="text-lg font-bold">L</span>
             </div>
-            <span className="text-xl font-bold">Jira Lite</span>
+            <span className="text-xl font-bold">Litmers</span>
           </div>
           {children}
         </div>

@@ -174,7 +174,7 @@ export function ProjectCreateModal({
             </Label>
             <Input
               id="name"
-              placeholder="예: Jira Lite MVP"
+              placeholder="예: My Project"
               {...register('name')}
               onChange={handleNameChange}
               disabled={createMutation.isPending}

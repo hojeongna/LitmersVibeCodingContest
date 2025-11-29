@@ -237,7 +237,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>시작하기</CardTitle>
             <CardDescription>
-              Jira Lite에 오신 것을 환영합니다! AI 기반 이슈 트래킹을 시작하세요.
+              Litmers에 오신 것을 환영합니다! AI 기반 이슈 트래킹을 시작하세요.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">

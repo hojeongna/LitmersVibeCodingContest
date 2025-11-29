@@ -56,6 +56,7 @@ interface CreateIssueModalProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   teamId: string;
+  defaultStatusId?: string;
 }
 
 export function CreateIssueModal({
@@ -63,6 +64,7 @@ export function CreateIssueModal({
   onOpenChange,
   projectId,
   teamId,
+  defaultStatusId,
 }: CreateIssueModalProps) {
   const createMutation = useCreateIssue();
   const { data: labels } = useLabels(projectId);
@@ -105,9 +107,9 @@ export function CreateIssueModal({
 
   const onSubmit = async (data: CreateIssueForm) => {
     try {
-      // 기본 상태 찾기 (Backlog)
-      const defaultStatus = statusData?.find((s) => s.name === 'Backlog');
-      const statusId = data.statusId || defaultStatus?.id;
+      // 기본 상태: prop으로 전달된 상태 > 폼에서 선택한 상태 > Backlog
+      const fallbackStatus = statusData?.find((s) => s.name === 'Backlog');
+      const statusId = defaultStatusId || data.statusId || fallbackStatus?.id;
 
       await createMutation.mutateAsync({
         projectId,

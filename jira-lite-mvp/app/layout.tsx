@@ -12,7 +12,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Jira Lite - AI-Native Issue Tracker",
+  title: "Litmers - AI-Native Issue Tracker",
   description: "AI 기반 경량 이슈 트래킹 도구. 팀이 더 빠르게 이슈를 관리하고 해결할 수 있게 해주는 스마트한 이슈 관리 경험을 제공합니다.",
 };
 

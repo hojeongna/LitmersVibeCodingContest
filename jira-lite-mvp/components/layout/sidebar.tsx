@@ -48,10 +48,10 @@ function SidebarSkeleton() {
     <aside className="hidden md:flex md:w-sidebar md:flex-col md:fixed md:inset-y-0 bg-sidebar">
       <div className="flex items-center gap-2 px-3 py-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ai-gradient">
-          <span className="text-sm font-bold text-white">JL</span>
+          <span className="text-sm font-bold text-white">L</span>
         </div>
         <span className="text-lg font-semibold text-sidebar-foreground">
-          Jira Lite
+          Litmers
         </span>
       </div>
       <Separator className="bg-sidebar-muted/30" />
@@ -227,10 +227,10 @@ function SidebarContent() {
       {/* Logo & Brand */}
       <div className="flex items-center gap-2 px-3 py-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ai-gradient">
-          <span className="text-sm font-bold text-white">JL</span>
+          <span className="text-sm font-bold text-white">L</span>
         </div>
         <span className="text-lg font-semibold text-sidebar-foreground">
-          Jira Lite
+          Litmers
         </span>
       </div>
 

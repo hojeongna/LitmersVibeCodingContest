@@ -16,7 +16,7 @@ env:
   - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
     value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jdmh1bXhzcG5hd3RrY3lqZ3BtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODEzMjIsImV4cCI6MjA3OTk1NzMyMn0.7rb1gyPnWo9wh5vn1gcyfx8pa_FqseIRXFUQwdXg60c
   - variable: NEXT_PUBLIC_APP_URL
-    value: https://litmersvibecodingcontest.web.app
+    value: https://litmersvibecodingcontest--litmersvibecodingcontest.asia-east1.hosted.app
 
   # Secret environment variables (firebase apphosting:secrets:set으로 설정)
   - variable: SUPABASE_SERVICE_ROLE_KEY

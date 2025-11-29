@@ -78,7 +78,7 @@ export async function sendTeamInvite({
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;">
 
     <p style="font-size: 12px; color: #9ca3af; margin: 0; text-align: center;">
-      이 이메일은 Jira Lite에서 발송되었습니다.<br>
+      이 이메일은 Litmers에서 발송되었습니다.<br>
       초대를 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.
     </p>
   </div>

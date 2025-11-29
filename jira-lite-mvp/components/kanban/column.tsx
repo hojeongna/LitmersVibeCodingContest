@@ -12,10 +12,11 @@ import { cn } from '@/lib/utils';
 interface KanbanColumnProps {
   column: KanbanColumnType;
   onIssueClick: (issueId: string) => void;
+  onAddIssue: (statusId: string) => void;
   isOver?: boolean;
 }
 
-export function KanbanColumn({ column, onIssueClick, isOver }: KanbanColumnProps) {
+export function KanbanColumn({ column, onIssueClick, onAddIssue, isOver }: KanbanColumnProps) {
   const { status, issues, issueCount, isOverWipLimit } = column;
 
   const { setNodeRef } = useDroppable({
@@ -98,7 +99,12 @@ export function KanbanColumn({ column, onIssueClick, isOver }: KanbanColumnProps
 
       {/* Add Card Button */}
       <div className="border-t border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-        <Button variant="ghost" className="w-full justify-start text-zinc-600 dark:text-zinc-400" size="sm">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-zinc-600 dark:text-zinc-400"
+          size="sm"
+          onClick={() => onAddIssue(status.id)}
+        >
           <Plus className="mr-2 h-4 w-4" />
           이슈 추가
         </Button>
