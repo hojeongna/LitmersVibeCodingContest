@@ -20,9 +20,7 @@ function errorResponse(
 
 // Validation schema for role update
 const updateRoleSchema = z.object({
-  role: z.enum(["OWNER", "ADMIN", "MEMBER"], {
-    errorMap: () => ({ message: "역할은 OWNER, ADMIN 또는 MEMBER여야 합니다" }),
-  }),
+  role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
 });
 
 // PUT /api/teams/[teamId]/members/[userId] - Update member role
@@ -61,7 +59,6 @@ export async function PUT(
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
-      .is("deleted_at", null)
       .single();
 
     if (currentUserError || !currentUserMembership) {
@@ -86,7 +83,6 @@ export async function PUT(
       .select("role, user_id")
       .eq("team_id", teamId)
       .eq("user_id", userId)
-      .is("deleted_at", null)
       .single();
 
     if (targetError || !targetMember) {
@@ -270,7 +266,6 @@ export async function DELETE(
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
-      .is("deleted_at", null)
       .single();
 
     if (currentUserError || !currentUserMembership) {
@@ -287,7 +282,6 @@ export async function DELETE(
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", userId)
-      .is("deleted_at", null)
       .single();
 
     if (targetError || !targetMember) {
@@ -340,10 +334,10 @@ export async function DELETE(
       }
     }
 
-    // Soft delete the member
+    // Hard delete the member (team_members table doesn't have deleted_at column)
     const { error: deleteError } = await supabase
       .from("team_members")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("team_id", teamId)
       .eq("user_id", userId);
 

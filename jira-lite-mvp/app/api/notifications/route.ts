@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
         .from('notifications')
         .select(`
             *,
-            actor:profiles!actor_id(name, avatar_url),
             issue:issues!issue_id(title, project_id)
         `)
         .eq('user_id', user.uid)
@@ -37,12 +36,27 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    // Transform actor metadata
+    // Fetch actor profiles separately
+    const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean) as string[])]
+    const actorProfiles: Record<string, any> = {}
+    
+    if (actorIds.length > 0) {
+      const { data: actors } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', actorIds)
+      
+      actors?.forEach(actor => {
+        actorProfiles[actor.id] = actor
+      })
+    }
+
+    // Transform notifications with actor data
     const transformedNotifications = notifications.map(n => ({
         ...n,
-        actor: n.actor ? {
-            name: n.actor.name,
-            avatar_url: n.actor.avatar_url
+        actor: n.actor_id && actorProfiles[n.actor_id] ? {
+            name: actorProfiles[n.actor_id].name,
+            avatar_url: actorProfiles[n.actor_id].avatar_url
         } : null
     }))
 

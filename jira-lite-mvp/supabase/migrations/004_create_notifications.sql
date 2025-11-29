@@ -1,12 +1,12 @@
 CREATE TABLE notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   title TEXT NOT NULL,
   body TEXT,
-  issue_id UUID REFERENCES issues(id) ON DELETE SET NULL,
-  team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-  actor_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  issue_id TEXT REFERENCES issues(id) ON DELETE SET NULL,
+  team_id TEXT REFERENCES teams(id) ON DELETE CASCADE,
+  actor_id TEXT REFERENCES profiles(id) ON DELETE SET NULL,
   read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
