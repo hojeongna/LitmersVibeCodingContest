@@ -1,38 +1,63 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { KanbanBoard } from '@/components/kanban/board';
+import { ListView } from '@/components/issues/list-view';
 import { IssueDetailPanel } from '@/components/issues/issue-detail-panel';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useRouter } from 'next/navigation';
+import { ViewToggle } from '@/components/kanban/view-toggle';
+import { KanbanSkeleton } from '@/components/kanban/kanban-skeleton';
+import { ListSkeleton } from '@/components/issues/list-skeleton';
+import { useKanban } from '@/hooks/use-kanban';
+import type { ViewMode } from '@/types/view';
 
 export default function BoardPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+
+  const { data, isLoading } = useKanban(projectId);
+
+  // Get current view from URL or localStorage
+  const urlView = searchParams.get('view') as ViewMode;
+  const [currentView, setCurrentView] = useState<ViewMode>(() => {
+    if (urlView) return urlView;
+    const saved = localStorage.getItem(`project-${projectId}-view`) as ViewMode;
+    return saved || 'board';
+  });
+
+  useEffect(() => {
+    if (urlView && urlView !== currentView) {
+      setCurrentView(urlView);
+    }
+  }, [urlView]);
+
+  // Flatten all issues for list view
+  const allIssues = data?.columns.flatMap((col) =>
+    col.issues.map((issue) => ({
+      ...issue,
+      status: col.status,
+    }))
+  ) || [];
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header with View Tabs */}
+      {/* Header with View Toggle */}
       <div className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between">
-          <Tabs defaultValue="board" className="w-auto">
-            <TabsList>
-              <TabsTrigger value="board">보드</TabsTrigger>
-              <TabsTrigger value="list" disabled>
-                리스트
-              </TabsTrigger>
-              <TabsTrigger value="timeline" disabled>
-                타임라인
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <ViewToggle projectId={projectId} />
         </div>
       </div>
 
-      {/* Kanban Board */}
-      <div className="flex-1 overflow-hidden">
-        <KanbanBoard projectId={projectId} onIssueClick={setSelectedIssueId} />
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden p-6">
+        {isLoading ? (
+          currentView === 'board' ? <KanbanSkeleton /> : <ListSkeleton />
+        ) : currentView === 'board' ? (
+          <KanbanBoard projectId={projectId} onIssueClick={setSelectedIssueId} />
+        ) : (
+          <ListView issues={allIssues} onIssueClick={setSelectedIssueId} />
+        )}
       </div>
 
       {/* Issue Detail Panel */}

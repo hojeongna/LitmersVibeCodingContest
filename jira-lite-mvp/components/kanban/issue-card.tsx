@@ -3,7 +3,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { LabelTag } from '@/components/ui/label-tag';
-import { Calendar, CheckSquare } from 'lucide-react';
+import { SubtaskProgress } from '@/components/issues/subtask-progress';
+import { Calendar } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import type { IssueCard as IssueCardType } from '@/types/kanban';
@@ -57,7 +58,14 @@ export function IssueCard({ issue, onClick, className }: IssueCardProps) {
         </div>
       )}
 
-      {/* Footer - Assignee, Due Date, Subtasks */}
+      {/* Subtask Progress */}
+      {issue.subtask_count > 0 && (
+        <div className="mb-3">
+          <SubtaskProgress completed={issue.subtask_completed} total={issue.subtask_count} />
+        </div>
+      )}
+
+      {/* Footer - Assignee & Due Date */}
       <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
         <div className="flex items-center gap-2">
           {issue.assignee && (
@@ -68,20 +76,11 @@ export function IssueCard({ issue, onClick, className }: IssueCardProps) {
               </AvatarFallback>
             </Avatar>
           )}
-          {dueDateText && (
-            <div className={cn('flex items-center gap-1', isOverdue && 'text-red-600 dark:text-red-400')}>
-              <Calendar className="h-3 w-3" />
-              <span>{dueDateText}</span>
-            </div>
-          )}
         </div>
-
-        {issue.subtask_count > 0 && (
-          <div className="flex items-center gap-1">
-            <CheckSquare className="h-3 w-3" />
-            <span>
-              {issue.subtask_completed}/{issue.subtask_count}
-            </span>
+        {dueDateText && (
+          <div className={cn('flex items-center gap-1', isOverdue && 'text-red-600 dark:text-red-400')}>
+            <Calendar className="h-3 w-3" />
+            <span>{dueDateText}</span>
           </div>
         )}
       </div>

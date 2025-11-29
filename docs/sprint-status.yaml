@@ -26,8 +26,8 @@ development_status:
   epic-2: in-progress
   2-1-team-create-list: review
   2-2-team-detail-edit-delete: review
-  2-3-member-invite-system: backlog
-  2-4-member-management: backlog
+  2-3-member-invite-system: review
+  2-4-member-management: in-progress
   2-5-team-activity-log: backlog
   epic-2-retrospective: backlog
 
