@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
 import { logActivity } from "@/lib/services/activity";
 import { z } from "zod";
 
@@ -30,13 +31,10 @@ export async function PUT(
 ) {
   try {
     const { teamId, userId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -58,7 +56,7 @@ export async function PUT(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
+      .eq("user_id", user.uid)
       .single();
 
     if (currentUserError || !currentUserMembership) {
@@ -102,7 +100,7 @@ export async function PUT(
         .eq("id", teamId)
         .single();
 
-      if (!team || team.owner_id !== user.id) {
+      if (!team || team.owner_id !== user.uid) {
         return errorResponse(
           "INSUFFICIENT_PERMISSION",
           "소유권 이전은 현재 OWNER만 가능합니다",
@@ -115,7 +113,7 @@ export async function PUT(
         .from("team_members")
         .update({ role: "ADMIN" })
         .eq("team_id", teamId)
-        .eq("user_id", user.id);
+        .eq("user_id", user.uid);
 
       if (demoteError) {
         console.error("Demote current owner error:", demoteError);
@@ -140,7 +138,7 @@ export async function PUT(
           .from("team_members")
           .update({ role: "OWNER" })
           .eq("team_id", teamId)
-          .eq("user_id", user.id);
+          .eq("user_id", user.uid);
 
         return errorResponse(
           "UPDATE_FAILED",
@@ -167,7 +165,7 @@ export async function PUT(
           .from("team_members")
           .update({ role: "OWNER" })
           .eq("team_id", teamId)
-          .eq("user_id", user.id);
+          .eq("user_id", user.uid);
 
         return errorResponse(
           "UPDATE_FAILED",
@@ -179,11 +177,11 @@ export async function PUT(
       // Log activity
       await logActivity(
         teamId,
-        user.id,
+        user.uid,
         "ownership_transferred",
         "member",
         userId,
-        { fromUserId: user.id, toUserId: userId, oldRole: targetMember.role }
+        { fromUserId: user.uid, toUserId: userId, oldRole: targetMember.role }
       );
 
       return NextResponse.json({
@@ -191,7 +189,7 @@ export async function PUT(
         data: {
           message: "소유권이 이전되었습니다",
           newOwner: userId,
-          previousOwner: user.id,
+          previousOwner: user.uid,
         },
       });
     }
@@ -217,7 +215,7 @@ export async function PUT(
     // Log activity
     await logActivity(
       teamId,
-      user.id,
+      user.uid,
       "role_changed",
       "member",
       userId,
@@ -248,13 +246,10 @@ export async function DELETE(
 ) {
   try {
     const { teamId, userId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -265,7 +260,7 @@ export async function DELETE(
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
-      .eq("user_id", user.id)
+      .eq("user_id", user.uid)
       .single();
 
     if (currentUserError || !currentUserMembership) {
@@ -292,7 +287,7 @@ export async function DELETE(
       );
     }
 
-    const isSelfRemoval = user.id === userId;
+    const isSelfRemoval = user.uid === userId;
 
     // Check if trying to remove OWNER
     if (targetMember.role === "OWNER") {
@@ -353,7 +348,7 @@ export async function DELETE(
     // Log activity
     await logActivity(
       teamId,
-      isSelfRemoval ? userId : user.id,
+      isSelfRemoval ? userId : user.uid,
       isSelfRemoval ? "member_left" : "member_removed",
       "member",
       userId,

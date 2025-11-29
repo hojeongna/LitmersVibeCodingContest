@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
@@ -30,6 +31,8 @@ function LoginFormContent() {
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
+
+  const { resolvedTheme } = useTheme();
 
   // Show message if account was deleted
   useEffect(() => {
@@ -87,7 +90,11 @@ function LoginFormContent() {
     <div className="flex flex-col gap-6">
       <div className="text-center lg:text-left">
         <div className="flex justify-center lg:justify-start mb-4">
-          <img src="/logo.png" alt="Litmers" className="h-12 w-12" />
+          <img 
+            src={resolvedTheme === "dark" ? "/logo-dark.png" : "/logo.png"} 
+            alt="Litmers" 
+            className="h-12 w-12" 
+          />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">로그인</h1>
         <p className="text-muted-foreground mt-1">

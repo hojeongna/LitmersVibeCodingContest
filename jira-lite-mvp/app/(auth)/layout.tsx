@@ -16,12 +16,7 @@ export default function AuthLayout({
     <div className="min-h-screen flex">
       {/* Brand Section - Left */}
       <div
-        className="hidden lg:flex lg:flex-1 flex-col justify-center px-12 text-white"
-        style={{
-          backgroundImage: "url('/login-bg.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+        className="hidden lg:flex lg:flex-1 flex-col justify-center px-12 text-white bg-[url('/login-bg.png')] dark:bg-[url('/login-bg-dark.png')] bg-cover bg-center"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#5B5FC7]/90 to-[#3B82F6]/90 mix-blend-multiply" />
         <div className="relative z-10 max-w-md">

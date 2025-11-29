@@ -1,16 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 import { NextResponse } from 'next/server';
 
 // PUT /api/projects/[projectId]/favorite - 즐겨찾기 토글
 export async function PUT(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -23,17 +21,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
     const { data: existing } = await supabase
       .from('project_favorites')
       .select()
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('project_id', projectId)
       .single();
 
     if (existing) {
       // 제거
-      await supabase.from('project_favorites').delete().eq('user_id', user.id).eq('project_id', projectId);
+      await supabase.from('project_favorites').delete().eq('user_id', user.uid).eq('project_id', projectId);
       return NextResponse.json({ success: true, data: { isFavorite: false } });
     } else {
       // 추가
-      await supabase.from('project_favorites').insert({ user_id: user.id, project_id: projectId });
+      await supabase.from('project_favorites').insert({ user_id: user.uid, project_id: projectId });
       return NextResponse.json({ success: true, data: { isFavorite: true } });
     }
   } catch (error) {

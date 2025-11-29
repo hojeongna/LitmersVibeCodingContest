@@ -1,16 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 import { NextResponse } from 'next/server';
 
 // PUT /api/projects/[projectId]/archive - 아카이브 토글
 export async function PUT(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -37,11 +35,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
-      .eq('user_id', user.id)
+      .eq('user_id', user.uid)
       .eq('status', 'active')
       .single();
 
-    const isOwner = project.owner_id === user.id;
+    const isOwner = project.owner_id === user.uid;
     const isAdmin = membership?.role === 'OWNER' || membership?.role === 'ADMIN';
 
     if (!isOwner && !isAdmin) {

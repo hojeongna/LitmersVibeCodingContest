@@ -12,6 +12,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +71,7 @@ function SidebarSkeleton() {
 function SidebarContent() {
   const pathname = usePathname();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
@@ -228,7 +230,7 @@ function SidebarContent() {
       <div className="flex items-center gap-2 px-3 py-4">
         <div className="relative h-8 w-8">
           <img
-            src="/logo.png"
+            src={resolvedTheme === "dark" ? "/logo-dark.png" : "/logo.png"}
             alt="Litmers Logo"
             className="h-full w-full object-contain"
           />

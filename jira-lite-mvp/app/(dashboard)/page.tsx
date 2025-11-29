@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, FolderKanban, Users, BarChart3, ArrowRight } from "lucide-react";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function DashboardPage() {
+  const { resolvedTheme } = useTheme();
   const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -243,7 +245,7 @@ export default function DashboardPage() {
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
             <div className="mb-4">
               <img 
-                src="/empty-state.png" 
+                src={resolvedTheme === "dark" ? "/empty-state-dark.png" : "/empty-state.png"}
                 alt="No projects" 
                 className="h-48 w-auto object-contain"
               />
