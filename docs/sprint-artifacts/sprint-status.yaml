@@ -103,6 +103,6 @@ development_status:
   5-1-ai-summary-suggestion: review
   5-2-ai-auto-label-duplicate: review
   5-3-dashboard: review
-  5-4-notification-system: ready-for-dev
-  5-5-ai-advanced-features: ready-for-dev
+  5-4-notification-system: review
+  5-5-ai-advanced-features: review
   epic-5-retrospective: optional

@@ -1,6 +1,6 @@
 # Story 5.5: AI 고급 기능
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -45,50 +45,41 @@ so that **AI 리소스를 효율적으로 관리하고 긴 토론을 빠르게 �
 ## Tasks / Subtasks
 
 ### Task 1: Rate Limiting 인프라
-- [ ] 1.1 `ai_usage` 테이블 마이그레이션
-  ```sql
-  CREATE TABLE ai_usage (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id),
-    action_type TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  CREATE INDEX idx_ai_usage_user_time ON ai_usage(user_id, created_at DESC);
-  ```
-- [ ] 1.2 `lib/ai/rate-limiter.ts` 구현
+- [x] 1.1 `ai_usage` 테이블 마이그레이션
+- [x] 1.2 `lib/ai/rate-limiter.ts` 구현
 
 ### Task 2: Rate Limiter 구현
-- [ ] 2.1 분당 사용량 체크 함수
-- [ ] 2.2 일당 사용량 체크 함수
-- [ ] 2.3 사용량 기록 함수
-- [ ] 2.4 남은 시간/횟수 계산 함수
+- [x] 2.1 분당 사용량 체크 함수
+- [x] 2.2 일당 사용량 체크 함수
+- [x] 2.3 사용량 기록 함수
+- [x] 2.4 남은 시간/횟수 계산 함수
 
 ### Task 3: 기존 AI API에 Rate Limit 적용
-- [ ] 3.1 `/api/ai/summary`에 Rate Limit 추가
-- [ ] 3.2 `/api/ai/suggestions`에 Rate Limit 추가
-- [ ] 3.3 `/api/ai/classify`에 Rate Limit 추가
-- [ ] 3.4 `/api/ai/duplicates`에 Rate Limit 추가
+- [x] 3.1 `/api/ai/summary`에 Rate Limit 추가
+- [x] 3.2 `/api/ai/suggestions`에 Rate Limit 추가
+- [x] 3.3 `/api/ai/classify`에 Rate Limit 추가
+- [x] 3.4 `/api/ai/duplicates`에 Rate Limit 추가
 
 ### Task 4: 댓글 요약 API
-- [ ] 4.1 `app/api/ai/comment-summary/route.ts` 생성
-- [ ] 4.2 댓글 5개 이상 검증
-- [ ] 4.3 댓글 목록 조회 및 프롬프트 생성
-- [ ] 4.4 OpenAI 호출 및 결과 파싱
-- [ ] 4.5 캐싱 (댓글 hash 기반)
+- [x] 4.1 `app/api/ai/comment-summary/route.ts` 생성
+- [x] 4.2 댓글 5개 이상 검증
+- [x] 4.3 댓글 목록 조회 및 프롬프트 생성
+- [x] 4.4 OpenAI 호출 및 결과 파싱
+- [x] 4.5 캐싱 (댓글 hash 기반)
 
 ### Task 5: 댓글 요약 UI
-- [ ] 5.1 `components/ai/comment-summary.tsx` 생성
+- [x] 5.1 `components/ai/comment-summary.tsx` 생성
 - [ ] 5.2 이슈 상세 패널 댓글 섹션에 버튼 추가
-- [ ] 5.3 요약 결과 표시 모달/패널
-- [ ] 5.4 복사 버튼 구현
+- [x] 5.3 요약 결과 표시 모달/패널
+- [x] 5.4 복사 버튼 구현
 
 ### Task 6: 사용량 조회 API
-- [ ] 6.1 `app/api/ai/usage/route.ts` 생성
-- [ ] 6.2 분당/일당 사용량 반환
+- [x] 6.1 `app/api/ai/usage/route.ts` 생성
+- [x] 6.2 분당/일당 사용량 반환
 
 ### Task 7: Rate Limit 에러 UI
-- [ ] 7.1 AI 버튼에 disabled 상태 처리
-- [ ] 7.2 에러 메시지 표시 컴포넌트
+- [x] 7.1 AI 버튼에 disabled 상태 처리
+- [x] 7.2 에러 메시지 표시 컴포넌트
 - [ ] 7.3 재시도 가능 시간 카운트다운 (선택)
 
 ## Dev Notes
@@ -279,3 +270,15 @@ export function CommentSummary({ issueId, commentCount }: Props) {
 ### Debug Log References
 ### Completion Notes List
 ### File List
+- supabase/migrations/005_create_ai_usage.sql
+- lib/supabase/types.ts
+- lib/ai/rate-limiter.ts
+- lib/ai/prompts.ts
+- app/api/ai/summary/route.ts
+- app/api/ai/suggestions/route.ts
+- app/api/ai/classify/route.ts
+- app/api/ai/duplicates/route.ts
+- app/api/ai/comment-summary/route.ts
+- app/api/ai/usage/route.ts
+- components/ai/comment-summary.tsx
+

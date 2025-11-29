@@ -207,12 +207,11 @@ export function CreateIssueModal({
                 name="assigneeId"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select value={field.value || undefined} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="담당자 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">미지정</SelectItem>
                       {teamMembers?.map((member) => (
                         <SelectItem key={member.user_id} value={member.user_id}>
                           {member.profile?.name || member.profile?.email}

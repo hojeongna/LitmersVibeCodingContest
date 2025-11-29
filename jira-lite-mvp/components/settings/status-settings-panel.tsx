@@ -108,8 +108,8 @@ export function StatusSettingsPanel({ projectId, userRole }: StatusSettingsPanel
 
   // Update local statuses when data changes
   useEffect(() => {
-    if (data?.statuses) {
-      setStatuses(data.statuses);
+    if (data) {
+      setStatuses(data);
     }
   }, [data]);
 
@@ -161,7 +161,7 @@ export function StatusSettingsPanel({ projectId, userRole }: StatusSettingsPanel
     );
   }
 
-  const statusList = data?.statuses || [];
+  const statusList = data || [];
   const canAddMore = statusList.length < 9;
 
   return (

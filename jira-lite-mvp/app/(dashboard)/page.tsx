@@ -8,24 +8,42 @@ import { CreateIssueModal } from "@/components/issues/create-issue-modal";
 import { ProjectCreateModal } from "@/components/projects/project-create-modal";
 import { useProjects } from "@/hooks/use-projects";
 import { useTeams } from "@/hooks/use-teams";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
   const { data: projects } = useProjects();
   const { data: teams } = useTeams();
   
-  // 첫 번째 활성 프로젝트와 팀 가져오기
-  const firstProject = projects?.find(p => !p.is_archived);
-  const firstTeam = teams?.[0];
+  // 활성 프로젝트 필터링
+  const activeProjects = projects?.filter(p => !p.is_archived) || [];
+  
+  // 선택된 프로젝트 찾기
+  const selectedProject = selectedProjectId 
+    ? activeProjects.find(p => p.id === selectedProjectId)
+    : activeProjects[0];
+  
+  // 선택된 프로젝트의 팀 찾기
+  const selectedTeam = selectedProject 
+    ? teams?.find(t => t.id === selectedProject.team_id)
+    : teams?.[0];
 
   const handleCreateIssue = () => {
     // 프로젝트가 없으면 프로젝트 생성 모달 열기
-    if (!firstProject) {
+    if (activeProjects.length === 0) {
+      toast.error("먼저 프로젝트를 생성해주세요");
       setIsCreateProjectOpen(true);
       return;
     }
+    
+    // 첫 번째 프로젝트를 기본 선택
+    if (!selectedProjectId && activeProjects.length > 0) {
+      setSelectedProjectId(activeProjects[0].id);
+    }
+    
     setIsCreateIssueOpen(true);
   };
 
@@ -121,19 +139,19 @@ export default function DashboardPage() {
       </Card>
 
       {/* Modals */}
-      {firstProject && firstTeam && (
+      {selectedProject && selectedTeam && (
         <CreateIssueModal
           open={isCreateIssueOpen}
           onOpenChange={setIsCreateIssueOpen}
-          projectId={firstProject.id}
-          teamId={firstTeam.id}
+          projectId={selectedProject.id}
+          teamId={selectedTeam.id}
         />
       )}
       
       <ProjectCreateModal
         open={isCreateProjectOpen}
         onOpenChange={setIsCreateProjectOpen}
-        defaultTeamId={firstTeam?.id}
+        defaultTeamId={teams?.[0]?.id}
       />
     </div>
   );

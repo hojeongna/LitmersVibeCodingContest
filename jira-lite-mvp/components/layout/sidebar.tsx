@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   FolderKanban,
-  Settings,
   Bell,
   ChevronDown,
   Plus,
@@ -339,23 +338,6 @@ function SidebarContent() {
         >
           <Bell className="h-4 w-4 shrink-0" />
           <span className="truncate">알림</span>
-        </Link>
-
-
-
-        {/* Settings */}
-        <Link
-          href="/settings"
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-            isActive("/settings")
-              ? "bg-sidebar-active text-white"
-              : "text-sidebar-foreground/70 hover:bg-sidebar-hover hover:text-sidebar-foreground"
-          )}
-          onClick={() => setIsMobileOpen(false)}
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          <span className="truncate">설정</span>
         </Link>
       </div>
 
