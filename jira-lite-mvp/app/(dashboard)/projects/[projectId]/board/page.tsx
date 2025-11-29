@@ -13,8 +13,9 @@ import type { ViewMode } from '@/types/view';
 
 import { useProject } from '@/hooks/use-projects';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import { CreateIssueModal } from '@/components/issues/create-issue-modal';
+import Link from 'next/link';
 
 export default function BoardPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
@@ -66,10 +67,18 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
       <div className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between">
           <ViewToggle projectId={projectId} />
-          <Button className="gap-2" onClick={() => setIsCreateIssueOpen(true)}>
-            <Plus className="h-4 w-4" />
-            새 이슈
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button className="gap-2" onClick={() => setIsCreateIssueOpen(true)}>
+              <Plus className="h-4 w-4" />
+              새 이슈
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={`/projects/${projectId}/settings`}>
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">프로젝트 설정</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 

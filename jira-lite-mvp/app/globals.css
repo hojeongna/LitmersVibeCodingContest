@@ -66,11 +66,11 @@
     --label-docs-bg: 152 81% 91%; /* #D1FAE5 */
     --label-docs-text: 160 84% 39%; /* #059669 */
 
-    /* Sidebar Colors (Dark theme) */
-    --sidebar-background: 240 6% 10%; /* Zinc 900 #18181B */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 240 4% 46%;
-    --sidebar-hover: 240 5% 17%; /* Zinc 800 */
+    /* Sidebar Colors (Light theme) */
+    --sidebar-background: 240 5% 96%; /* Zinc 100 #F4F4F5 */
+    --sidebar-foreground: 240 6% 10%; /* Zinc 900 */
+    --sidebar-muted: 240 4% 65%; /* Zinc 400 */
+    --sidebar-hover: 240 5% 90%; /* Zinc 200 */
     --sidebar-active: 238 39% 57%; /* Primary */
 
     /* Chart Colors */
@@ -143,12 +143,12 @@
     --label-docs-bg: 152 81% 91%;
     --label-docs-text: 160 84% 39%;
 
-    /* Sidebar Colors (remains dark) */
-    --sidebar-background: 240 6% 10%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 240 4% 46%;
-    --sidebar-hover: 240 5% 17%;
-    --sidebar-active: 238 39% 57%;
+    /* Sidebar Colors (Dark theme) */
+    --sidebar-background: 240 6% 10%; /* Zinc 900 */
+    --sidebar-foreground: 0 0% 100%; /* White */
+    --sidebar-muted: 240 4% 46%; /* Zinc 500 */
+    --sidebar-hover: 240 5% 17%; /* Zinc 800 */
+    --sidebar-active: 238 39% 57%; /* Primary */
 
     /* Chart Colors */
     --chart-1: 238 39% 57%;

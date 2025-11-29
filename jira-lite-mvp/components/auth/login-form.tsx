@@ -86,6 +86,9 @@ function LoginFormContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center lg:text-left">
+        <div className="flex justify-center lg:justify-start mb-4">
+          <img src="/logo.png" alt="Litmers" className="h-12 w-12" />
+        </div>
         <h1 className="text-2xl font-bold tracking-tight">로그인</h1>
         <p className="text-muted-foreground mt-1">
           계정에 로그인하여 시작하세요

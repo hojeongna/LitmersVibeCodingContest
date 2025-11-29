@@ -241,8 +241,12 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="rounded-full bg-primary/10 p-4 mb-4">
-              <FolderKanban className="h-8 w-8 text-primary" />
+            <div className="mb-4">
+              <img 
+                src="/empty-state.png" 
+                alt="No projects" 
+                className="h-48 w-auto object-contain"
+              />
             </div>
             <h3 className="text-lg font-semibold mb-2">첫 프로젝트 만들기</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">

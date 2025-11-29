@@ -18,13 +18,16 @@ export default function AuthLayout({
       <div
         className="hidden lg:flex lg:flex-1 flex-col justify-center px-12 text-white"
         style={{
-          background: "linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%)",
+          backgroundImage: "url('/login-bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <div className="max-w-md">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#5B5FC7]/90 to-[#3B82F6]/90 mix-blend-multiply" />
+        <div className="relative z-10 max-w-md">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-              <span className="text-xl font-bold">L</span>
+            <div className="relative w-10 h-10">
+              <img src="/logo.png" alt="Litmers" className="w-full h-full object-contain brightness-0 invert" />
             </div>
             <h1 className="text-2xl font-bold">Litmers</h1>
           </div>
@@ -56,11 +59,8 @@ export default function AuthLayout({
         <div className="w-full max-w-sm">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-              style={{ background: "linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%)" }}
-            >
-              <span className="text-lg font-bold">L</span>
+            <div className="relative w-8 h-8">
+              <img src="/logo.png" alt="Litmers" className="w-full h-full object-contain" />
             </div>
             <span className="text-xl font-bold">Litmers</span>
           </div>

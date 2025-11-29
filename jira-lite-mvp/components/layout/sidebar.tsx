@@ -226,8 +226,12 @@ function SidebarContent() {
     <>
       {/* Logo & Brand */}
       <div className="flex items-center gap-2 px-3 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ai-gradient">
-          <span className="text-sm font-bold text-white">L</span>
+        <div className="relative h-8 w-8">
+          <img
+            src="/logo.png"
+            alt="Litmers Logo"
+            className="h-full w-full object-contain"
+          />
         </div>
         <span className="text-lg font-semibold text-sidebar-foreground">
           Litmers
