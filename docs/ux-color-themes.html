@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Lite MVP - Color Theme Visualizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #18181b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #18181b;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: #71717a;
+            margin-bottom: 40px;
+        }
+
+        .theme-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e4e4e7;
+        }
+
+        .theme-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .theme-badge {
+            background: #5B5FC7;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Color Palette */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .color-card {
+            text-align: center;
+        }
+
+        .color-swatch {
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.05);
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 2px;
+        }
+
+        .color-hex {
+            font-size: 0.75rem;
+            color: #71717a;
+            font-family: monospace;
+        }
+
+        /* Component Preview */
+        .component-section {
+            margin-top: 32px;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #3f3f46;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .component-card {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e4e4e7;
+        }
+
+        .component-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background: #5B5FC7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4F52B3;
+        }
+
+        .btn-secondary {
+            background: #f4f4f5;
+            color: #18181b;
+            border: 1px solid #e4e4e7;
+        }
+
+        .btn-secondary:hover {
+            background: #e4e4e7;
+        }
+
+        .btn-destructive {
+            background: #EF4444;
+            color: white;
+        }
+
+        .btn-destructive:hover {
+            background: #DC2626;
+        }
+
+        .btn-ai {
+            background: linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%);
+            color: white;
+        }
+
+        .btn-ai:hover {
+            opacity: 0.9;
+        }
+
+        /* Form Inputs */
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #3f3f46;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #5B5FC7;
+            box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.1);
+        }
+
+        .input-error {
+            border-color: #EF4444;
+        }
+
+        .error-text {
+            font-size: 0.75rem;
+            color: #EF4444;
+            margin-top: 4px;
+        }
+
+        /* Cards */
+        .issue-card {
+            background: white;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .issue-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #d4d4d8;
+        }
+
+        .issue-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #18181b;
+        }
+
+        .issue-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .priority-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .priority-medium {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .priority-low {
+            background: #DCFCE7;
+            color: #16A34A;
+        }
+
+        .label-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .label-bug {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .label-feature {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .label-enhancement {
+            background: #F3E8FF;
+            color: #7C3AED;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .alert-warning {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+
+        .alert-info {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+        }
+
+        /* AI Panel */
+        .ai-panel {
+            background: linear-gradient(135deg, rgba(91, 95, 199, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(91, 95, 199, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .ai-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #5B5FC7;
+        }
+
+        .ai-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%);
+            border-radius: 4px;
+        }
+
+        .ai-content {
+            font-size: 0.875rem;
+            color: #3f3f46;
+            line-height: 1.6;
+        }
+
+        /* Kanban Preview */
+        .kanban-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .kanban-column {
+            background: #f4f4f5;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid;
+        }
+
+        .column-backlog .column-header {
+            border-color: #71717a;
+        }
+
+        .column-progress .column-header {
+            border-color: #3B82F6;
+        }
+
+        .column-done .column-header {
+            border-color: #22C55E;
+        }
+
+        .column-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .column-count {
+            background: #e4e4e7;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .mini-card {
+            background: white;
+            border: 1px solid #e4e4e7;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+
+        /* Typography */
+        .typography-section {
+            margin-top: 32px;
+        }
+
+        .type-sample {
+            margin-bottom: 16px;
+        }
+
+        .type-h1 { font-size: 2rem; font-weight: 700; }
+        .type-h2 { font-size: 1.5rem; font-weight: 600; }
+        .type-h3 { font-size: 1.25rem; font-weight: 600; }
+        .type-body { font-size: 1rem; }
+        .type-small { font-size: 0.875rem; color: #71717a; }
+
+        /* Semantic Colors */
+        .semantic-section {
+            margin-top: 24px;
+        }
+
+        .semantic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .semantic-item {
+            text-align: center;
+        }
+
+        .semantic-swatch {
+            height: 48px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        /* Dark Mode Toggle */
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e4e4e7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            z-index: 100;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background: #09090b;
+            color: #fafafa;
+        }
+
+        body.dark-mode .theme-section {
+            background: #18181b;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .theme-header {
+            border-color: #27272a;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode .theme-name,
+        body.dark-mode .issue-title {
+            color: #fafafa;
+        }
+
+        body.dark-mode .component-card {
+            background: #27272a;
+            border-color: #3f3f46;
+        }
+
+        body.dark-mode .input {
+            background: #27272a;
+            border-color: #3f3f46;
+            color: #fafafa;
+        }
+
+        body.dark-mode .issue-card {
+            background: #27272a;
+            border-color: #3f3f46;
+        }
+
+        body.dark-mode .kanban-column {
+            background: #27272a;
+        }
+
+        body.dark-mode .mini-card {
+            background: #18181b;
+            border-color: #3f3f46;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #27272a;
+            color: #fafafa;
+            border-color: #3f3f46;
+        }
+
+        body.dark-mode .mode-toggle {
+            background: #18181b;
+            border-color: #3f3f46;
+            color: #fafafa;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .kanban-preview {
+                grid-template-columns: 1fr;
+            }
+
+            .semantic-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mode-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <div class="container">
+        <h1>Jira Lite MVP - Color Theme</h1>
+        <p class="subtitle">Linear Productivity Theme - AI-Native Issue Tracker</p>
+
+        <!-- Theme Section -->
+        <div class="theme-section">
+            <div class="theme-header">
+                <h2 class="theme-name">Linear Productivity</h2>
+                <span class="theme-badge">Selected Theme</span>
+            </div>
+
+            <!-- Primary Colors -->
+            <h3 class="section-title">Primary Colors</h3>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #5B5FC7; color: white;">Primary</div>
+                    <div class="color-name">Indigo</div>
+                    <div class="color-hex">#5B5FC7</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #3B82F6; color: white;">Accent</div>
+                    <div class="color-name">Blue</div>
+                    <div class="color-hex">#3B82F6</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #18181B; color: white;">Text</div>
+                    <div class="color-name">Zinc 900</div>
+                    <div class="color-hex">#18181B</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #71717A; color: white;">Secondary</div>
+                    <div class="color-name">Zinc 500</div>
+                    <div class="color-hex">#71717A</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #FAFAFA; border: 1px solid #e4e4e7;">BG</div>
+                    <div class="color-name">Zinc 50</div>
+                    <div class="color-hex">#FAFAFA</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #FFFFFF; border: 1px solid #e4e4e7;">Surface</div>
+                    <div class="color-name">White</div>
+                    <div class="color-hex">#FFFFFF</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #E4E4E7; border: 1px solid #d4d4d8;">Border</div>
+                    <div class="color-name">Zinc 200</div>
+                    <div class="color-hex">#E4E4E7</div>
+                </div>
+            </div>
+
+            <!-- Semantic Colors -->
+            <div class="semantic-section">
+                <h3 class="section-title">Semantic Colors</h3>
+                <div class="semantic-grid">
+                    <div class="semantic-item">
+                        <div class="semantic-swatch" style="background: #22C55E;"></div>
+                        <div class="color-name">Success</div>
+                        <div class="color-hex">#22C55E</div>
+                    </div>
+                    <div class="semantic-item">
+                        <div class="semantic-swatch" style="background: #F59E0B;"></div>
+                        <div class="color-name">Warning</div>
+                        <div class="color-hex">#F59E0B</div>
+                    </div>
+                    <div class="semantic-item">
+                        <div class="semantic-swatch" style="background: #EF4444;"></div>
+                        <div class="color-name">Error</div>
+                        <div class="color-hex">#EF4444</div>
+                    </div>
+                    <div class="semantic-item">
+                        <div class="semantic-swatch" style="background: #3B82F6;"></div>
+                        <div class="color-name">Info</div>
+                        <div class="color-hex">#3B82F6</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component Preview -->
+            <div class="component-section">
+                <h3 class="section-title">UI Components</h3>
+                <div class="component-grid">
+                    <!-- Buttons -->
+                    <div class="component-card">
+                        <div class="component-label">Buttons</div>
+                        <button class="btn btn-primary">Primary</button>
+                        <button class="btn btn-secondary">Secondary</button>
+                        <button class="btn btn-destructive">Delete</button>
+                        <br>
+                        <button class="btn btn-ai">AI Summary</button>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="component-card">
+                        <div class="component-label">Form Inputs</div>
+                        <div class="input-group">
+                            <label class="input-label">Issue Title</label>
+                            <input type="text" class="input" placeholder="Enter issue title...">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Description (Error)</label>
+                            <input type="text" class="input input-error" value="Too short">
+                            <div class="error-text">Description must be at least 10 characters</div>
+                        </div>
+                    </div>
+
+                    <!-- Issue Card -->
+                    <div class="component-card">
+                        <div class="component-label">Issue Card</div>
+                        <div class="issue-card">
+                            <div class="issue-title">Implement user authentication</div>
+                            <div class="issue-meta">
+                                <span class="priority-badge priority-high">HIGH</span>
+                                <span class="label-tag label-feature">Feature</span>
+                                <span style="color: #71717a; font-size: 0.75rem;">Due: Dec 15</span>
+                            </div>
+                        </div>
+                        <div class="issue-card">
+                            <div class="issue-title">Fix login button alignment</div>
+                            <div class="issue-meta">
+                                <span class="priority-badge priority-low">LOW</span>
+                                <span class="label-tag label-bug">Bug</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="component-card">
+                        <div class="component-label">Alerts</div>
+                        <div class="alert alert-success">Issue created successfully</div>
+                        <div class="alert alert-error">Failed to save changes</div>
+                        <div class="alert alert-warning">Deadline approaching</div>
+                        <div class="alert alert-info">AI is generating summary...</div>
+                    </div>
+
+                    <!-- AI Panel -->
+                    <div class="component-card">
+                        <div class="component-label">AI Feature Panel</div>
+                        <div class="ai-panel">
+                            <div class="ai-panel-header">
+                                <div class="ai-icon"></div>
+                                AI Summary
+                            </div>
+                            <div class="ai-content">
+                                This issue involves implementing a complete user authentication system including login, signup, and password reset functionality. The main challenge is integrating Google OAuth while maintaining security standards.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Badges -->
+                    <div class="component-card">
+                        <div class="component-label">Priority & Labels</div>
+                        <div style="margin-bottom: 12px;">
+                            <span class="priority-badge priority-high">HIGH</span>
+                            <span class="priority-badge priority-medium">MEDIUM</span>
+                            <span class="priority-badge priority-low">LOW</span>
+                        </div>
+                        <div>
+                            <span class="label-tag label-bug">Bug</span>
+                            <span class="label-tag label-feature">Feature</span>
+                            <span class="label-tag label-enhancement">Enhancement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanban Preview -->
+            <div class="component-section">
+                <h3 class="section-title">Kanban Board Preview</h3>
+                <div class="kanban-preview">
+                    <div class="kanban-column column-backlog">
+                        <div class="column-header">
+                            <span class="column-title">Backlog</span>
+                            <span class="column-count">3</span>
+                        </div>
+                        <div class="mini-card">Setup project structure</div>
+                        <div class="mini-card">Design database schema</div>
+                        <div class="mini-card">Create API endpoints</div>
+                    </div>
+                    <div class="kanban-column column-progress">
+                        <div class="column-header">
+                            <span class="column-title">In Progress</span>
+                            <span class="column-count">2</span>
+                        </div>
+                        <div class="mini-card">Implement auth flow</div>
+                        <div class="mini-card">Build kanban board UI</div>
+                    </div>
+                    <div class="kanban-column column-done">
+                        <div class="column-header">
+                            <span class="column-title">Done</span>
+                            <span class="column-count">1</span>
+                        </div>
+                        <div class="mini-card">Project initialization</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typography -->
+            <div class="typography-section">
+                <h3 class="section-title">Typography</h3>
+                <div class="type-sample">
+                    <p class="type-h1">Heading 1 - Inter Bold 32px</p>
+                    <p class="type-h2">Heading 2 - Inter Semibold 24px</p>
+                    <p class="type-h3">Heading 3 - Inter Semibold 20px</p>
+                    <p class="type-body">Body Text - Inter Regular 16px - The quick brown fox jumps over the lazy dog.</p>
+                    <p class="type-small">Small Text - Inter Regular 14px - Secondary information and metadata</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Summary -->
+        <div class="theme-section">
+            <h2 class="theme-name">Theme Specification Summary</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-top: 16px;">
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 8px;">Color Psychology</h4>
+                    <p style="font-size: 0.875rem; color: #71717a;">
+                        Indigo primary conveys trust and professionalism. Blue accent represents AI/technology.
+                        Neutral grays provide a clean, distraction-free workspace.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 8px;">Typography</h4>
+                    <p style="font-size: 0.875rem; color: #71717a;">
+                        Inter font family - modern, highly readable, excellent for UI.
+                        Consistent weight hierarchy for clear visual structure.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 8px;">Best For</h4>
+                    <p style="font-size: 0.875rem; color: #71717a;">
+                        Productivity tools, project management, AI-powered applications,
+                        SaaS products, developer tools.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

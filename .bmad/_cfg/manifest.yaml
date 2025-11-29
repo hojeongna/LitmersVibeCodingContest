@@ -1,0 +1,10 @@
+installation:
+  version: 6.0.0-alpha.12
+  installDate: '2025-11-29T02:04:38.698Z'
+  lastUpdated: '2025-11-29T02:04:38.698Z'
+modules:
+  - core
+  - bmm
+ides:
+  - claude-code
+  - antigravity

@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Lite MVP - Design Direction Mockups</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5B5FC7;
+            --primary-hover: #4F52B3;
+            --accent: #3B82F6;
+            --text-primary: #18181B;
+            --text-secondary: #71717A;
+            --bg: #FAFAFA;
+            --surface: #FFFFFF;
+            --border: #E4E4E7;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 60px;
+            padding: 24px;
+        }
+
+        .screen-container {
+            display: none;
+        }
+
+        .screen-container.active {
+            display: block;
+        }
+
+        .screen-header {
+            margin-bottom: 24px;
+        }
+
+        .screen-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .screen-desc {
+            color: var(--text-secondary);
+        }
+
+        /* App Shell - Sidebar Layout */
+        .app-shell {
+            display: flex;
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            height: 700px;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #18181B;
+            color: white;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 24px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #71717A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-item.active {
+            background: var(--primary);
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            background: currentColor;
+            border-radius: 4px;
+            opacity: 0.7;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--error);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sidebar-projects {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .project-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #A1A1AA;
+        }
+
+        .project-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .project-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .project-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Main Panel */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* View Tabs */
+        .view-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .view-tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+        }
+
+        .view-tab:hover {
+            background: var(--bg);
+        }
+
+        .view-tab.active {
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: var(--bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            width: 200px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Kanban Board */
+        .kanban-container {
+            flex: 1;
+            padding: 16px 24px;
+            overflow-x: auto;
+            display: flex;
+            gap: 16px;
+        }
+
+        .kanban-column {
+            min-width: 280px;
+            background: var(--bg);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+        }
+
+        .column-header {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid;
+        }
+
+        .column-backlog .column-header { border-color: #71717A; }
+        .column-progress .column-header { border-color: var(--accent); }
+        .column-review .column-header { border-color: #A855F7; }
+        .column-done .column-header { border-color: var(--success); }
+
+        .column-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-count {
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .column-menu {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .column-cards {
+            padding: 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Issue Card */
+        .issue-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .issue-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #D4D4D8;
+        }
+
+        .issue-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .issue-id {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .issue-title {
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .issue-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .priority-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .priority-high { background: #FEE2E2; color: #DC2626; }
+        .priority-medium { background: #FEF3C7; color: #D97706; }
+        .priority-low { background: #DCFCE7; color: #16A34A; }
+
+        .label-tag {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .label-bug { background: #FEE2E2; color: #DC2626; }
+        .label-feature { background: #DBEAFE; color: #2563EB; }
+        .label-enhancement { background: #F3E8FF; color: #7C3AED; }
+        .label-docs { background: #D1FAE5; color: #059669; }
+
+        .issue-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .issue-assignee {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .issue-due {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .issue-due.overdue {
+            color: var(--error);
+        }
+
+        .subtask-progress {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Add Card Button */
+        .add-card-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border: 1px dashed var(--border);
+            background: transparent;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .add-card-btn:hover {
+            background: var(--surface);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Issue Detail Panel */
+        .detail-panel {
+            width: 400px;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+        }
+
+        .detail-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: var(--bg);
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .detail-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+        }
+
+        .detail-description {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* AI Panel */
+        .ai-panel {
+            background: linear-gradient(135deg, rgba(91, 95, 199, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(91, 95, 199, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ai-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 4px;
+        }
+
+        .ai-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--primary);
+        }
+
+        .ai-content {
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .ai-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(91, 95, 199, 0.3);
+            background: white;
+            color: var(--primary);
+        }
+
+        .ai-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .comment {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .comment-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .comment-text {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .dashboard-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .chart-placeholder {
+            height: 150px;
+            background: var(--bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .issue-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .issue-list-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Login Screen */
+        .login-container {
+            min-height: 700px;
+            display: flex;
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .login-brand {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .login-tagline {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+
+        .login-features {
+            list-style: none;
+        }
+
+        .login-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 1rem;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-form-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            margin-bottom: 16px;
+        }
+
+        .login-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .login-btn-google {
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 60px;
+            }
+            .sidebar-label,
+            .sidebar-item span,
+            .logo-text,
+            .project-item span {
+                display: none;
+            }
+            .detail-panel {
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 100;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-left {
+                display: none;
+            }
+            .kanban-column {
+                min-width: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-title">Jira Lite MVP - Design Mockups</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showScreen('kanban')">Kanban Board</button>
+            <button class="nav-tab" onclick="showScreen('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="showScreen('login')">Login</button>
+            <button class="nav-tab" onclick="showScreen('team')">Team</button>
+            <button class="nav-tab" onclick="showScreen('profile')">Profile</button>
+            <button class="nav-tab" onclick="showScreen('notifications')">Notifications</button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <!-- Kanban Board Screen -->
+        <div id="kanban-screen" class="screen-container active">
+            <div class="screen-header">
+                <h1 class="screen-title">Kanban Board</h1>
+                <p class="screen-desc">핵심 화면 - 프로젝트 이슈를 칸반 보드로 관리. Drag & Drop으로 상태 변경.</p>
+            </div>
+
+            <div class="app-shell">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text">Jira Lite</span>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-item active">
+                            <div class="sidebar-icon"></div>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Notifications</span>
+                            <span class="sidebar-badge">3</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>My Issues</span>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section sidebar-projects">
+                        <div class="sidebar-label">Projects</div>
+                        <div class="project-item active">
+                            <div class="project-dot" style="background: var(--primary);"></div>
+                            <span>Jira Lite MVP</span>
+                        </div>
+                        <div class="project-item">
+                            <div class="project-dot" style="background: var(--success);"></div>
+                            <span>Marketing Site</span>
+                        </div>
+                        <div class="project-item">
+                            <div class="project-dot" style="background: var(--warning);"></div>
+                            <span>Mobile App</span>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-label">Team</div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Members</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Panel -->
+                <div class="main-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Jira Lite MVP</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary">Filters</button>
+                            <button class="btn btn-primary">+ New Issue</button>
+                        </div>
+                    </div>
+
+                    <div class="view-tabs">
+                        <button class="view-tab active">Board</button>
+                        <button class="view-tab">List</button>
+                        <button class="view-tab">Timeline</button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" class="search-input" placeholder="Search issues...">
+                        <button class="filter-btn">Status</button>
+                        <button class="filter-btn">Priority</button>
+                        <button class="filter-btn">Assignee</button>
+                        <button class="filter-btn">Label</button>
+                    </div>
+
+                    <div class="kanban-container">
+                        <!-- Backlog Column -->
+                        <div class="kanban-column column-backlog">
+                            <div class="column-header">
+                                <div class="column-title">
+                                    Backlog
+                                    <span class="column-count">4</span>
+                                </div>
+                                <span class="column-menu">...</span>
+                            </div>
+                            <div class="column-cards">
+                                <div class="issue-card">
+                                    <div class="issue-id">JL-12</div>
+                                    <div class="issue-title">Implement email notification system</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-medium">MEDIUM</span>
+                                        <span class="label-tag label-feature">Feature</span>
+                                    </div>
+                                    <div class="issue-footer">
+                                        <div class="issue-assignee">HJ</div>
+                                        <span class="subtask-progress">2/5</span>
+                                    </div>
+                                </div>
+                                <div class="issue-card">
+                                    <div class="issue-id">JL-11</div>
+                                    <div class="issue-title">Add team activity log</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-low">LOW</span>
+                                        <span class="label-tag label-enhancement">Enhancement</span>
+                                    </div>
+                                </div>
+                                <div class="issue-card">
+                                    <div class="issue-id">JL-10</div>
+                                    <div class="issue-title">Design dashboard charts</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-medium">MEDIUM</span>
+                                    </div>
+                                    <div class="issue-footer">
+                                        <div class="issue-assignee">KM</div>
+                                        <span class="issue-due">Dec 20</span>
+                                    </div>
+                                </div>
+                                <button class="add-card-btn">+ Add Issue</button>
+                            </div>
+                        </div>
+
+                        <!-- In Progress Column -->
+                        <div class="kanban-column column-progress">
+                            <div class="column-header">
+                                <div class="column-title">
+                                    In Progress
+                                    <span class="column-count">2</span>
+                                </div>
+                                <span class="column-menu">...</span>
+                            </div>
+                            <div class="column-cards">
+                                <div class="issue-card" style="border-left: 3px solid var(--primary);">
+                                    <div class="issue-id">JL-8</div>
+                                    <div class="issue-title">Build kanban board drag & drop</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-high">HIGH</span>
+                                        <span class="label-tag label-feature">Feature</span>
+                                    </div>
+                                    <div class="issue-footer">
+                                        <div class="issue-assignee">HJ</div>
+                                        <span class="subtask-progress">4/6</span>
+                                    </div>
+                                </div>
+                                <div class="issue-card">
+                                    <div class="issue-id">JL-7</div>
+                                    <div class="issue-title">Implement AI summary feature</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-high">HIGH</span>
+                                        <span class="label-tag label-feature">Feature</span>
+                                    </div>
+                                    <div class="issue-footer">
+                                        <div class="issue-assignee">SL</div>
+                                        <span class="issue-due overdue">Dec 14</span>
+                                    </div>
+                                </div>
+                                <button class="add-card-btn">+ Add Issue</button>
+                            </div>
+                        </div>
+
+                        <!-- Review Column -->
+                        <div class="kanban-column column-review">
+                            <div class="column-header">
+                                <div class="column-title">
+                                    Review
+                                    <span class="column-count">1</span>
+                                </div>
+                                <span class="column-menu">...</span>
+                            </div>
+                            <div class="column-cards">
+                                <div class="issue-card">
+                                    <div class="issue-id">JL-6</div>
+                                    <div class="issue-title">Fix login button alignment on mobile</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-low">LOW</span>
+                                        <span class="label-tag label-bug">Bug</span>
+                                    </div>
+                                    <div class="issue-footer">
+                                        <div class="issue-assignee">KM</div>
+                                    </div>
+                                </div>
+                                <button class="add-card-btn">+ Add Issue</button>
+                            </div>
+                        </div>
+
+                        <!-- Done Column -->
+                        <div class="kanban-column column-done">
+                            <div class="column-header">
+                                <div class="column-title">
+                                    Done
+                                    <span class="column-count">3</span>
+                                </div>
+                                <span class="column-menu">...</span>
+                            </div>
+                            <div class="column-cards">
+                                <div class="issue-card" style="opacity: 0.7;">
+                                    <div class="issue-id">JL-5</div>
+                                    <div class="issue-title">Setup project structure</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-high">HIGH</span>
+                                    </div>
+                                </div>
+                                <div class="issue-card" style="opacity: 0.7;">
+                                    <div class="issue-id">JL-4</div>
+                                    <div class="issue-title">Implement user authentication</div>
+                                    <div class="issue-meta">
+                                        <span class="priority-badge priority-high">HIGH</span>
+                                        <span class="label-tag label-feature">Feature</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issue Detail Panel -->
+                <div class="detail-panel">
+                    <div class="detail-header">
+                        <span style="font-weight: 600;">JL-8</span>
+                        <button class="detail-close">x</button>
+                    </div>
+                    <div class="detail-content">
+                        <h3 class="detail-title">Build kanban board drag & drop</h3>
+
+                        <!-- AI Panel -->
+                        <div class="ai-panel">
+                            <div class="ai-header">
+                                <div class="ai-icon"></div>
+                                <span class="ai-title">AI Summary</span>
+                            </div>
+                            <div class="ai-content">
+                                This task involves implementing a drag-and-drop kanban board using React. Key challenges include smooth animations, state management, and mobile touch support.
+                            </div>
+                            <div class="ai-actions">
+                                <button class="ai-btn">Regenerate</button>
+                                <button class="ai-btn">Get Suggestions</button>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-description">
+                                Implement drag and drop functionality for the kanban board. Users should be able to:
+                                - Drag cards between columns
+                                - Reorder cards within a column
+                                - See visual feedback during drag
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <div class="detail-label">Status</div>
+                                    <div class="detail-value">In Progress</div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">Priority</div>
+                                    <span class="priority-badge priority-high">HIGH</span>
+                                </div>
+                                <div>
+                                    <div class="detail-label">Assignee</div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="issue-assignee">HJ</div>
+                                        <span>Hojeong</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="detail-label">Due Date</div>
+                                    <div class="detail-value">Dec 18, 2025</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="comments-section">
+                            <div class="detail-label">Comments (2)</div>
+                            <div class="comment">
+                                <div class="comment-avatar">SL</div>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <span class="comment-author">Seulgi</span>
+                                        <span class="comment-time">2 hours ago</span>
+                                    </div>
+                                    <div class="comment-text">Looking good! Can we add touch support for mobile?</div>
+                                </div>
+                            </div>
+                            <div class="comment">
+                                <div class="comment-avatar">HJ</div>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <span class="comment-author">Hojeong</span>
+                                        <span class="comment-time">1 hour ago</span>
+                                    </div>
+                                    <div class="comment-text">Yes, I'll add it in the next commit.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen-container">
+            <div class="screen-header">
+                <h1 class="screen-title">Dashboard</h1>
+                <p class="screen-desc">프로젝트 현황을 한눈에 파악하는 대시보드. 통계, 차트, 마감 임박 이슈 표시.</p>
+            </div>
+
+            <div class="app-shell" style="height: auto; min-height: 700px;">
+                <!-- Sidebar (same as kanban) -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text">Jira Lite</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-item active">
+                            <div class="sidebar-icon"></div>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Notifications</span>
+                            <span class="sidebar-badge">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div class="main-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Personal Dashboard</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary">Last 7 days</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Stats Row -->
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-title">My Issues</div>
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <div class="stat-item-value" style="color: var(--accent);">8</div>
+                                    <div class="stat-label">In Progress</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-item-value" style="color: var(--warning);">3</div>
+                                    <div class="stat-label">Due Soon</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-item-value" style="color: var(--success);">12</div>
+                                    <div class="stat-label">Completed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-title">Project Progress</div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="stat-value">67%</div>
+                                <div style="flex: 1; height: 8px; background: var(--border); border-radius: 4px;">
+                                    <div style="width: 67%; height: 100%; background: var(--success); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-label" style="margin-top: 8px;">14 of 21 issues completed</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-title">Issues by Status</div>
+                            <div class="chart-placeholder">[Pie Chart Placeholder]</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-title">Activity Trend</div>
+                            <div class="chart-placeholder">[Line Chart Placeholder]</div>
+                        </div>
+
+                        <div class="dashboard-card" style="grid-column: span 2;">
+                            <div class="dashboard-card-title">Due Soon (Next 7 Days)</div>
+                            <div class="issue-list-item">
+                                <div>
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">JL-7</span>
+                                    <span style="margin-left: 8px;">Implement AI summary feature</span>
+                                </div>
+                                <span class="issue-due overdue">Dec 14 (Overdue)</span>
+                            </div>
+                            <div class="issue-list-item">
+                                <div>
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">JL-8</span>
+                                    <span style="margin-left: 8px;">Build kanban board drag & drop</span>
+                                </div>
+                                <span class="issue-due">Dec 18</span>
+                            </div>
+                            <div class="issue-list-item">
+                                <div>
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">JL-10</span>
+                                    <span style="margin-left: 8px;">Design dashboard charts</span>
+                                </div>
+                                <span class="issue-due">Dec 20</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen-container">
+            <div class="screen-header">
+                <h1 class="screen-title">Login / Sign Up</h1>
+                <p class="screen-desc">인증 화면 - 이메일/비밀번호 로그인 및 Google OAuth 지원.</p>
+            </div>
+
+            <div class="login-container">
+                <div class="login-left">
+                    <div class="login-brand">Jira Lite</div>
+                    <div class="login-tagline">AI가 함께하는 스마트한 이슈 관리</div>
+                    <ul class="login-features">
+                        <li>
+                            <div class="feature-icon"></div>
+                            AI 자동 요약으로 이슈를 빠르게 파악
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            직관적인 칸반 보드로 작업 관리
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            실시간 팀 협업 지원
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            중복 이슈 자동 탐지
+                        </li>
+                    </ul>
+                </div>
+                <div class="login-right">
+                    <h2 class="login-form-title">Welcome back</h2>
+                    <p class="login-form-subtitle">Enter your credentials to access your account</p>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="name@company.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="Enter your password">
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem;">
+                            <input type="checkbox"> Remember me
+                        </label>
+                        <a href="#" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;">Forgot password?</a>
+                    </div>
+
+                    <button class="login-btn login-btn-primary">Sign In</button>
+
+                    <div class="divider">or continue with</div>
+
+                    <button class="login-btn login-btn-google">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <p style="text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary);">
+                        Don't have an account? <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 500;">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Management Screen -->
+        <div id="team-screen" class="screen-container">
+            <div class="screen-header">
+                <h1 class="screen-title">Team Management</h1>
+                <p class="screen-desc">팀 멤버 관리 화면 - 멤버 목록, 초대, 역할 변경 기능.</p>
+            </div>
+
+            <div class="app-shell" style="height: auto; min-height: 600px;">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text">Jira Lite</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Notifications</span>
+                            <span class="sidebar-badge">3</span>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-label">Team</div>
+                        <div class="sidebar-item active">
+                            <div class="sidebar-icon"></div>
+                            <span>Members</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Content -->
+                <div class="main-panel" style="background: var(--bg);">
+                    <div class="panel-header" style="background: var(--surface);">
+                        <h2 class="panel-title">Team Members</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-primary" onclick="showInviteModal()">+ Invite Member</button>
+                        </div>
+                    </div>
+
+                    <div class="view-tabs" style="background: var(--surface);">
+                        <button class="view-tab active">Members (3)</button>
+                        <button class="view-tab">Pending Invites (1)</button>
+                        <button class="view-tab">Activity Log</button>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <!-- Member Table -->
+                        <div style="background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--bg); border-bottom: 1px solid var(--border);">
+                                        <th style="text-align: left; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Member</th>
+                                        <th style="text-align: left; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Email</th>
+                                        <th style="text-align: left; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Role</th>
+                                        <th style="text-align: left; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Joined</th>
+                                        <th style="text-align: right; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 16px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <div class="issue-assignee" style="width: 36px; height: 36px; font-size: 0.875rem;">HJ</div>
+                                                <div>
+                                                    <div style="font-weight: 500;">Hojeong</div>
+                                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">You</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">hojeong@example.com</td>
+                                        <td style="padding: 16px;">
+                                            <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">OWNER</span>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">Nov 1, 2025</td>
+                                        <td style="padding: 16px; text-align: right;">
+                                            <span style="color: var(--text-secondary); font-size: 0.8rem;">—</span>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 16px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <div class="issue-assignee" style="width: 36px; height: 36px; font-size: 0.875rem; background: var(--accent);">SL</div>
+                                                <div style="font-weight: 500;">Seulgi</div>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">seulgi@example.com</td>
+                                        <td style="padding: 16px;">
+                                            <select style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; background: white;">
+                                                <option>ADMIN</option>
+                                                <option>MEMBER</option>
+                                            </select>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">Nov 5, 2025</td>
+                                        <td style="padding: 16px; text-align: right;">
+                                            <button style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; font-size: 0.8rem; color: var(--error);">Remove</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 16px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <div class="issue-assignee" style="width: 36px; height: 36px; font-size: 0.875rem; background: var(--success);">KM</div>
+                                                <div style="font-weight: 500;">Kimin</div>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">kimin@example.com</td>
+                                        <td style="padding: 16px;">
+                                            <select style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; background: white;">
+                                                <option>MEMBER</option>
+                                                <option>ADMIN</option>
+                                            </select>
+                                        </td>
+                                        <td style="padding: 16px; color: var(--text-secondary); font-size: 0.875rem;">Nov 10, 2025</td>
+                                        <td style="padding: 16px; text-align: right;">
+                                            <button style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; font-size: 0.8rem; color: var(--error);">Remove</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pending Invites Card -->
+                        <div style="margin-top: 24px; background: var(--surface); border-radius: 12px; padding: 20px; border: 1px solid var(--border);">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary);">Pending Invites</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 1rem;">📧</div>
+                                    <div>
+                                        <div style="font-weight: 500;">newmember@example.com</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Invited Nov 28 · Expires Dec 5</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; font-size: 0.8rem;">Resend</button>
+                                    <button style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; font-size: 0.8rem; color: var(--error);">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invite Modal -->
+            <div id="invite-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; width: 420px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600;">Invite Team Member</h3>
+                        <button onclick="hideInviteModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" class="form-input" placeholder="colleague@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-input">
+                            <option>MEMBER</option>
+                            <option>ADMIN</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button onclick="hideInviteModal()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                        <button class="btn btn-primary" style="flex: 1;">Send Invite</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Settings Screen -->
+        <div id="profile-screen" class="screen-container">
+            <div class="screen-header">
+                <h1 class="screen-title">Profile Settings</h1>
+                <p class="screen-desc">사용자 프로필 및 보안 설정 - 프로필 수정, 비밀번호 변경, 계정 삭제.</p>
+            </div>
+
+            <div class="app-shell" style="height: auto; min-height: 650px;">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text">Jira Lite</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Dashboard</span>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-label">Account</div>
+                        <div class="sidebar-item active">
+                            <div class="sidebar-icon"></div>
+                            <span>Profile</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Security</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Preferences</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Content -->
+                <div class="main-panel" style="background: var(--bg);">
+                    <div class="panel-header" style="background: var(--surface);">
+                        <h2 class="panel-title">Profile Settings</h2>
+                    </div>
+
+                    <div class="view-tabs" style="background: var(--surface);">
+                        <button class="view-tab active">Profile</button>
+                        <button class="view-tab" onclick="showSecurityTab()">Security</button>
+                        <button class="view-tab">Preferences</button>
+                    </div>
+
+                    <div style="padding: 24px; max-width: 600px;">
+                        <!-- Profile Photo -->
+                        <div style="background: var(--surface); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary);">Profile Photo</h3>
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 600;">HJ</div>
+                                <div>
+                                    <button class="btn btn-secondary" style="margin-bottom: 8px;">Upload Photo</button>
+                                    <p style="font-size: 0.75rem; color: var(--text-secondary);">JPG, PNG up to 5MB</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div style="background: var(--surface); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary);">Personal Information</h3>
+                            <div class="form-group">
+                                <label class="form-label">Name *</label>
+                                <input type="text" class="form-input" value="Hojeong">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <div style="position: relative;">
+                                    <input type="email" class="form-input" value="hojeong@example.com" disabled style="background: var(--bg); color: var(--text-secondary);">
+                                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%);">🔒</span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Email cannot be changed</p>
+                            </div>
+                            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                <button class="btn btn-secondary">Cancel</button>
+                                <button class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+
+                        <!-- Security Section (Preview) -->
+                        <div id="security-section" style="background: var(--surface); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 20px;">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary);">Security</h3>
+
+                            <!-- Password Change -->
+                            <div style="padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 500;">Password</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Last changed 30 days ago</div>
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="showPasswordModal()">Change Password</button>
+                                </div>
+                            </div>
+
+                            <!-- Danger Zone -->
+                            <div style="padding: 16px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 500; color: var(--error);">Delete Account</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Permanently delete your account and all data</div>
+                                    </div>
+                                    <button onclick="showDeleteModal()" style="padding: 8px 16px; border-radius: 8px; background: var(--error); color: white; border: none; cursor: pointer; font-weight: 500;">Delete Account</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Modal -->
+            <div id="password-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; width: 420px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600;">Change Password</h3>
+                        <button onclick="hidePasswordModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current Password *</label>
+                        <input type="password" class="form-input" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password *</label>
+                        <input type="password" class="form-input" placeholder="Enter new password">
+                        <div style="margin-top: 8px; display: flex; gap: 4px;">
+                            <div style="height: 4px; flex: 1; background: var(--success); border-radius: 2px;"></div>
+                            <div style="height: 4px; flex: 1; background: var(--success); border-radius: 2px;"></div>
+                            <div style="height: 4px; flex: 1; background: var(--border); border-radius: 2px;"></div>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Strength: Medium</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password *</label>
+                        <input type="password" class="form-input" placeholder="Confirm new password">
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button onclick="hidePasswordModal()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                        <button class="btn btn-primary" style="flex: 1;">Update Password</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Account Modal -->
+            <div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; width: 480px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--error);">⚠️ Delete Account</h3>
+                        <button onclick="hideDeleteModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+                    </div>
+                    <p style="margin-bottom: 16px;">Are you sure you want to delete your account? This action <strong>cannot be undone</strong>.</p>
+                    <div style="background: #FEF2F2; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                        <p style="font-weight: 500; margin-bottom: 8px;">What will be deleted:</p>
+                        <ul style="margin-left: 20px; font-size: 0.875rem; color: var(--text-secondary);">
+                            <li>Your profile and personal data</li>
+                            <li>Your comments and activity history</li>
+                            <li>Team memberships (not owned teams)</li>
+                        </ul>
+                    </div>
+                    <div style="background: #FEF3C7; border-radius: 8px; padding: 12px; margin-bottom: 20px; display: flex; gap: 8px; align-items: start;">
+                        <span>⚠️</span>
+                        <p style="font-size: 0.875rem;">You own 1 team. Please delete or transfer ownership before proceeding.</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Enter your password to confirm:</label>
+                        <input type="password" class="form-input" placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type "DELETE" to confirm:</label>
+                        <input type="text" class="form-input" placeholder="DELETE">
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button onclick="hideDeleteModal()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                        <button style="flex: 1; padding: 12px; border-radius: 8px; background: var(--error); color: white; border: none; cursor: pointer; font-weight: 500; opacity: 0.5;" disabled>Delete My Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Screen -->
+        <div id="notifications-screen" class="screen-container">
+            <div class="screen-header">
+                <h1 class="screen-title">Notifications</h1>
+                <p class="screen-desc">알림 센터 - 담당자 지정, 댓글, 마감일 임박 등 중요 알림 관리.</p>
+            </div>
+
+            <div class="app-shell" style="height: auto; min-height: 650px;">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text">Jira Lite</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-item">
+                            <div class="sidebar-icon"></div>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="sidebar-item active">
+                            <div class="sidebar-icon"></div>
+                            <span>Notifications</span>
+                            <span class="sidebar-badge">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Content -->
+                <div class="main-panel" style="background: var(--bg);">
+                    <div class="panel-header" style="background: var(--surface);">
+                        <h2 class="panel-title">Notifications</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary">Mark all as read</button>
+                        </div>
+                    </div>
+
+                    <div class="view-tabs" style="background: var(--surface);">
+                        <button class="view-tab active">All (8)</button>
+                        <button class="view-tab">Unread (5)</button>
+                        <button class="view-tab">Mentions</button>
+                    </div>
+
+                    <div style="padding: 24px; max-width: 800px;">
+                        <!-- Today -->
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px;">Today</h3>
+
+                            <!-- Unread Notification -->
+                            <div style="background: var(--surface); border-radius: 12px; border: 1px solid var(--border); border-left: 3px solid var(--primary); margin-bottom: 8px; padding: 16px; display: flex; gap: 16px; cursor: pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #DBEAFE; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">👤</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <p style="font-weight: 500; margin-bottom: 4px;">Issue assigned to you</p>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">JL-12: Implement email notification system</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary);"></span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">2 min ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Unread - Due Date -->
+                            <div style="background: var(--surface); border-radius: 12px; border: 1px solid var(--border); border-left: 3px solid var(--warning); margin-bottom: 8px; padding: 16px; display: flex; gap: 16px; cursor: pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">⚠️</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <p style="font-weight: 500; margin-bottom: 4px;">Due date approaching</p>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">JL-7: Implement AI summary feature - Due tomorrow</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--warning);"></span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">1 hour ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Unread - Comment -->
+                            <div style="background: var(--surface); border-radius: 12px; border: 1px solid var(--border); border-left: 3px solid var(--accent); margin-bottom: 8px; padding: 16px; display: flex; gap: 16px; cursor: pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0;">SL</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <p style="font-weight: 500; margin-bottom: 4px;">New comment on JL-8</p>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Seulgi: "Looking good! Can we add touch support for mobile?"</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">2 hours ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yesterday -->
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px;">Yesterday</h3>
+
+                            <!-- Read Notification -->
+                            <div style="background: var(--surface); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; padding: 16px; display: flex; gap: 16px; cursor: pointer; opacity: 0.7;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #D1FAE5; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">✅</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <p style="font-weight: 500; margin-bottom: 4px;">Issue completed</p>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">JL-4: Implement user authentication - marked as Done</p>
+                                        </div>
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Yesterday</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Team Invite -->
+                            <div style="background: var(--surface); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; padding: 16px; display: flex; gap: 16px; cursor: pointer; opacity: 0.7;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #F3E8FF; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">📧</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <p style="font-weight: 500; margin-bottom: 4px;">Team invite accepted</p>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Kimin joined the team as MEMBER</p>
+                                        </div>
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Yesterday</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Load More -->
+                        <div style="text-align: center; padding: 20px;">
+                            <button class="btn btn-secondary">Load more notifications</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen-container').forEach(screen => {
+                screen.classList.remove('active');
+            });
+
+            // Remove active from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected screen
+            document.getElementById(screenId + '-screen').classList.add('active');
+
+            // Activate corresponding tab
+            event.target.classList.add('active');
+        }
+
+        // Modal functions
+        function showInviteModal() {
+            document.getElementById('invite-modal').style.display = 'flex';
+        }
+
+        function hideInviteModal() {
+            document.getElementById('invite-modal').style.display = 'none';
+        }
+
+        function showPasswordModal() {
+            document.getElementById('password-modal').style.display = 'flex';
+        }
+
+        function hidePasswordModal() {
+            document.getElementById('password-modal').style.display = 'none';
+        }
+
+        function showDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'flex';
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'invite-modal') hideInviteModal();
+            if (e.target.id === 'password-modal') hidePasswordModal();
+            if (e.target.id === 'delete-modal') hideDeleteModal();
+        });
+    </script>
+</body>
+</html>

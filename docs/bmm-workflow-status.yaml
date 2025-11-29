@@ -1,0 +1,109 @@
+# Workflow Status - Jira Lite MVP
+# BMad Method 워크플로우 진행 상황 추적
+
+generated: "2025-11-29"
+project: "Litmers Vibe Coding Contest"
+project_type: "AI 기반 이슈 트래킹 웹 애플리케이션 (Jira Lite MVP)"
+selected_track: "bmad-method"
+field_type: "greenfield"
+workflow_path: "method-greenfield.yaml"
+
+# Source PRD reference
+source_documents:
+  - path: "PRD_KR_VER.md"
+    type: "external-prd"
+    note: "8시간 해커톤 과제 요구사항 문서 (SRS 스타일) - 58개 FR"
+
+# FR Tracking Summary (원본 번호 체계)
+fr_summary:
+  total: 58
+  categories:
+    - name: "인증"
+      range: "FR-001 ~ FR-007"
+      count: 7
+    - name: "팀"
+      range: "FR-010 ~ FR-019"
+      count: 10
+    - name: "프로젝트"
+      range: "FR-020 ~ FR-027"
+      count: 8
+    - name: "이슈"
+      range: "FR-030 ~ FR-039-2"
+      count: 11
+    - name: "AI"
+      range: "FR-040 ~ FR-045"
+      count: 6
+    - name: "칸반"
+      range: "FR-050 ~ FR-054"
+      count: 5
+    - name: "댓글"
+      range: "FR-060 ~ FR-063"
+      count: 4
+    - name: "권한/보안"
+      range: "FR-070 ~ FR-071"
+      count: 2
+    - name: "대시보드"
+      range: "FR-080 ~ FR-082"
+      count: 3
+    - name: "알림"
+      range: "FR-090 ~ FR-091"
+      count: 2
+
+workflow_status:
+  # Phase 0: Discovery (Skipped for hackathon)
+  phase_0_discovery:
+    brainstorm-project: "skipped"
+    research: "skipped"
+    product-brief: "skipped"
+
+  # Phase 1: Planning
+  phase_1_planning:
+    prd: "docs/prd.md"  # ✅ Updated 2025-11-29 v2.0 (58 FR, 원본 번호 체계)
+    validate-prd: "optional"
+    create-design: "docs/ux-design-specification.md"  # ✅ Completed 2025-11-29
+
+  # Phase 2: Solutioning
+  phase_2_solutioning:
+    create-architecture: "docs/architecture.md"  # ✅ Completed 2025-11-29
+    create-epics-and-stories: "docs/epics.md"  # ✅ Completed 2025-11-29
+    test-design: "recommended"
+    validate-architecture: "optional"
+    implementation-readiness: "required"
+
+  # Phase 3: Implementation
+  phase_3_implementation:
+    sprint-planning: "required"
+
+# Next Steps
+next_action:
+  workflow: "implementation-readiness"
+  agent: "architect"
+  command: "/bmad:bmm:workflows:implementation-readiness"
+  note: "PRD + UX + Architecture + Epics 정합성 검증"
+
+alternative_next:
+  workflow: "test-design"
+  agent: "tea"
+  command: "/bmad:bmm:workflows:test-design"
+  note: "테스트 설계 검토 (recommended)"
+
+# Completed Artifacts
+completed_artifacts:
+  epics:
+    path: "docs/epics.md"
+    completed: "2025-11-29"
+  ux_design:
+    path: "docs/ux-design-specification.md"
+    completed: "2025-11-29"
+    supporting_files:
+      - "docs/ux-color-themes.html"
+      - "docs/ux-design-directions.html"
+  architecture:
+    path: "docs/architecture.md"
+    completed: "2025-11-29"
+    tech_stack:
+      - "Next.js 15 (App Router)"
+      - "Supabase (PostgreSQL, Auth, Realtime, Storage)"
+      - "Firebase App Hosting"
+      - "OpenAI GPT-5-nano"
+      - "shadcn/ui + Tailwind CSS"
