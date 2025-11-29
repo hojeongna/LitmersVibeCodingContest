@@ -56,8 +56,9 @@ No epics with status "backlog" found in sprint-status.yaml.
 
   <step n="1.5" goal="Discover and load project documents">
     <invoke-protocol name="discover_inputs" />
-    <note>After discovery, these content variables are available: {prd_content}, {gdd_content}, {architecture_content}, {ux_design_content}, {epics_content} (will load only epic-{{epic_id}}.md if sharded), {document_project_content}</note>
+    <note>After discovery, these content variables are available: {prd_content}, {gdd_content}, {architecture_content}, {ux_design_content}, {ux_mockups_content}, {epics_content} (will load only epic-{{epic_id}}.md if sharded), {document_project_content}</note>
     <action>Extract {{epic_title}} from {prd_content} or {epics_content} based on {{epic_id}}.</action>
+    <note>UX documents include both markdown specs ({ux_design_content}) and HTML mockups/themes ({ux_mockups_content}). Extract color themes, component styles, and interaction patterns from HTML files.</note>
   </step>
 
   <step n="2" goal="Validate epic exists in sprint status" tag="sprint-status">
@@ -88,6 +89,27 @@ Continuing to regenerate tech spec...
       Replace {{objectives_scope}} with explicit in-scope and out-of-scope bullets
       Replace {{system_arch_alignment}} with a short alignment summary to the architecture (components referenced, constraints)
     </template-output>
+  </step>
+
+  <step n="3.5" goal="UX design specification (if applicable)">
+    <check if="{ux_design_content} or {ux_mockups_content} exists">
+      <action>Extract screen layouts, wireframes, and UI component specifications from {ux_design_content}</action>
+      <action>Extract color themes, CSS variables, and styling details from {ux_mockups_content} HTML files</action>
+      <action>Identify component-level styling (buttons, badges, modals, tables) from mockups</action>
+      <action>Document interaction patterns (hover states, transitions, confirmation dialogs)</action>
+      <template-output file="{default_output_file}">
+        Add ## UX Design Specification section after System Architecture Alignment with:
+        - Screen Layout diagrams (tab navigation, component hierarchy)
+        - Color Theme variables (primary, accent, surface, text colors)
+        - Component-specific styling (role badges, avatars, buttons)
+        - Modal and form specifications
+        - Interaction patterns and transitions
+        - Typography specifications
+      </template-output>
+    </check>
+    <check if="no UX documents found">
+      <action>Skip UX section for non-UI epics</action>
+    </check>
   </step>
 
   <step n="4" goal="Detailed design">

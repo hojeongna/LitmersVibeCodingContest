@@ -1,0 +1,252 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>공통 레이아웃 &amp; UI 컴포넌트</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-2-common-layout-ui-components.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>개발자</asA>
+    <iWant>shadcn/ui 기반의 공통 레이아웃과 UI 컴포넌트 시스템을 구축</iWant>
+    <soThat>일관된 디자인으로 빠르게 UI를 개발할 수 있다</soThat>
+    <tasks>
+      <partA title="shadcn/ui 설치 및 테마 설정">
+        <task id="1" ac="4" title="shadcn/ui 초기화">
+          <subtask id="1.1">npx shadcn@latest init 실행</subtask>
+          <subtask id="1.2">Tailwind CSS 설정 확인 및 최적화</subtask>
+          <subtask id="1.3">components.json 설정 검토</subtask>
+        </task>
+        <task id="2" ac="4" title="Linear Productivity 테마 적용">
+          <subtask id="2.1">tailwind.config.js에 커스텀 색상 추가 (Primary: #5B5FC7, Hover: #4F52B3, Accent: #3B82F6)</subtask>
+          <subtask id="2.2">CSS 변수로 테마 색상 정의 (globals.css) - 칸반 컬럼 색상, 라벨 색상 포함</subtask>
+          <subtask id="2.3">Inter 폰트 설정 (next/font)</subtask>
+          <subtask id="2.4">Dark Mode 테마 변수 준비 (Zinc 900 배경, Zinc 700 카드)</subtask>
+        </task>
+      </partA>
+      <partB title="공통 레이아웃 컴포넌트">
+        <task id="3" ac="1" title="AppShell 레이아웃 생성">
+          <subtask id="3.1">components/layout/app-shell.tsx 생성</subtask>
+          <subtask id="3.2">Sidebar + Main Content 영역 구조 구현</subtask>
+          <subtask id="3.3">app/(dashboard)/layout.tsx에 AppShell 적용</subtask>
+        </task>
+        <task id="4" ac="2" title="Sidebar 컴포넌트 생성">
+          <subtask id="4.1">components/layout/sidebar.tsx 생성</subtask>
+          <subtask id="4.2">다크 테마 스타일 적용 (배경: Zinc 900)</subtask>
+          <subtask id="4.3">너비 240px 고정</subtask>
+          <subtask id="4.4">로고/브랜드 영역</subtask>
+          <subtask id="4.5">네비게이션 메뉴 구조 (팀, 프로젝트, 설정)</subtask>
+          <subtask id="4.6">알림 버튼 + 미읽음 뱃지 placeholder</subtask>
+        </task>
+        <task id="5" ac="1" title="Header 컴포넌트 생성">
+          <subtask id="5.1">components/layout/header.tsx 생성</subtask>
+          <subtask id="5.2">페이지 제목 영역</subtask>
+          <subtask id="5.3">검색 바 placeholder (Command Palette 연동 준비)</subtask>
+          <subtask id="5.4">사용자 아바타 드롭다운</subtask>
+        </task>
+      </partB>
+      <partC title="공통 UI 컴포넌트">
+        <task id="6" ac="3" title="shadcn/ui 기본 컴포넌트 설치">
+          <subtask id="6.1">Button (Primary, Secondary, Destructive, AI 변형)</subtask>
+          <subtask id="6.2">Input, Textarea, Select</subtask>
+          <subtask id="6.3">Card, Badge, Avatar</subtask>
+          <subtask id="6.4">Dialog (Modal), Sheet (슬라이드 패널)</subtask>
+          <subtask id="6.5">Toast (알림 메시지)</subtask>
+          <subtask id="6.6">Skeleton (로딩 상태)</subtask>
+          <subtask id="6.7">Tabs, Dropdown Menu</subtask>
+          <subtask id="6.8">Alert (Success, Error, Warning, Info 변형)</subtask>
+        </task>
+        <task id="7" ac="3" title="커스텀 UI 컴포넌트 생성">
+          <subtask id="7.1">components/ui/ai-button.tsx - AI 그라디언트 버튼</subtask>
+          <subtask id="7.2">components/ui/priority-badge.tsx - 우선순위 뱃지 (HIGH/MEDIUM/LOW)</subtask>
+          <subtask id="7.3">components/ui/label-tag.tsx - 라벨 태그 (동적 색상)</subtask>
+        </task>
+      </partC>
+      <partD title="인증 컨텍스트 설정">
+        <task id="8" ac="5" title="AuthProvider 구현">
+          <subtask id="8.1">components/providers/auth-provider.tsx 생성</subtask>
+          <subtask id="8.2">Supabase Auth 연동 (onAuthStateChange)</subtask>
+          <subtask id="8.3">사용자 세션 상태 관리</subtask>
+          <subtask id="8.4">app/layout.tsx에 AuthProvider 적용</subtask>
+        </task>
+        <task id="9" ac="5" title="useAuth 훅 구현">
+          <subtask id="9.1">hooks/use-auth.ts 생성</subtask>
+          <subtask id="9.2">user, loading, error 상태 반환</subtask>
+          <subtask id="9.3">signIn, signOut, signUp 함수 제공</subtask>
+        </task>
+      </partD>
+      <partE title="검증 및 테스트">
+        <task id="10" ac="3" title="컴포넌트 테스트 페이지">
+          <subtask id="10.1">app/(dashboard)/dev/components/page.tsx 생성</subtask>
+          <subtask id="10.2">모든 UI 컴포넌트 렌더링 테스트</subtask>
+          <subtask id="10.3">버튼 변형, 색상, 상태 확인</subtask>
+        </task>
+        <task id="11" ac="1,2" title="레이아웃 검증">
+          <subtask id="11.1">반응형 동작 확인 (Desktop, Tablet, Mobile)</subtask>
+          <subtask id="11.2">Sidebar 접기/펼치기 준비 (Tablet 이하)</subtask>
+          <subtask id="11.3">다크모드 Sidebar 스타일 확인</subtask>
+        </task>
+      </partE>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" description="/ 접속 시 Sidebar + 메인 영역 레이아웃 표시" validation="브라우저에서 메인 레이아웃 구조 확인"/>
+    <ac id="2" description="다크모드 Sidebar 스타일 적용 (240px 너비)" validation="Sidebar 배경색이 다크 테마, 너비 240px 확인"/>
+    <ac id="3" description="모든 공통 컴포넌트가 테스트 페이지에서 확인 가능" validation="/dev/components 또는 Storybook에서 컴포넌트 렌더링 확인"/>
+    <ac id="4" description="Linear Productivity 테마 색상 적용 (Primary: #5B5FC7)" validation="버튼, 링크 등에 Indigo 색상 적용 확인"/>
+    <ac id="5" description="인증 컨텍스트 Provider가 앱 전체에 설정됨" validation="useAuth 훅으로 사용자 상태 접근 가능 확인"/>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Design System Foundation">
+        디자인 시스템: shadcn/ui + Tailwind CSS + Radix UI, 아이콘: Lucide Icons
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Color System">
+        Primary: #5B5FC7 (Indigo), Accent: #3B82F6 (Blue), Success/Warning/Error 색상, Priority Colors, AI Gradient
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Typography">
+        Font: Inter, H1-H3/Body/Small/Tiny 크기 및 weight 정의
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Design Direction">
+        Layout: 좌측 Sidebar (240px), Content, Detail Panel (400px). Sidebar 다크 테마 (Zinc 900)
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Component Library">
+        shadcn/ui 기본 컴포넌트 목록 및 커스텀 컴포넌트(KanbanBoard, AIPanel, PriorityBadge 등) 정의
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Responsive Design">
+        Breakpoints: Desktop(1280+), Laptop(1024-1279), Tablet(768-1023), Mobile(&lt;768). Sidebar 반응형 동작
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Project Structure">
+        컴포넌트 구조: components/ui/, components/layout/, components/providers/, hooks/
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Technology Stack">
+        Next.js 15 + TypeScript + Tailwind CSS + shadcn/ui + Zustand + TanStack Query
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Naming Conventions">
+        파일명: kebab-case, 컴포넌트: PascalCase, 함수/변수: camelCase
+      </doc>
+      <doc path="docs/epics.md" title="Epic Breakdown" section="Story 1.2">
+        스토리 상세 설명, 작업 내용 및 인수 조건 정의
+      </doc>
+      <doc path="docs/ux-color-themes.html" title="Color Theme Visualizer" section="Interactive">
+        버튼, 카드, Alert, AI Panel 등 색상 테마 시각화 HTML
+      </doc>
+      <doc path="docs/ux-design-directions.html" title="Design Direction Mockups" section="Interactive">
+        Kanban, Dashboard, Login, Team, Profile, Notifications UI 목업
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/app/layout.tsx" kind="layout" symbol="RootLayout" lines="22-41" reason="ThemeProvider 위치, AuthProvider 추가 필요"/>
+      <file path="jira-lite-mvp/app/globals.css" kind="styles" symbol="CSS variables" lines="5-68" reason="테마 색상 CSS 변수 - Linear Productivity 테마로 수정 필요"/>
+      <file path="jira-lite-mvp/tailwind.config.ts" kind="config" symbol="tailwind config" lines="1-63" reason="커스텀 색상 확장 필요"/>
+      <file path="jira-lite-mvp/components.json" kind="config" symbol="shadcn config" lines="1-21" reason="shadcn/ui 설정 - new-york 스타일 사용 중"/>
+      <file path="jira-lite-mvp/components/ui/button.tsx" kind="component" symbol="Button" reason="기존 버튼 컴포넌트 - AI 변형 추가 필요"/>
+      <file path="jira-lite-mvp/components/ui/badge.tsx" kind="component" symbol="Badge" reason="기존 뱃지 - Priority 변형 추가 가능"/>
+      <file path="jira-lite-mvp/components/ui/card.tsx" kind="component" symbol="Card" reason="기존 카드 컴포넌트"/>
+      <file path="jira-lite-mvp/components/ui/input.tsx" kind="component" symbol="Input" reason="기존 입력 컴포넌트"/>
+      <file path="jira-lite-mvp/components/ui/label.tsx" kind="component" symbol="Label" reason="기존 라벨 컴포넌트"/>
+      <file path="jira-lite-mvp/components/ui/dropdown-menu.tsx" kind="component" symbol="DropdownMenu" reason="기존 드롭다운 메뉴"/>
+      <file path="jira-lite-mvp/components/ui/checkbox.tsx" kind="component" symbol="Checkbox" reason="기존 체크박스 컴포넌트"/>
+      <file path="jira-lite-mvp/lib/supabase/client.ts" kind="utility" symbol="createBrowserClient" reason="Supabase 클라이언트 - AuthProvider에서 사용"/>
+      <file path="jira-lite-mvp/lib/supabase/server.ts" kind="utility" symbol="createServerClient" reason="Supabase 서버 클라이언트"/>
+      <file path="jira-lite-mvp/app/protected/layout.tsx" kind="layout" symbol="ProtectedLayout" reason="인증 필요 레이아웃 - dashboard 레이아웃으로 확장 참고"/>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="latest"/>
+        <package name="react" version="^19.0.0"/>
+        <package name="react-dom" version="^19.0.0"/>
+        <package name="typescript" version="^5"/>
+        <package name="tailwindcss" version="^3.4.1"/>
+        <package name="tailwindcss-animate" version="^1.0.7"/>
+        <package name="class-variance-authority" version="^0.7.1"/>
+        <package name="clsx" version="^2.1.1"/>
+        <package name="tailwind-merge" version="^3.3.0"/>
+        <package name="lucide-react" version="^0.511.0"/>
+        <package name="next-themes" version="^0.4.6"/>
+        <package name="@radix-ui/react-slot" version="^1.2.2"/>
+        <package name="@radix-ui/react-label" version="^2.1.6"/>
+        <package name="@radix-ui/react-checkbox" version="^1.3.1"/>
+        <package name="@radix-ui/react-dropdown-menu" version="^2.1.14"/>
+        <package name="@supabase/ssr" version="latest"/>
+        <package name="@supabase/supabase-js" version="latest"/>
+        <package name="zustand" version="^5.0.8"/>
+        <package name="@dnd-kit/core" version="^6.3.1"/>
+        <package name="@dnd-kit/sortable" version="^10.0.0"/>
+        <package name="@dnd-kit/utilities" version="^3.2.2"/>
+      </node>
+      <shadcn_components_installed>
+        <component name="button"/>
+        <component name="badge"/>
+        <component name="card"/>
+        <component name="checkbox"/>
+        <component name="dropdown-menu"/>
+        <component name="input"/>
+        <component name="label"/>
+      </shadcn_components_installed>
+      <shadcn_components_needed>
+        <component name="dialog" reason="Modal 용도"/>
+        <component name="sheet" reason="슬라이드 패널"/>
+        <component name="toast" reason="알림 메시지"/>
+        <component name="skeleton" reason="로딩 상태"/>
+        <component name="tabs" reason="뷰 전환"/>
+        <component name="select" reason="선택 입력"/>
+        <component name="textarea" reason="텍스트 영역"/>
+        <component name="avatar" reason="사용자 프로필"/>
+        <component name="alert" reason="알림 메시지"/>
+        <component name="separator" reason="구분선"/>
+        <component name="tooltip" reason="툴팁"/>
+      </shadcn_components_needed>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="architecture.md">컴포넌트 구조: 'use client' 필요시에만, Hooks → State → Effects → Handlers → Render 순서</constraint>
+    <constraint source="architecture.md">파일명: kebab-case (예: app-shell.tsx), 컴포넌트: PascalCase (예: AppShell)</constraint>
+    <constraint source="ux-design-specification.md">Sidebar 너비: Desktop 240px, Tablet 60px (아이콘만), Mobile 숨김</constraint>
+    <constraint source="ux-design-specification.md">Sidebar 배경: Zinc 900 (#18181B) 다크 테마 고정</constraint>
+    <constraint source="ux-design-specification.md">Primary 색상: #5B5FC7 (Indigo), Accent: #3B82F6 (Blue)</constraint>
+    <constraint source="ux-design-specification.md">폰트: Inter (Google Fonts via next/font)</constraint>
+    <constraint source="ux-design-specification.md">모든 인터랙티브 컴포넌트: Default, Hover, Focus, Active, Disabled, Loading, Error 상태 지원</constraint>
+    <constraint source="ux-design-specification.md">접근성: WCAG 2.1 Level AA, 키보드 네비게이션, 포커스 인디케이터</constraint>
+    <constraint source="story">Story 1.1(in-progress)의 Supabase 클라이언트 설정 완료 필요</constraint>
+    <constraint source="story">기존 app/layout.tsx의 ThemeProvider, Geist 폰트 → Inter로 변경</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="createBrowserClient" kind="function" path="jira-lite-mvp/lib/supabase/client.ts">
+      Supabase 브라우저 클라이언트 생성 함수 - AuthProvider에서 사용
+    </interface>
+    <interface name="ThemeProvider" kind="component" path="next-themes">
+      next-themes의 테마 Provider - 이미 적용됨
+    </interface>
+    <interface name="Button variants" kind="component" path="jira-lite-mvp/components/ui/button.tsx">
+      기존 variants: default, destructive, outline, secondary, ghost, link - AI variant 추가 필요
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      이 프로젝트는 현재 테스트 프레임워크가 설정되어 있지 않습니다. 8시간 해커톤 MVP 특성상 브라우저 수동 테스트와 Chrome DevTools MCP를 통한 실시간 테스트를 권장합니다.
+    </standards>
+    <locations>
+      <location pattern="app/(dashboard)/dev/components/page.tsx">UI 컴포넌트 테스트 페이지 (Story에서 생성 예정)</location>
+      <location pattern="Chrome DevTools MCP">실시간 브라우저 테스트</location>
+    </locations>
+    <ideas>
+      <idea ac="1">브라우저에서 / 접속하여 Sidebar + Main 레이아웃 구조 확인</idea>
+      <idea ac="2">Sidebar 배경색이 Zinc 900 (#18181B)인지 확인, 너비 240px DevTools로 측정</idea>
+      <idea ac="3">/dev/components 페이지에서 Button, Badge, Card 등 모든 컴포넌트 렌더링 확인</idea>
+      <idea ac="3">AI 버튼 그라디언트 (#5B5FC7 → #3B82F6) 시각적 확인</idea>
+      <idea ac="3">Priority Badge HIGH(빨강), MEDIUM(노랑), LOW(초록) 색상 확인</idea>
+      <idea ac="4">Primary 버튼 색상이 #5B5FC7인지 확인</idea>
+      <idea ac="5">콘솔에서 useAuth() 훅 호출하여 user, loading, error 상태 반환 확인</idea>
+      <idea ac="5">로그인/로그아웃 시 AuthProvider 상태 업데이트 확인</idea>
+    </ideas>
+  </tests>
+</story-context>

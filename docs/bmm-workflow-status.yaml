@@ -65,10 +65,10 @@ workflow_status:
   # Phase 2: Solutioning
   phase_2_solutioning:
     create-architecture: "docs/architecture.md"  # ✅ Completed 2025-11-29
-    create-epics-and-stories: "docs/epics.md"  # ✅ Completed 2025-11-29
+    create-epics-and-stories: "docs/epics.md"  # ✅ Updated 2025-11-29 (Story 1.1 강화)
     test-design: "recommended"
     validate-architecture: "optional"
-    implementation-readiness: "required"
+    implementation-readiness: "docs/implementation-readiness-report-2025-11-29.md"  # ✅ Completed 2025-11-29
 
   # Phase 3: Implementation
   phase_3_implementation:
@@ -76,16 +76,16 @@ workflow_status:
 
 # Next Steps
 next_action:
-  workflow: "implementation-readiness"
-  agent: "architect"
-  command: "/bmad:bmm:workflows:implementation-readiness"
-  note: "PRD + UX + Architecture + Epics 정합성 검증"
+  workflow: "sprint-planning"
+  agent: "sm"
+  command: "/bmad:bmm:workflows:sprint-planning"
+  note: "스프린트 계획 및 Story 배치"
 
 alternative_next:
-  workflow: "test-design"
-  agent: "tea"
-  command: "/bmad:bmm:workflows:test-design"
-  note: "테스트 설계 검토 (recommended)"
+  workflow: "dev-story"
+  agent: "dev"
+  command: "/bmad:bmm:workflows:dev-story"
+  note: "Story 1.1 직접 구현 시작 (sprint-planning 없이)"
 
 # Completed Artifacts
 completed_artifacts:

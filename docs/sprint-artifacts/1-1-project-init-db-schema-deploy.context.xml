@@ -1,0 +1,197 @@
+<story-context id="1-1-project-init-db-schema-deploy" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1</storyId>
+    <title>프로젝트 초기화 &amp; DB 스키마 &amp; 배포 환경</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-1-project-init-db-schema-deploy.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>개발팀</asA>
+    <iWant>Next.js 프로젝트 기반, Supabase 데이터베이스 스키마, Firebase App Hosting 배포 환경을 구축</iWant>
+    <soThat>이후 모든 Epic의 기능 개발을 위한 안정적인 인프라 기반을 확보할 수 있다</soThat>
+    <tasks>
+      <part id="A" title="Next.js 프로젝트 생성">
+        <task id="1" ac="1">Next.js 15 프로젝트 생성
+          <subtask id="1.1">npx create-next-app -e with-supabase jira-lite-mvp 실행</subtask>
+          <subtask id="1.2">프로젝트 폴더 구조 확인</subtask>
+        </task>
+        <task id="2" ac="1">추가 의존성 설치
+          <subtask id="2.1">@dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities 설치</subtask>
+          <subtask id="2.2">zustand, @tanstack/react-query 설치</subtask>
+          <subtask id="2.3">react-hook-form, @hookform/resolvers, zod 설치</subtask>
+          <subtask id="2.4">recharts, date-fns, openai, resend 설치</subtask>
+        </task>
+        <task id="3" ac="1">환경변수 설정
+          <subtask id="3.1">.env.local.example 파일 생성</subtask>
+          <subtask id="3.2">.env.local 파일 생성 및 Supabase/Resend 키 설정</subtask>
+          <subtask id="3.3">apphosting.yaml에 환경변수 시크릿 설정</subtask>
+        </task>
+      </part>
+      <part id="B" title="Supabase 데이터베이스 설정">
+        <task id="4" ac="2">전체 DB 스키마 마이그레이션 생성
+          <subtask id="4.1">profiles 테이블 생성 (auth.users 확장)</subtask>
+          <subtask id="4.2">teams, team_members, team_invites 테이블 생성</subtask>
+          <subtask id="4.3">projects, project_favorites, statuses, labels 테이블 생성</subtask>
+          <subtask id="4.4">issues, issue_labels, issue_history, subtasks 테이블 생성</subtask>
+          <subtask id="4.5">comments, notifications, team_activities 테이블 생성</subtask>
+          <subtask id="4.6">ai_cache, ai_rate_limits 테이블 생성</subtask>
+        </task>
+        <task id="5" ac="3">RLS 정책 생성
+          <subtask id="5.1">profiles 테이블 RLS 정책 (자신의 프로필만 조회/수정)</subtask>
+          <subtask id="5.2">teams 테이블 RLS 정책 (팀 멤버만 조회)</subtask>
+          <subtask id="5.3">projects 테이블 RLS 정책 (팀 멤버만 접근)</subtask>
+          <subtask id="5.4">issues 테이블 RLS 정책 (프로젝트 팀 멤버만 접근)</subtask>
+          <subtask id="5.5">comments 테이블 RLS 정책</subtask>
+          <subtask id="5.6">notifications 테이블 RLS 정책 (자신의 알림만)</subtask>
+        </task>
+        <task id="6" ac="2,4">트리거 함수 생성
+          <subtask id="6.1">handle_new_user() 트리거 - 사용자 생성 시 profiles 자동 생성</subtask>
+          <subtask id="6.2">handle_updated_at() 트리거 - updated_at 자동 갱신</subtask>
+          <subtask id="6.3">Soft Delete 뷰 또는 정책 적용</subtask>
+        </task>
+        <task id="7" ac="2">마이그레이션 적용 및 타입 생성
+          <subtask id="7.1">Supabase CLI 또는 SQL Editor로 마이그레이션 실행</subtask>
+          <subtask id="7.2">supabase gen types typescript 실행</subtask>
+          <subtask id="7.3">lib/supabase/types.ts에 타입 저장</subtask>
+        </task>
+      </part>
+      <part id="C" title="Firebase App Hosting 설정">
+        <task id="8" ac="5,6">Firebase CLI 설치 및 초기화
+          <subtask id="8.1">npm install -g firebase-tools 실행</subtask>
+          <subtask id="8.2">firebase login 실행</subtask>
+          <subtask id="8.3">firebase init apphosting 실행</subtask>
+        </task>
+        <task id="9" ac="5">apphosting.yaml 설정
+          <subtask id="9.1">runConfig (cpu, memory, concurrency) 설정</subtask>
+          <subtask id="9.2">환경변수 및 시크릿 설정</subtask>
+        </task>
+        <task id="10" ac="6">GitHub 저장소 연결 및 첫 배포
+          <subtask id="10.1">GitHub 저장소 연결 (자동 배포 설정)</subtask>
+          <subtask id="10.2">git push origin main 실행</subtask>
+          <subtask id="10.3">Firebase 콘솔에서 배포 상태 확인</subtask>
+          <subtask id="10.4">배포된 URL 접속 테스트</subtask>
+        </task>
+      </part>
+      <part id="D" title="검증 테스트">
+        <task id="11" ac="1-6">전체 AC 검증
+          <subtask id="11.1">로컬 개발 서버 정상 시작 확인</subtask>
+          <subtask id="11.2">Supabase 15개 테이블 존재 확인</subtask>
+          <subtask id="11.3">RLS 정책 동작 테스트 (인증 없이 접근 시 에러)</subtask>
+          <subtask id="11.4">Soft Delete 동작 테스트</subtask>
+          <subtask id="11.5">배포 URL 정상 접속 확인</subtask>
+          <subtask id="11.6">Git 푸시 → 자동 배포 트리거 확인</subtask>
+        </task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" description="npm run dev 실행 시 에러 없이 로컬 서버 시작" verification="로컬에서 localhost:3000 접속 확인"/>
+    <ac id="2" description="Supabase 대시보드에서 15개 테이블 확인 가능" verification="Supabase Table Editor에서 테이블 목록 확인"/>
+    <ac id="3" description="RLS 정책이 활성화되어 팀 멤버십 검증 동작" verification="인증 없이 데이터 접근 시 에러 반환 확인"/>
+    <ac id="4" description="deleted_at 컬럼이 있는 테이블에 Soft Delete 정책 적용" verification="DELETE 대신 UPDATE 동작 확인"/>
+    <ac id="5" description="Firebase App Hosting URL로 접속 시 앱 로딩 확인" verification="배포된 URL에서 앱 렌더링 확인"/>
+    <ac id="6" description="git push 시 자동 배포 트리거 확인" verification="GitHub 푸시 후 Firebase 빌드 로그 확인"/>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/prd.md" title="Jira Lite MVP PRD" section="Functional Requirements" snippet="FR-070: 팀 멤버십 검증 - 모든 API 엔드포인트에서 팀 멤버십 검증 필수. FR-071: Soft Delete - 모든 주요 엔티티에 deletedAt 필드 추가, 삭제 시 타임스탬프 기록."/>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Database Schema" snippet="15개 테이블 정의: profiles, teams, team_members, team_invites, projects, project_favorites, statuses, labels, issues, issue_labels, subtasks, comments, issue_history, ai_cache, ai_rate_limits, notifications, team_activities"/>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Row Level Security" snippet="팀 멤버만 팀 데이터 접근 가능. RLS 정책으로 team_members 테이블 조인하여 user_id = auth.uid() 검증."/>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Project Initialization" snippet="npx create-next-app -e with-supabase jira-lite-mvp 명령으로 프로젝트 생성. 추가 의존성: @dnd-kit, zustand, @tanstack/react-query, react-hook-form, zod, recharts, date-fns, openai, resend"/>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Deployment Architecture" snippet="Firebase App Hosting - Git 푸시 자동 배포. apphosting.yaml: runConfig (cpu: 1, memoryMiB: 512, concurrency: 80), 환경변수 시크릿 설정."/>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-1.md" title="Epic 1 Tech Spec" section="Data Models and Contracts" snippet="profiles 테이블 스키마 및 handle_new_user() 트리거 정의. TypeScript 타입 정의 포함."/>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-1.md" title="Epic 1 Tech Spec" section="Acceptance Criteria" snippet="AC-1: npm run dev 성공, 15개 테이블 확인, RLS 활성화, Soft Delete 적용, Firebase URL 접속, git push 자동 배포"/>
+      <doc path="docs/epics.md" title="Epic Breakdown" section="Story 1.1" snippet="프로젝트 초기화 &amp; DB 스키마 &amp; 배포 환경 - Part A: Next.js 생성, Part B: Supabase 설정, Part C: Firebase 설정"/>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Design System" snippet="Linear Productivity 테마: Primary #5B5FC7, Accent #3B82F6. 폰트: Inter (웹폰트). Tailwind CSS 설정 참조."/>
+      <doc path="docs/ux-color-themes.html" title="UX Color Themes Visualizer" section="Linear Productivity Theme" snippet="Primary(#5B5FC7), Accent(#3B82F6), Background(#FFFFFF/#1E1E2E), Text(#1F2937/#F9FAFB), Border(#E5E7EB/#374151), Semantic Colors"/>
+      <doc path="docs/ux-design-directions.html" title="UX Design Direction Mockups" section="UI Layouts" snippet="Kanban, Dashboard, Login, Team, Profile, Notifications 페이지 목업. Story 1.2에서 UI 컴포넌트 구현 시 참조."/>
+    </docs>
+    <code>
+      <!-- 신규 프로젝트이므로 기존 코드 없음 -->
+      <note>이 스토리는 프로젝트 초기화 단계로, 기존 코드가 없습니다. 아래는 생성할 파일 구조입니다.</note>
+      <plannedFile path="lib/supabase/client.ts" kind="service" reason="브라우저용 Supabase 클라이언트"/>
+      <plannedFile path="lib/supabase/server.ts" kind="service" reason="서버 컴포넌트용 Supabase 클라이언트"/>
+      <plannedFile path="lib/supabase/types.ts" kind="types" reason="Supabase에서 생성한 TypeScript 타입"/>
+      <plannedFile path="middleware.ts" kind="middleware" reason="세션 갱신, 보호된 라우트 체크"/>
+      <plannedFile path="supabase/migrations/001_initial_schema.sql" kind="migration" reason="전체 DB 스키마 마이그레이션"/>
+      <plannedFile path=".env.local.example" kind="config" reason="환경변수 예시 파일"/>
+      <plannedFile path="apphosting.yaml" kind="config" reason="Firebase App Hosting 설정"/>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="^15.x" purpose="React 프레임워크"/>
+        <package name="react" version="^19.x" purpose="UI 라이브러리"/>
+        <package name="@supabase/supabase-js" version="^2.x" purpose="Supabase 클라이언트"/>
+        <package name="@supabase/ssr" version="^0.x" purpose="SSR용 Supabase 헬퍼"/>
+        <package name="@dnd-kit/core" version="latest" purpose="Drag &amp; Drop 코어"/>
+        <package name="@dnd-kit/sortable" version="latest" purpose="정렬 가능한 Drag &amp; Drop"/>
+        <package name="@dnd-kit/utilities" version="latest" purpose="Drag &amp; Drop 유틸리티"/>
+        <package name="zustand" version="latest" purpose="클라이언트 상태 관리"/>
+        <package name="@tanstack/react-query" version="latest" purpose="서버 상태 관리"/>
+        <package name="react-hook-form" version="^7.x" purpose="폼 상태 관리"/>
+        <package name="@hookform/resolvers" version="^3.x" purpose="Zod + RHF 연동"/>
+        <package name="zod" version="^3.x" purpose="스키마 유효성 검증"/>
+        <package name="recharts" version="latest" purpose="차트 라이브러리"/>
+        <package name="date-fns" version="latest" purpose="날짜 유틸리티"/>
+        <package name="openai" version="latest" purpose="OpenAI API 클라이언트"/>
+        <package name="resend" version="^2.x" purpose="이메일 발송"/>
+        <package name="tailwindcss" version="^3.x" purpose="CSS 프레임워크"/>
+        <package name="lucide-react" version="latest" purpose="아이콘 라이브러리"/>
+      </node>
+      <external>
+        <service name="Supabase" purpose="인증, DB, 스토리지" envVars="NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY"/>
+        <service name="Firebase App Hosting" purpose="배포" envVars="Firebase CLI 인증"/>
+        <service name="Google OAuth" purpose="소셜 로그인" envVars="Supabase 대시보드에서 설정"/>
+        <service name="Resend" purpose="이메일 발송" envVars="RESEND_API_KEY"/>
+      </external>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="architecture" type="framework">Next.js 15 (App Router) - Firebase App Hosting 공식 지원</constraint>
+    <constraint source="architecture" type="database">Supabase PostgreSQL - RLS, Realtime, Storage 통합</constraint>
+    <constraint source="architecture" type="auth">Supabase Auth - 이메일/비밀번호 + Google OAuth</constraint>
+    <constraint source="architecture" type="hosting">Firebase App Hosting - Git 푸시 자동 배포</constraint>
+    <constraint source="prd" type="security">FR-070: 모든 API에서 팀 멤버십 검증 필수</constraint>
+    <constraint source="prd" type="data">FR-071: Soft Delete 사용 (deleted_at 필드)</constraint>
+    <constraint source="architecture" type="naming">파일명: kebab-case, 컴포넌트: PascalCase, DB 테이블: snake_case 복수형</constraint>
+    <constraint source="tech-spec" type="performance">페이지 로드 3초 이내, API 응답 500ms 이내</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="Supabase Client" kind="service" signature="createBrowserClient()" path="lib/supabase/client.ts"/>
+    <interface name="Supabase Server" kind="service" signature="createServerClient(cookies)" path="lib/supabase/server.ts"/>
+    <interface name="profiles 테이블" kind="database" signature="id UUID PK, name VARCHAR(50), avatar_url TEXT, created_at, updated_at, deleted_at"/>
+    <interface name="teams 테이블" kind="database" signature="id UUID PK, name VARCHAR(50), owner_id UUID FK, created_at, updated_at, deleted_at"/>
+    <interface name="team_members 테이블" kind="database" signature="id UUID PK, team_id UUID FK, user_id UUID FK, role VARCHAR(20) CHECK, joined_at"/>
+    <interface name="RLS Policy Pattern" kind="database" signature="USING (team_id IN (SELECT team_id FROM team_members WHERE user_id = auth.uid()) AND deleted_at IS NULL)"/>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Next.js 15 프로젝트이므로 기본적으로 Jest/Vitest와 React Testing Library를 사용합니다.
+      E2E 테스트는 Chrome DevTools MCP를 통해 수행합니다.
+      이 스토리는 인프라 설정 스토리이므로 주로 수동 검증과 E2E 테스트로 확인합니다.
+    </standards>
+    <locations>
+      <location pattern="__tests__/**/*.test.ts" type="unit"/>
+      <location pattern="e2e/**/*.spec.ts" type="e2e"/>
+      <location pattern="supabase/tests/**/*.sql" type="database"/>
+    </locations>
+    <ideas>
+      <idea acRef="1">로컬 서버 시작 후 localhost:3000 접속하여 페이지 렌더링 확인</idea>
+      <idea acRef="2">Supabase 대시보드에서 15개 테이블 목록 스크린샷 캡처</idea>
+      <idea acRef="3">RLS 테스트: 인증 없이 profiles 테이블 SELECT 시도 → 에러 확인</idea>
+      <idea acRef="3">RLS 테스트: 다른 사용자 ID로 profiles 접근 시도 → 빈 결과 확인</idea>
+      <idea acRef="4">Soft Delete 테스트: profiles에 DELETE 실행 → deleted_at 타임스탬프 설정 확인</idea>
+      <idea acRef="5">배포 URL 접속하여 Next.js 기본 페이지 렌더링 확인</idea>
+      <idea acRef="6">README.md 수정 후 git push → Firebase 빌드 로그에서 자동 배포 트리거 확인</idea>
+    </ideas>
+  </tests>
+</story-context>

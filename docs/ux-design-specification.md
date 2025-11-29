@@ -230,6 +230,17 @@ background: linear-gradient(135deg, #5B5FC7 0%, #3B82F6 100%);
 
 ---
 
+## UX 시각 자료 참조 (스토리/Context 문서용)
+
+> 아래 HTML 파일들을 참조하여 스토리 문서 및 에픽 관련 문서에 반영해야 합니다.
+
+| 파일 | 설명 | 확인 내용 |
+|------|------|----------|
+| **[ux-design-directions.html](./ux-design-directions.html)** | 인터랙티브 UI 목업 | Kanban, Dashboard, Login, Team, Profile, Notifications 6개 화면 실제 레이아웃 |
+| **[ux-color-themes.html](./ux-color-themes.html)** | 색상 테마 시각화 | 버튼, 폼, 카드, Alert, AI Panel, Priority Badge, Label Tag 컴포넌트 미리보기 + 다크모드 |
+
+---
+
 ## 4. Design Direction
 
 ### 4.1 Chosen Design Approach

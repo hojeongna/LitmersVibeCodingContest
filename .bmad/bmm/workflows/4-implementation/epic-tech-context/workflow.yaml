@@ -35,6 +35,11 @@ input_file_patterns:
     whole: "{output_folder}/*ux*.md"
     sharded: "{output_folder}/*ux*/*.md"
     load_strategy: "FULL_LOAD"
+  ux_mockups:
+    description: "UX interactive mockups and color themes (HTML)"
+    whole: "{output_folder}/*ux*.html"
+    sharded: "{output_folder}/*ux*/*.html"
+    load_strategy: "FULL_LOAD"
   epics:
     description: "Specific epic for tech spec generation"
     whole: "{output_folder}/*epic*.md"

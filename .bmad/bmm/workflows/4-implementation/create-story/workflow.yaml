@@ -56,7 +56,9 @@ input_file_patterns:
   ux_design:
     description: "UX design specification (if UI)"
     whole: "{output_folder}/*ux*.md"
+    spec: "{output_folder}/ux-design-specification.md"
     sharded: "{output_folder}/*ux*/*.md"
+    html: "{output_folder}/*ux*.html"
     load_strategy: "FULL_LOAD"
   epics:
     description: "Epic containing this story"

@@ -1,0 +1,253 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>3</storyId>
+    <title>회원가입 &amp; 로그인</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-3-signup-login.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>사용자</asA>
+    <iWant>이메일과 비밀번호로 회원가입하고 로그인</iWant>
+    <soThat>시스템에 접근하여 이슈 트래킹 기능을 사용할 수 있다</soThat>
+    <tasks>
+      <part id="A" title="회원가입 페이지 (FR-001)">
+        <task id="1" title="회원가입 페이지 라우트 생성" ac="1,2">
+          <subtask id="1.1">app/(auth)/signup/page.tsx 생성</subtask>
+          <subtask id="1.2">app/(auth)/layout.tsx 생성 (인증 페이지 공통 레이아웃)</subtask>
+        </task>
+        <task id="2" title="회원가입 폼 구현" ac="1,3,4,5">
+          <subtask id="2.1">이메일 입력 필드 (유효성: 이메일 형식, 최대 255자)</subtask>
+          <subtask id="2.2">비밀번호 입력 필드 (유효성: 6~100자)</subtask>
+          <subtask id="2.3">비밀번호 보기/숨기기 토글 버튼</subtask>
+          <subtask id="2.4">비밀번호 강도 표시 인디케이터 구현 (Weak/Medium/Strong)</subtask>
+          <subtask id="2.5">이름 입력 필드 (유효성: 1~50자)</subtask>
+          <subtask id="2.6">Zod 스키마 유효성 검증 (lib/validations/auth.ts)</subtask>
+          <subtask id="2.7">react-hook-form 연동</subtask>
+        </task>
+        <task id="3" title="회원가입 API 연동" ac="1,2,3">
+          <subtask id="3.1">Supabase Auth signUp() 호출</subtask>
+          <subtask id="3.2">메타데이터로 이름 전달 (options.data.name)</subtask>
+          <subtask id="3.3">성공 시 자동 로그인 및 대시보드 리다이렉트</subtask>
+          <subtask id="3.4">에러 처리 (중복 이메일, 약한 비밀번호 등)</subtask>
+          <subtask id="3.5">Toast로 성공/에러 메시지 표시</subtask>
+        </task>
+      </part>
+      <part id="B" title="로그인 페이지 (FR-002)">
+        <task id="4" title="로그인 페이지 생성" ac="6,7,10">
+          <subtask id="4.1">app/(auth)/login/page.tsx 생성</subtask>
+          <subtask id="4.2">이메일 입력 필드</subtask>
+          <subtask id="4.3">비밀번호 입력 필드</subtask>
+          <subtask id="4.4">비밀번호 보기/숨기기 토글</subtask>
+          <subtask id="4.5">"Remember me" 체크박스</subtask>
+          <subtask id="4.6">"Sign Up" 링크</subtask>
+          <subtask id="4.7">"Forgot password?" 링크</subtask>
+        </task>
+        <task id="5" title="로그인 API 연동" ac="6,7">
+          <subtask id="5.1">Supabase Auth signInWithPassword() 호출</subtask>
+          <subtask id="5.2">성공 시 대시보드로 리다이렉트</subtask>
+          <subtask id="5.3">에러 처리</subtask>
+          <subtask id="5.4">Toast로 에러 메시지 표시</subtask>
+        </task>
+      </part>
+      <part id="C" title="로그아웃 기능 (FR-002)">
+        <task id="6" title="로그아웃 구현" ac="8">
+          <subtask id="6.1">Sidebar/Header 사용자 메뉴에 로그아웃 버튼 추가</subtask>
+          <subtask id="6.2">supabase.auth.signOut() 호출</subtask>
+          <subtask id="6.3">세션 클리어 후 /auth/login으로 리다이렉트</subtask>
+        </task>
+      </part>
+      <part id="D" title="인증 미들웨어 (FR-002)">
+        <task id="7" title="보호된 라우트 미들웨어" ac="9">
+          <subtask id="7.1">middleware.ts 구현 (Supabase SSR 패턴)</subtask>
+          <subtask id="7.2">세션 갱신 로직 (supabase.auth.getSession())</subtask>
+          <subtask id="7.3">미인증 시 /auth/login으로 리다이렉트</subtask>
+          <subtask id="7.4">인증된 사용자가 /auth/* 접근 시 대시보드로 리다이렉트</subtask>
+        </task>
+      </part>
+      <part id="E" title="인증 레이아웃 UI">
+        <task id="8" title="인증 페이지 레이아웃" ac="1,6">
+          <subtask id="8.1">좌측: 브랜드 영역 (로고, 태그라인, AI 기능 소개)</subtask>
+          <subtask id="8.2">우측: 폼 영역 (회원가입/로그인 폼)</subtask>
+          <subtask id="8.3">그라디언트 배경 (좌측 영역)</subtask>
+          <subtask id="8.4">모바일 반응형 (단일 컬럼)</subtask>
+        </task>
+      </part>
+      <part id="F" title="테스트 및 검증">
+        <task id="9" title="E2E 테스트 시나리오" ac="1-10">
+          <subtask id="9.1">회원가입 성공 플로우 테스트</subtask>
+          <subtask id="9.2">중복 이메일 에러 테스트</subtask>
+          <subtask id="9.3">로그인 성공 플로우 테스트</subtask>
+          <subtask id="9.4">로그인 실패 에러 테스트</subtask>
+          <subtask id="9.5">로그아웃 플로우 테스트</subtask>
+          <subtask id="9.6">보호된 라우트 리다이렉트 테스트</subtask>
+        </task>
+      </part>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" fr="FR-001">유효한 이메일/비밀번호/이름으로 회원가입 성공 (회원가입 폼 제출 후 자동 로그인 확인)</criterion>
+    <criterion id="AC-2" fr="FR-001">회원가입 후 자동 로그인 및 대시보드 리다이렉트 (/ 페이지로 리다이렉트 확인)</criterion>
+    <criterion id="AC-3" fr="FR-001">중복 이메일로 회원가입 시 에러 메시지 표시 ("이미 사용 중인 이메일입니다")</criterion>
+    <criterion id="AC-4" fr="FR-001">비밀번호 6자 미만 시 유효성 에러 표시</criterion>
+    <criterion id="AC-5" fr="FR-001">비밀번호 강도 표시 동작 (Weak/Medium/Strong)</criterion>
+    <criterion id="AC-6" fr="FR-002">올바른 자격 증명으로 로그인 성공 (로그인 후 대시보드 이동)</criterion>
+    <criterion id="AC-7" fr="FR-002">로그인 실패 시 에러 메시지 표시 ("이메일 또는 비밀번호가 올바르지 않습니다")</criterion>
+    <criterion id="AC-8" fr="FR-002">로그아웃 시 /auth/login으로 리다이렉트</criterion>
+    <criterion id="AC-9" fr="FR-002">미인증 사용자가 보호된 페이지 접근 시 로그인 페이지로 리다이렉트</criterion>
+    <criterion id="AC-10" fr="FR-002">폼에 "Remember me" 체크박스 존재</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/prd.md" title="Jira Lite MVP PRD">
+        <section>FR-001: 회원가입 (Sign Up)</section>
+        <snippet>이메일/비밀번호를 통해 회원가입. email: 유니크, 이메일 형식, 최대 255자. password: 6자 이상, 최대 100자. name: 1~50자. 생성 후 자동 로그인.</snippet>
+      </doc>
+      <doc path="docs/prd.md" title="Jira Lite MVP PRD">
+        <section>FR-002: 로그인/로그아웃</section>
+        <snippet>이메일/비밀번호로 로그인. 성공 시 세션/토큰 발급 (만료: 24시간). 실패 시 "이메일 또는 비밀번호가 올바르지 않습니다" 메시지.</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document">
+        <section>Authentication Flow</section>
+        <snippet>Supabase Auth 기반 JWT 인증. 이메일/비밀번호 로그인 → JWT 발급 → Cookie 저장. Google OAuth → Supabase Auth → Google → Callback.</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document">
+        <section>Project Structure</section>
+        <snippet>app/(auth)/login/page.tsx, app/(auth)/signup/page.tsx, middleware.ts 구조. lib/supabase/client.ts, lib/supabase/server.ts.</snippet>
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification">
+        <section>Screen 3: Login/Sign Up</section>
+        <snippet>좌측 브랜드 섹션(로고, 태그라인, AI 기능 소개) + 우측 폼 섹션(이메일, 비밀번호, Sign In 버튼, Google OAuth). 그라디언트 배경.</snippet>
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification">
+        <section>Color System</section>
+        <snippet>Primary: #5B5FC7 (Indigo). Error: #EF4444. 비밀번호 강도 - Weak: #EF4444, Medium: #F59E0B, Strong: #22C55E.</snippet>
+      </doc>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-1.md" title="Epic 1 Tech Spec">
+        <section>Data Models and Contracts</section>
+        <snippet>signUpSchema, loginSchema - Zod 스키마. email: z.string().email().max(255), password: z.string().min(6).max(100), name: z.string().min(1).max(50).</snippet>
+      </doc>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-1.md" title="Epic 1 Tech Spec">
+        <section>APIs and Interfaces</section>
+        <snippet>supabase.auth.signUp(), signInWithPassword(), signOut(). 에러 코드: EMAIL_EXISTS, INVALID_CREDENTIALS, WEAK_PASSWORD.</snippet>
+      </doc>
+      <doc path="docs/epics.md" title="Epics Breakdown">
+        <section>Story 1.3: 회원가입 &amp; 로그인</section>
+        <snippet>회원가입 페이지(/auth/signup), 로그인 페이지(/auth/login), 비밀번호 강도 표시, 로그아웃, 인증 미들웨어(보호된 라우트). FR-001, FR-002 커버.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file path="jira-lite-mvp/lib/supabase/client.ts" kind="service" symbol="createClient" reason="브라우저용 Supabase 클라이언트 - 회원가입/로그인 폼에서 사용">
+        <snippet>createBrowserClient로 Supabase 클라이언트 생성, Database 타입 적용</snippet>
+      </file>
+      <file path="jira-lite-mvp/lib/supabase/server.ts" kind="service" symbol="createClient" reason="서버 컴포넌트용 Supabase 클라이언트 - 미들웨어에서 사용">
+        <snippet>createServerClient로 서버용 클라이언트 생성, cookies() 활용</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/sign-up-form.tsx" kind="component" symbol="SignUpForm" reason="기존 회원가입 폼 - 확장 필요 (이름 필드, 비밀번호 강도, Zod 유효성 검증 추가)">
+        <snippet>현재: email, password, repeatPassword 필드만 있음. 이름 필드 없음, Zod 미사용, 비밀번호 강도 표시 없음</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/login-form.tsx" kind="component" symbol="LoginForm" reason="기존 로그인 폼 - 확장 필요 (Remember me 체크박스, Zod 유효성 검증 추가)">
+        <snippet>현재: email, password 필드, Forgot password 링크. Remember me 없음, Zod 미사용</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/logout-button.tsx" kind="component" symbol="LogoutButton" reason="로그아웃 버튼 - 재사용 가능 (signOut 후 /auth/login 리다이렉트)">
+        <snippet>supabase.auth.signOut() 호출 후 router.push("/auth/login")</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/ui/button.tsx" kind="ui-component" symbol="Button" reason="shadcn/ui 버튼 컴포넌트 - 재사용">
+        <snippet>variant: default, destructive, outline, secondary, ghost, link. size: default, sm, lg, icon</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/ui/input.tsx" kind="ui-component" symbol="Input" reason="shadcn/ui 인풋 컴포넌트 - 재사용">
+        <snippet>forwardRef 기반 Input, className 병합 지원</snippet>
+      </file>
+      <file path="jira-lite-mvp/components/ui/checkbox.tsx" kind="ui-component" symbol="Checkbox" reason="shadcn/ui 체크박스 - Remember me에 사용">
+        <snippet>Radix UI 기반 Checkbox 컴포넌트</snippet>
+      </file>
+    </code>
+    <dependencies>
+      <ecosystem name="Node.js">
+        <pkg name="next" version="latest" usage="App Router, 서버 컴포넌트, 미들웨어"/>
+        <pkg name="react" version="^19.0.0" usage="UI 라이브러리"/>
+        <pkg name="@supabase/supabase-js" version="latest" usage="Supabase 클라이언트 (Auth 포함)"/>
+        <pkg name="@supabase/ssr" version="latest" usage="SSR용 Supabase 헬퍼"/>
+        <pkg name="zod" version="^4.1.13" usage="폼 유효성 검증 스키마"/>
+        <pkg name="react-hook-form" version="^7.67.0" usage="폼 상태 관리"/>
+        <pkg name="@hookform/resolvers" version="^5.2.2" usage="Zod + RHF 연동"/>
+        <pkg name="@radix-ui/react-checkbox" version="^1.3.1" usage="Remember me 체크박스"/>
+        <pkg name="@radix-ui/react-label" version="^2.1.6" usage="Label 컴포넌트"/>
+        <pkg name="lucide-react" version="^0.511.0" usage="아이콘 (Eye, EyeOff 등)"/>
+        <pkg name="tailwindcss" version="^3.4.1" usage="스타일링"/>
+        <pkg name="class-variance-authority" version="^0.7.1" usage="버튼 variants"/>
+        <pkg name="next-themes" version="^0.4.6" usage="다크모드 (선택적)"/>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="validation">비밀번호 최소 6자 이상, 최대 100자 (PRD FR-001)</constraint>
+    <constraint type="validation">이메일 최대 255자, 이메일 형식 (PRD FR-001)</constraint>
+    <constraint type="validation">이름 1~50자 (PRD FR-001)</constraint>
+    <constraint type="security">JWT 토큰 만료 24시간 (PRD FR-002)</constraint>
+    <constraint type="pattern">react-hook-form + zod 조합 사용 (architecture.md)</constraint>
+    <constraint type="pattern">Server Actions 대신 Supabase Auth 클라이언트 API 직접 호출 (기존 코드 패턴)</constraint>
+    <constraint type="ui">Primary 색상 #5B5FC7, 에러 #EF4444 (ux-design-specification.md)</constraint>
+    <constraint type="ui">비밀번호 강도: Weak(빨강), Medium(노랑), Strong(초록) (ux-design-specification.md)</constraint>
+    <constraint type="structure">라우트: app/(auth)/signup, app/(auth)/login 생성 필요 (현재 /auth/sign-up)</constraint>
+    <constraint type="missing">middleware.ts 미존재 - 보호된 라우트 미들웨어 생성 필요</constraint>
+    <constraint type="missing">lib/validations/auth.ts 미존재 - Zod 스키마 생성 필요</constraint>
+  </constraints>
+  <interfaces>
+    <interface name="Supabase Auth signUp" kind="API">
+      <signature>supabase.auth.signUp({ email, password, options: { data: { name } } })</signature>
+      <path>jira-lite-mvp/lib/supabase/client.ts</path>
+    </interface>
+    <interface name="Supabase Auth signInWithPassword" kind="API">
+      <signature>supabase.auth.signInWithPassword({ email, password })</signature>
+      <path>jira-lite-mvp/lib/supabase/client.ts</path>
+    </interface>
+    <interface name="Supabase Auth signOut" kind="API">
+      <signature>supabase.auth.signOut()</signature>
+      <path>jira-lite-mvp/lib/supabase/client.ts</path>
+    </interface>
+    <interface name="Supabase Auth getSession" kind="API">
+      <signature>supabase.auth.getSession()</signature>
+      <path>jira-lite-mvp/lib/supabase/server.ts</path>
+      <note>미들웨어에서 세션 확인용</note>
+    </interface>
+    <interface name="signUpSchema" kind="Zod Schema">
+      <signature>z.object({ email: z.string().email().max(255), password: z.string().min(6).max(100), name: z.string().min(1).max(50) })</signature>
+      <path>jira-lite-mvp/lib/validations/auth.ts (생성 필요)</path>
+    </interface>
+    <interface name="loginSchema" kind="Zod Schema">
+      <signature>z.object({ email: z.string().email(), password: z.string().min(1) })</signature>
+      <path>jira-lite-mvp/lib/validations/auth.ts (생성 필요)</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      E2E 테스트: Chrome DevTools MCP를 사용한 브라우저 자동화 테스트.
+      Unit 테스트: Vitest + React Testing Library (선택적).
+      폼 유효성: Zod 스키마 기반 유효성 검증, onBlur 시점 에러 표시.
+      에러 처리: Supabase Auth 에러 코드를 사용자 친화적 한국어 메시지로 매핑.
+    </standards>
+    <locations>
+      <location>jira-lite-mvp/__tests__/ (테스트 파일 위치)</location>
+      <location>jira-lite-mvp/lib/validations/ (Zod 스키마)</location>
+    </locations>
+    <ideas>
+      <idea ac="AC-1">유효한 이메일/비밀번호/이름 입력 후 회원가입 성공 → 자동 로그인 → 대시보드 리다이렉트</idea>
+      <idea ac="AC-2">회원가입 후 / 페이지로 리다이렉트 확인</idea>
+      <idea ac="AC-3">중복 이메일로 회원가입 시도 → "이미 사용 중인 이메일입니다" 에러 메시지 표시</idea>
+      <idea ac="AC-4">비밀번호 5자 입력 → 폼 유효성 에러 표시 (6자 미만)</idea>
+      <idea ac="AC-5">비밀번호 입력 중 강도 인디케이터 변화 확인 (Weak → Medium → Strong)</idea>
+      <idea ac="AC-6">올바른 이메일/비밀번호로 로그인 → 대시보드 이동</idea>
+      <idea ac="AC-7">잘못된 비밀번호로 로그인 시도 → "이메일 또는 비밀번호가 올바르지 않습니다" 에러 표시</idea>
+      <idea ac="AC-8">로그아웃 버튼 클릭 → /auth/login으로 리다이렉트</idea>
+      <idea ac="AC-9">미인증 상태에서 / 직접 접근 → /auth/login으로 리다이렉트</idea>
+      <idea ac="AC-10">로그인 폼에 "Remember me" 체크박스 표시 확인</idea>
+    </ideas>
+  </tests>
+</story-context>

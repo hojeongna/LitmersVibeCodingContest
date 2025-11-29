@@ -101,28 +101,67 @@
 **의존성:** 없음 (선행 필수)
 **스토리 순서:** 순차적 (1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6)
 
-### Story 1.1: 프로젝트 초기화 & DB 스키마
+### Story 1.1: 프로젝트 초기화 & DB 스키마 & 배포 환경
 
 **FR:** FR-070 (팀 멤버십 검증), FR-071 (Soft Delete)
 
+**⚠️ 중요:** 이 Story의 모든 작업은 **AI (Claude)가 직접 수행**합니다. 사용자는 Supabase/Firebase 콘솔 접근 권한만 제공하면 됩니다.
+
 **작업 내용:**
-1. Next.js 15 프로젝트 생성 (App Router, TypeScript)
-2. Supabase 프로젝트 연결 및 환경변수 설정
-3. 전체 DB 스키마 생성:
-   - `users` 테이블 (auth.users 확장)
-   - `teams`, `team_members` 테이블
-   - `projects` 테이블
-   - `issues`, `issue_labels`, `issue_history` 테이블
-   - `comments` 테이블
-   - `notifications` 테이블
-4. RLS (Row Level Security) 정책 설정
-5. Soft Delete 트리거 함수 구현
-6. TypeScript 타입 생성 (supabase gen types)
+
+#### Part A: Next.js 프로젝트 생성
+1. Next.js 15 프로젝트 생성 (Supabase 템플릿 사용)
+   ```bash
+   npx create-next-app -e with-supabase jira-lite-mvp
+   ```
+2. 추가 의존성 설치:
+   ```bash
+   npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+   npm install zustand @tanstack/react-query
+   npm install react-hook-form @hookform/resolvers zod
+   npm install recharts date-fns openai resend
+   ```
+3. 환경변수 설정 (.env.local)
+
+#### Part B: Supabase 설정 (AI 직접 생성)
+4. **AI가 직접 SQL 마이그레이션 파일 생성** - architecture.md의 스키마 기반:
+   - `profiles` 테이블 (auth.users 확장)
+   - `teams`, `team_members`, `team_invites` 테이블
+   - `projects`, `project_favorites`, `statuses`, `labels` 테이블
+   - `issues`, `issue_labels`, `issue_history`, `subtasks` 테이블
+   - `comments`, `notifications`, `team_activities` 테이블
+   - `ai_cache`, `ai_rate_limits` 테이블
+5. **AI가 직접 RLS 정책 생성** - 팀 멤버십 기반 접근 제어
+6. **AI가 직접 트리거 함수 생성** - Soft Delete, 히스토리 자동 기록
+7. Supabase CLI로 마이그레이션 적용 또는 SQL Editor에서 직접 실행
+8. TypeScript 타입 생성 (`supabase gen types typescript`)
+
+#### Part C: Firebase App Hosting 설정
+9. Firebase CLI 설치 및 로그인:
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   ```
+10. Firebase App Hosting 초기화:
+    ```bash
+    firebase init apphosting
+    ```
+11. `apphosting.yaml` 설정 (환경변수, 리소스 설정)
+12. GitHub 저장소 연결 (자동 배포 설정)
+13. 첫 배포 테스트 (`git push origin main`)
 
 **인수 조건:**
-- [ ] `pnpm dev` 실행 시 에러 없이 로컬 서버 시작
-- [ ] Supabase 대시보드에서 모든 테이블 확인 가능
+- [ ] `npm run dev` 실행 시 에러 없이 로컬 서버 시작
+- [ ] Supabase 대시보드에서 모든 15개 테이블 확인 가능
+- [ ] RLS 정책이 활성화되어 있고, 팀 멤버십 검증 동작
 - [ ] `deleted_at` 컬럼이 있는 테이블에 Soft Delete 정책 적용
+- [ ] Firebase App Hosting URL로 접속 시 앱 로딩 확인
+- [ ] `git push` 시 자동 배포 트리거 확인
+
+**참고 문서:**
+- DB 스키마: `docs/architecture.md` → "Database Schema" 섹션
+- RLS 정책: `docs/architecture.md` → "Row Level Security" 섹션
+- Firebase 설정: `docs/architecture.md` → "Deployment Architecture" 섹션
 
 ---
 

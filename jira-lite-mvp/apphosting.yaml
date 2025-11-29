@@ -1,0 +1,24 @@
+# Firebase App Hosting Configuration
+# https://firebase.google.com/docs/app-hosting
+
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+
+env:
+  # Public environment variables (visible to client)
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    value: your-project.supabase.co
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://your-app.web.app
+
+  # Secret environment variables (server-side only)
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    secret: supabase-anon-key
+  - variable: SUPABASE_SERVICE_ROLE_KEY
+    secret: supabase-service-role-key
+  - variable: OPENAI_API_KEY
+    secret: openai-api-key
+  - variable: RESEND_API_KEY
+    secret: resend-api-key
