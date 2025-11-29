@@ -7,15 +7,15 @@ runConfig:
   concurrency: 80
 
 env:
-  # Public environment variables (visible to client)
+  # Public environment variables
   - variable: NEXT_PUBLIC_SUPABASE_URL
-    value: your-project.supabase.co
-  - variable: NEXT_PUBLIC_APP_URL
-    value: https://your-app.web.app
-
-  # Secret environment variables (server-side only)
+    value: https://ncvhumxspnawtkcyjgpm.supabase.co
   - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
-    secret: supabase-anon-key
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jdmh1bXhzcG5hd3RrY3lqZ3BtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODEzMjIsImV4cCI6MjA3OTk1NzMyMn0.7rb1gyPnWo9wh5vn1gcyfx8pa_FqseIRXFUQwdXg60c
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://litmersvibecodingcontest.web.app
+
+  # Secret environment variables (설정 필요: firebase apphosting:secrets:set)
   - variable: SUPABASE_SERVICE_ROLE_KEY
     secret: supabase-service-role-key
   - variable: OPENAI_API_KEY
