@@ -9,6 +9,7 @@ import { ViewToggle } from '@/components/kanban/view-toggle';
 import { KanbanSkeleton } from '@/components/kanban/kanban-skeleton';
 import { ListSkeleton } from '@/components/issues/list-skeleton';
 import { useKanban } from '@/hooks/use-kanban';
+import { useRealtimeKanban } from '@/hooks/use-realtime-kanban';
 import type { ViewMode } from '@/types/view';
 
 import { useProject } from '@/hooks/use-projects';
@@ -38,6 +39,9 @@ export default function BoardPage({ params }: { params: Promise<{ projectId: str
 
   const { data, isLoading } = useKanban(projectId);
   const { data: project } = useProject(projectId);
+
+  // 실시간 협업 - 다른 사용자의 변경사항 자동 동기화
+  useRealtimeKanban({ projectId });
 
   // Get current view from URL or localStorage
   const urlView = searchParams.get('view') as ViewMode;
