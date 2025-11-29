@@ -1,0 +1,60 @@
+# Sprint Status Tracking File
+# Generated: 2025-11-29
+# Project: Jira Lite MVP
+
+# STATUS DEFINITIONS
+# - backlog: Story not yet started, needs drafting
+# - drafted: Story document created, ready for context/development
+# - in-progress: Currently being developed
+# - review: Development complete, under review
+# - done: Story completed and verified
+
+current_epic: 2
+current_sprint: 1
+
+development_status:
+  # Epic 1: Foundation & 인증 (완료됨)
+  epic-1: done
+  1-1-project-init-db-schema-deploy: done
+  1-2-common-layout-ui-components: done
+  1-3-signup-login: done
+  1-4-google-oauth: done
+  1-5-profile-password-management: done
+  epic-1-retrospective: done
+
+  # Epic 2: 팀 관리
+  epic-2: in-progress
+  2-1-team-create-list: drafted
+  2-2-team-detail-update-delete: backlog
+  2-3-member-invite-system: backlog
+  2-4-member-management: backlog
+  2-5-team-activity-log: backlog
+  epic-2-retrospective: backlog
+
+  # Epic 3: 프로젝트 & 이슈 관리
+  epic-3: backlog
+  3-1-project-crud: backlog
+  3-2-project-advanced-features: backlog
+  3-3-issue-create-list: backlog
+  3-4-issue-detail-update: backlog
+  3-5-issue-search-filter: backlog
+  3-6-history-subtasks: backlog
+  epic-3-retrospective: backlog
+
+  # Epic 4: 칸반 보드 & 댓글
+  epic-4: backlog
+  4-1-kanban-basic-ui: backlog
+  4-2-drag-drop: backlog
+  4-3-custom-columns-wip-limit: backlog
+  4-4-comment-crud: backlog
+  4-5-view-switch-ux: backlog
+  epic-4-retrospective: backlog
+
+  # Epic 5: AI & 대시보드 & 알림
+  epic-5: backlog
+  5-1-ai-summary-suggestion: backlog
+  5-2-ai-auto-label-duplicate: backlog
+  5-3-dashboard: backlog
+  5-4-notification-system: backlog
+  5-5-ai-advanced-features: backlog
+  epic-5-retrospective: backlog

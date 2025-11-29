@@ -1,0 +1,447 @@
+# Story 2.1: 팀 생성 & 목록 조회
+
+Status: drafted
+
+## Story
+
+As a **인증된 사용자**,
+I want **새로운 팀을 생성하고 내가 소속된 팀 목록을 조회**,
+so that **협업 공간을 만들고 팀 간 전환을 통해 프로젝트를 관리할 수 있다**.
+
+## Acceptance Criteria
+
+| AC # | 설명 | FR | 검증 방법 |
+|------|------|-----|----------|
+| AC-1 | 팀 생성 모달에서 팀 이름(1~50자)을 입력하여 팀 생성 가능 | FR-010 | 팀 이름 입력 후 생성 버튼 클릭 시 DB에 팀 생성 확인 |
+| AC-2 | 팀 생성 시 생성자가 자동으로 OWNER 역할로 `team_members` 테이블에 등록 | FR-010, FR-017 | DB에서 team_members.role = 'OWNER' 확인 |
+| AC-3 | 팀 생성 후 Sidebar에 즉시 표시 | FR-010 | 새로고침 없이 Sidebar에 팀 추가됨 확인 |
+| AC-4 | 한 사용자가 여러 팀에 소속 가능 | FR-010 | 다른 팀 생성/가입 후 모든 팀 목록 표시 확인 |
+| AC-5 | Sidebar에서 팀 목록 표시 (팀 이름 + 컬러 도트) | FR-010 | Sidebar UI에서 팀별 표시 확인 |
+| AC-6 | 팀 선택 시 해당 팀 컨텍스트로 전환 | FR-010 | 팀 클릭 시 URL 변경 및 컨텍스트 전환 확인 |
+| AC-7 | 역할 체계(OWNER/ADMIN/MEMBER) 기반 구현 | FR-017 | team_members 테이블 role 컬럼 CHECK 제약 조건 확인 |
+| AC-8 | 팀 이름이 비어있거나 50자 초과 시 에러 메시지 표시 | FR-010 | 유효성 검증 에러 메시지 표시 확인 |
+| AC-9 | API 응답 형식이 표준 포맷 준수 (`{ success: true, data: {...} }`) | FR-010 | API 응답 JSON 구조 확인 |
+
+## Tasks / Subtasks
+
+### Part A: 데이터 레이어 구현
+
+- [ ] Task 1: 팀 관련 TypeScript 타입 정의 (AC: 2, 7)
+  - [ ] 1.1 `types/team.ts` 생성
+  - [ ] 1.2 `Team` 인터페이스 정의 (id, name, owner_id, created_at, updated_at, deleted_at)
+  - [ ] 1.3 `TeamMember` 인터페이스 정의 (id, team_id, user_id, role, joined_at)
+  - [ ] 1.4 `TeamRole` 타입 정의 (`'OWNER' | 'ADMIN' | 'MEMBER'`)
+  - [ ] 1.5 Supabase Database types와 연동 확인
+
+- [ ] Task 2: 팀 API 구현 (AC: 1, 2, 9)
+  - [ ] 2.1 `app/api/teams/route.ts` 생성 (POST: 팀 생성, GET: 팀 목록)
+  - [ ] 2.2 POST 핸들러: 인증 확인, 팀 이름 검증, 팀 생성, OWNER 멤버 추가
+  - [ ] 2.3 GET 핸들러: 사용자가 속한 팀 목록 조회 (team_members JOIN teams)
+  - [ ] 2.4 표준 응답 포맷 적용 (`{ success: true, data: {...} }`)
+  - [ ] 2.5 에러 처리 (VALIDATION_ERROR, UNAUTHORIZED)
+
+### Part B: UI 컴포넌트 구현
+
+- [ ] Task 3: 팀 생성 모달 컴포넌트 (AC: 1, 8)
+  - [ ] 3.1 `components/teams/team-create-modal.tsx` 생성
+  - [ ] 3.2 모달 레이아웃 (제목, 입력 필드, 버튼)
+  - [ ] 3.3 팀 이름 입력 폼 (`react-hook-form` + `zod` 검증)
+  - [ ] 3.4 1~50자 유효성 검증 에러 메시지
+  - [ ] 3.5 "Cancel", "Create Team" 버튼
+  - [ ] 3.6 생성 중 로딩 상태 표시
+  - [ ] 3.7 생성 성공 시 모달 닫기 + Toast
+
+- [ ] Task 4: Sidebar 팀 목록 컴포넌트 (AC: 3, 4, 5, 6)
+  - [ ] 4.1 `components/teams/team-list.tsx` 생성 (기존 Sidebar 수정)
+  - [ ] 4.2 팀 목록 아이템 UI (컬러 도트 + 팀 이름)
+  - [ ] 4.3 활성 팀 하이라이트 스타일
+  - [ ] 4.4 팀 클릭 시 해당 팀 페이지로 라우팅
+  - [ ] 4.5 "+ New Team" 버튼 (모달 열기)
+  - [ ] 4.6 빈 상태 UI ("No teams yet. Create your first team!")
+
+- [ ] Task 5: Sidebar 통합 (AC: 3, 5)
+  - [ ] 5.1 `components/layout/sidebar.tsx` 수정
+  - [ ] 5.2 TeamList 컴포넌트 통합
+  - [ ] 5.3 팀 섹션 레이아웃 (상단: 팀 목록, 하단: 설정 등)
+  - [ ] 5.4 Zustand store 또는 TanStack Query로 팀 목록 상태 관리
+
+### Part C: 상태 관리 및 데이터 페칭
+
+- [ ] Task 6: 팀 데이터 훅 구현 (AC: 3, 4)
+  - [ ] 6.1 `hooks/use-teams.ts` 생성
+  - [ ] 6.2 `useTeams()` - 팀 목록 조회 (TanStack Query)
+  - [ ] 6.3 `useCreateTeam()` - 팀 생성 mutation
+  - [ ] 6.4 생성 성공 시 팀 목록 캐시 무효화
+  - [ ] 6.5 에러 처리 및 로딩 상태
+
+- [ ] Task 7: 팀 컨텍스트 관리 (AC: 6)
+  - [ ] 7.1 현재 선택된 팀 ID 상태 관리 (Zustand 또는 URL)
+  - [ ] 7.2 팀 전환 시 URL 업데이트 (`/teams/[teamId]`)
+  - [ ] 7.3 페이지 새로고침 시 URL에서 팀 ID 복원
+
+### Part D: 팀 페이지 기본 구현
+
+- [ ] Task 8: 팀 상세 페이지 스캐폴딩 (AC: 6)
+  - [ ] 8.1 `app/(dashboard)/teams/page.tsx` 생성 (팀 선택 페이지)
+  - [ ] 8.2 `app/(dashboard)/teams/[teamId]/page.tsx` 생성 (팀 상세)
+  - [ ] 8.3 기본 레이아웃 (탭 네비게이션 placeholder)
+  - [ ] 8.4 팀 정보 표시 (팀 이름, 생성일)
+
+### Part E: 폼 검증 스키마
+
+- [ ] Task 9: Zod 스키마 정의 (AC: 8)
+  - [ ] 9.1 `lib/validations/team.ts` 생성
+  - [ ] 9.2 `createTeamSchema` - 팀 이름 1~50자 검증
+  - [ ] 9.3 에러 메시지 한국어화
+
+### Part F: 테스트 및 검증
+
+- [ ] Task 10: E2E 테스트 시나리오 (AC: 1-9)
+  - [ ] 10.1 팀 생성 성공 테스트
+  - [ ] 10.2 팀 이름 유효성 검증 테스트 (빈 값, 51자)
+  - [ ] 10.3 팀 생성 후 Sidebar 반영 테스트
+  - [ ] 10.4 팀 전환 테스트
+  - [ ] 10.5 여러 팀 소속 테스트
+
+## Dev Notes
+
+### UX 시각 자료 (필수 참조)
+
+> **IMPORTANT**: Epic 2 Tech Spec에 정의된 UI 스타일을 참고하세요.
+
+| 항목 | 설명 | 확인 내용 |
+|------|------|----------|
+| **[docs/sprint-artifacts/tech-spec-epic-2.md](./tech-spec-epic-2.md)** | Epic 2 기술 사양서 | 팀 관리 UI 전체 스펙 |
+| **[docs/architecture.md](../architecture.md)** | 아키텍처 문서 | Project Structure, API 패턴 |
+
+### Linear Productivity 테마 색상
+
+| 용도 | 색상 | HEX |
+|------|------|-----|
+| Primary | Indigo | #5B5FC7 |
+| Primary Hover | Indigo Dark | #4F52B3 |
+| Accent | Blue | #3B82F6 |
+| Background | Near Black | #0F0F10 |
+| Surface | Dark Gray | #1A1A1D |
+| Surface Hover | Gray | #242428 |
+| Border | Gray | #2E2E32 |
+| Text Primary | White | #FAFAFA |
+| Text Secondary | Gray | #A1A1AA |
+
+[Source: docs/sprint-artifacts/tech-spec-epic-2.md#Color-Theme-Linear-Productivity]
+
+### 데이터베이스 스키마
+
+```sql
+-- teams 테이블 (Epic 1에서 생성됨)
+CREATE TABLE public.teams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(50) NOT NULL,                    -- 1~50자
+  owner_id UUID REFERENCES public.profiles NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ                        -- Soft Delete
+);
+
+-- team_members 테이블 (Epic 1에서 생성됨)
+CREATE TABLE public.team_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id UUID REFERENCES public.teams NOT NULL,
+  user_id UUID REFERENCES public.profiles NOT NULL,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('OWNER', 'ADMIN', 'MEMBER')),
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+```
+
+[Source: docs/sprint-artifacts/tech-spec-epic-2.md#Data-Models-and-Contracts]
+
+### API 설계
+
+#### POST /api/teams - 팀 생성
+
+```typescript
+// Request
+POST /api/teams
+{
+  "name": "My Team"
+}
+
+// Response (성공)
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "name": "My Team",
+    "owner_id": "user-uuid",
+    "created_at": "2025-11-29T...",
+    "updated_at": "2025-11-29T..."
+  }
+}
+
+// Response (에러)
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "팀 이름은 1~50자 사이여야 합니다"
+  }
+}
+```
+
+#### GET /api/teams - 내 팀 목록
+
+```typescript
+// Response
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "My Team",
+      "owner_id": "user-uuid",
+      "created_at": "2025-11-29T...",
+      "role": "OWNER"  // 현재 사용자의 역할
+    }
+  ]
+}
+```
+
+[Source: docs/sprint-artifacts/tech-spec-epic-2.md#APIs-and-Interfaces]
+
+### 팀 생성 워크플로우
+
+```
+1. 사용자가 "+ New Team" 버튼 클릭
+2. TeamCreateModal 열림
+3. 팀 이름 입력 (1~50자 검증)
+4. "Create Team" 클릭
+5. POST /api/teams 호출
+6. 서버에서:
+   - 인증 확인
+   - 팀 이름 검증
+   - INSERT teams (owner_id = 현재 사용자)
+   - INSERT team_members (role = 'OWNER')
+7. 성공 응답
+8. 클라이언트에서:
+   - 모달 닫기
+   - 팀 목록 캐시 무효화 (자동 리페치)
+   - 성공 Toast 표시
+   - Sidebar에 새 팀 표시
+```
+
+[Source: docs/sprint-artifacts/tech-spec-epic-2.md#Workflows-and-Sequencing]
+
+### Zod 스키마
+
+```typescript
+// lib/validations/team.ts
+import { z } from 'zod';
+
+export const createTeamSchema = z.object({
+  name: z
+    .string()
+    .min(1, '팀 이름을 입력하세요')
+    .max(50, '팀 이름은 50자 이내로 입력하세요')
+    .trim(),
+});
+
+export type CreateTeamInput = z.infer<typeof createTeamSchema>;
+```
+
+### TypeScript 타입
+
+```typescript
+// types/team.ts
+export type TeamRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+
+export interface Team {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  role: TeamRole;
+  joined_at: string;
+}
+
+export interface TeamWithRole extends Team {
+  role: TeamRole;  // 현재 사용자의 역할
+}
+```
+
+[Source: docs/sprint-artifacts/tech-spec-epic-2.md#Data-Models-and-Contracts]
+
+### TanStack Query 훅 패턴
+
+```typescript
+// hooks/use-teams.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+export function useTeams() {
+  return useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const res = await fetch('/api/teams');
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error.message);
+      return json.data as TeamWithRole[];
+    },
+    staleTime: 30 * 1000, // 30초
+  });
+}
+
+export function useCreateTeam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreateTeamInput) => {
+      const res = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error.message);
+      return json.data as Team;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+  });
+}
+```
+
+### 팀 생성 모달 UI 레이아웃
+
+```
++----------------------------------+
+| Create Team                  [X] |
++----------------------------------+
+|                                  |
+| Team Name *                      |
+| +------------------------------+ |
+| | Enter team name              | |
+| +------------------------------+ |
+| Characters: 0/50                 |
+|                                  |
+| [Cancel]          [Create Team]  |
++----------------------------------+
+```
+
+### Sidebar 팀 목록 UI 레이아웃
+
+```
++------------------------+
+| TEAMS                  |
+| + New Team             |
++------------------------+
+| 🟣 My Team     ←active |
+| 🔵 Work Team           |
+| 🟢 Side Project        |
++------------------------+
+```
+
+### Project Structure Notes
+
+파일 생성/수정 경로:
+```
+app/
+├── (dashboard)/
+│   └── teams/
+│       ├── page.tsx              # 새로 생성 (팀 선택 페이지)
+│       └── [teamId]/
+│           └── page.tsx          # 새로 생성 (팀 상세)
+├── api/
+│   └── teams/
+│       └── route.ts              # 새로 생성 (POST, GET)
+
+components/
+├── teams/
+│   ├── team-create-modal.tsx     # 새로 생성
+│   └── team-list.tsx             # 새로 생성
+└── layout/
+    └── sidebar.tsx               # 수정 (TeamList 통합)
+
+hooks/
+└── use-teams.ts                  # 새로 생성
+
+types/
+└── team.ts                       # 새로 생성
+
+lib/
+└── validations/
+    └── team.ts                   # 새로 생성
+```
+
+[Source: docs/architecture.md#Project-Structure]
+
+### References
+
+- [Source: docs/PRD.md#FR-010] - 팀 생성 요구사항
+- [Source: docs/PRD.md#FR-017] - 역할 체계 요구사항
+- [Source: docs/sprint-artifacts/tech-spec-epic-2.md] - Epic 2 기술 사양 전체
+- [Source: docs/architecture.md#Project-Structure] - 프로젝트 구조
+- [Source: docs/architecture.md#API-Contracts] - API 응답 형식
+- [Source: docs/epics.md#Story-2.1] - 스토리 상세 설명
+
+### Learnings from Previous Story
+
+**From Story 1-5-profile-password-management (Status: drafted)**
+
+이전 스토리는 `drafted` 상태입니다. Epic 1의 모든 스토리가 완료된 것으로 가정합니다.
+
+**의존성 참고:**
+- Story 1.1에서 `teams`, `team_members` DB 테이블 생성 완료
+- Story 1.2에서 Sidebar, Modal, Toast 등 공통 UI 컴포넌트 구현 완료
+- Story 1.3에서 인증 미들웨어 및 세션 관리 구현 완료
+
+**확인 필요 사항:**
+- `teams` 테이블과 `team_members` 테이블이 존재하는지
+- RLS 정책이 활성화되어 있는지
+- 인증 컨텍스트에서 사용자 ID 접근 가능한지
+- Modal, Toast 컴포넌트가 구현되어 있는지
+
+**재사용할 컴포넌트 (이전 스토리에서 생성):**
+- 대시보드 레이아웃 (`app/(dashboard)/layout.tsx`)
+- Sidebar 컴포넌트 (`components/layout/sidebar.tsx`)
+- Modal, Toast, Button, Input 컴포넌트
+- Supabase 클라이언트 (`lib/supabase/client.ts`, `lib/supabase/server.ts`)
+- 인증 미들웨어 (`middleware.ts`)
+
+[Source: docs/sprint-artifacts/1-5-profile-password-management.md]
+
+## Dev Agent Record
+
+### Context Reference
+
+<!-- Path(s) to story context XML will be added here by context workflow -->
+
+### Agent Model Used
+
+<!-- Will be filled by dev agent -->
+
+### Debug Log References
+
+<!-- Will be filled by dev agent during implementation -->
+
+### Completion Notes List
+
+<!-- Will be filled by dev agent after completion -->
+
+### File List
+
+<!-- Will be filled by dev agent: NEW, MODIFIED, DELETED files -->
+
+## Change Log
+
+| 날짜 | 변경 내용 | 작성자 |
+|------|----------|--------|
+| 2025-11-29 | 스토리 초안 작성 | SM (create-story workflow) |
