@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/services/activity";
+import { verifyFirebaseAuth } from "@/lib/firebase/auth-server";
 
 // Standard error response
 function errorResponse(
@@ -24,13 +25,10 @@ export async function POST(
 ) {
   try {
     const { token } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await verifyFirebaseAuth();
 
     if (authError || !user) {
       return errorResponse("UNAUTHORIZED", "로그인이 필요합니다", 401);
@@ -77,8 +75,7 @@ export async function POST(
       .from("team_members")
       .select("id")
       .eq("team_id", invite.team_id)
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("user_id", user.uid)
       .single();
 
     if (existingMember) {
@@ -97,7 +94,7 @@ export async function POST(
       .from("team_members")
       .insert({
         team_id: invite.team_id,
-        user_id: user.id,
+        user_id: user.uid,
         role: "MEMBER",
       })
       .select()
@@ -127,11 +124,11 @@ export async function POST(
     // Log activity
     await logActivity(
       invite.team_id,
-      user.id,
+      user.uid,
       "member_joined",
       "member",
-      user.id,
-      { email: invite.email, role: invite.role }
+      user.uid,
+      { email: invite.email }
     );
 
     return NextResponse.json({

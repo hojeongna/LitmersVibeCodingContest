@@ -30,7 +30,7 @@ interface IssueFilterPanelProps {
   statuses?: Array<{ id: string; name: string; color: string | null }>;
   teamMembers?: Array<{
     user_id: string;
-    profiles?: { name: string; email: string };
+    profile?: { name: string; email: string };
   }>;
   labels?: Array<{ id: string; name: string; color: string }>;
   issueCount?: number;
@@ -228,7 +228,7 @@ export function IssueFilterPanel({
                     <SelectItem value="unassigned">미지정</SelectItem>
                     {teamMembers.map((member) => (
                       <SelectItem key={member.user_id} value={member.user_id}>
-                        {member.profiles?.name || member.profiles?.email}
+                        {member.profile?.name || member.profile?.email}
                       </SelectItem>
                     ))}
                   </SelectContent>

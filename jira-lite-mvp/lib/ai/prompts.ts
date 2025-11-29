@@ -33,5 +33,25 @@ Compare the new issue with existing issues and identify potential duplicates.
 Return JSON: { "duplicates": [{ "issue_id": "...", "similarity": 0.0-1.0 }] }
 Only return issues with similarity >= 0.8`,
     userTemplate: (newTitle: string, newDescription: string, existingIssuesJson: string) => `New Issue:\nTitle: ${newTitle}\nDescription: ${newDescription}\n\nExisting Issues:\n${existingIssuesJson}`
+  },
+  COMMENT_SUMMARY: {
+    system: `You are an AI assistant for an issue tracking system. Summarize the discussion thread in Korean.
+Provide:
+1. A summary of the discussion (3-5 sentences)
+2. Key decisions or action items (if any)
+
+Format:
+## 토론 요약
+(요약 내용)
+
+## 주요 결정 사항
+- (결정 1)
+- (결정 2)
+(결정 사항이 없으면 "명시적인 결정 사항 없음"으로 표시)`,
+    userTemplate: (title: string, description: string, comments: string) => `Issue Title: ${title}
+Issue Description: ${description}
+
+Comments:
+${comments}`
   }
 }

@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { openai } from '@/lib/ai/openai-client'
 import { PROMPTS } from '@/lib/ai/prompts'
-import { checkRateLimit, checkRateLimitWithDetails, recordUsage } from '@/lib/ai/rate-limiter'
+import { checkRateLimitWithDetails, recordUsage } from '@/lib/ai/rate-limiter'
 import { withRetry } from '@/lib/ai/utils'
 import { verifyFirebaseAuth } from '@/lib/firebase/auth-server'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    // Fetch issue
+    // Fetch issue and comments
     const { data: issue, error: issueError } = await supabase
       .from('issues')
       .select('title, description, project_id')
@@ -86,51 +87,102 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    // Generate suggestions
-    const suggestions = await withRetry(async () => {
+    // Fetch comments
+    const { data: comments } = await supabase
+        .from('comments')
+        .select('content, author:profiles(name), created_at')
+        .eq('issue_id', issue_id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+
+    if (!comments || comments.length < 5) {
+        return NextResponse.json(
+            { 
+                success: false, 
+                error: { 
+                    code: 'INSUFFICIENT_COMMENTS', 
+                    message: '댓글이 5개 이상일 때만 요약할 수 있습니다',
+                    details: {
+                        required: 5,
+                        current: comments?.length || 0
+                    }
+                } 
+            },
+            { status: 400 }
+        )
+    }
+
+    // Calculate hash
+    const commentsText = comments.map(c => `${c.author?.name}: ${c.content}`).join('\n')
+    const contentHash = crypto.createHash('sha256').update(commentsText).digest('hex')
+
+    // Check cache
+    const { data: cached } = await supabase
+        .from('ai_cache')
+        .select('result')
+        .eq('issue_id', issue_id)
+        .eq('cache_type', 'comment_summary')
+        .eq('content_hash', contentHash)
+        .single()
+
+    if (cached) {
+        return NextResponse.json({
+            success: true,
+            data: {
+                summary: (cached.result as any).text,
+                cached: true
+            }
+        })
+    }
+
+    // Generate summary
+    const summary = await withRetry(async () => {
         const response = await openai.chat.completions.create({
             model: 'gpt-5-nano',
             messages: [
               {
                 role: 'system',
-                content: PROMPTS.ISSUE_SUGGESTION.system
+                content: PROMPTS.COMMENT_SUMMARY.system
               },
               {
                 role: 'user',
-                content: PROMPTS.ISSUE_SUGGESTION.userTemplate(issue.title, issue.description || '')
+                content: PROMPTS.COMMENT_SUMMARY.userTemplate(issue.title, issue.description || '', commentsText)
               }
             ],
             max_tokens: 500,
             temperature: 0.7,
-            response_format: { type: 'json_object' }
         })
-        return JSON.parse(response.choices[0].message.content || '{}')
+        return response.choices[0].message.content || ''
     })
 
-    // Save to database
-    await supabase
-      .from('issues')
-      .update({
-        ai_suggestions: suggestions,
-        ai_generated_at: new Date().toISOString()
-      })
-      .eq('id', issue_id)
+    // Save to cache
+    // Remove old cache for this type
+    await supabase.from('ai_cache').delete()
+        .eq('issue_id', issue_id)
+        .eq('cache_type', 'comment_summary')
+
+    await supabase.from('ai_cache').insert({
+        issue_id: issue_id,
+        cache_type: 'comment_summary',
+        content_hash: contentHash,
+        result: { text: summary }
+    })
 
     // Record usage
-    await recordUsage(user.uid, 'suggestion')
+    await recordUsage(user.uid, 'comment_summary')
 
     return NextResponse.json({
       success: true,
       data: {
-        suggestions,
-        generated_at: new Date().toISOString()
+        summary,
+        cached: false
       }
     })
 
   } catch (error) {
-    console.error('AI Suggestions Error:', error)
+    console.error('AI Comment Summary Error:', error)
     return NextResponse.json(
-      { success: false, error: { code: 'AI_ERROR', message: 'AI 제안 생성에 실패했습니다' } },
+      { success: false, error: { code: 'AI_ERROR', message: '댓글 요약에 실패했습니다' } },
       { status: 500 }
     )
   }

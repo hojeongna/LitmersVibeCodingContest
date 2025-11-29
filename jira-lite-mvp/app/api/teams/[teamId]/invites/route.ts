@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createInviteSchema } from "@/lib/validations/invite";
 import { sendTeamInvite } from "@/lib/email/templates/team-invite";
 import { logActivity } from "@/lib/services/activity";
+import { adminAuth } from "@/lib/firebase/admin";
+import { createNotification } from "@/lib/notifications/service";
 
 // Standard error response
 function errorResponse(
@@ -124,7 +126,7 @@ export async function POST(
         token,
         invited_by: user.uid,
         expires_at: expiresAt.toISOString(),
-      })
+      } as any)
       .select()
       .single();
 
@@ -155,13 +157,31 @@ export async function POST(
       await sendTeamInvite({
         email,
         teamName: team?.name || "팀",
-        inviterName: inviterProfile?.name || "팀 관리자",
+        inviterName: inviterProfile?.name || user.email || "팀 관리자",
         token,
         role,
       });
     } catch (emailError) {
       console.error("Failed to send invite email:", emailError);
       // Don't fail the request if email fails - invitation is already created
+    }
+
+    // Notify user if they already have an account
+    try {
+        const invitedUser = await adminAuth.getUserByEmail(email);
+        if (invitedUser) {
+            await createNotification({
+                userId: invitedUser.uid,
+                type: 'TEAM_INVITE',
+                title: `${inviterProfile?.name || 'Someone'} invited you to join ${team?.name || 'a team'}`,
+                body: 'Check your email for the invitation link.',
+                teamId: teamId,
+                actorId: user.uid,
+            });
+        }
+    } catch (error) {
+        // User not found or other error - ignore
+        // console.log('User not found for email:', email);
     }
 
     // Log activity

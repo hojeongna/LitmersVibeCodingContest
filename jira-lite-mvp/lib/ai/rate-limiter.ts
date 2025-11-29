@@ -1,80 +1,62 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const RATE_LIMITS = {
-  MINUTE: 10,
-  DAILY: 100
+const LIMITS = {
+  PER_MINUTE: 10,
+  PER_DAY: 100
+}
+
+interface RateLimitResult {
+  allowed: boolean
+  remaining: { minute: number; daily: number }
+  resetIn?: { minute: number; daily: number } // seconds
 }
 
 export async function checkRateLimit(userId: string): Promise<boolean> {
-  const supabase = await createClient()
-  
-  // Get current usage
-  const { data: usage, error } = await supabase
-    .from('ai_rate_limits')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-    console.error('Rate limit check error:', error)
-    return false // Fail safe
-  }
-
-  const now = new Date()
-  
-  if (!usage) {
-    // Create new record
-    await supabase.from('ai_rate_limits').insert({
-      user_id: userId,
-      minute_count: 0,
-      minute_reset_at: new Date(now.getTime() + 60 * 1000).toISOString(),
-      daily_count: 0,
-      daily_reset_at: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()
-    })
-    return true
-  }
-
-  // Check resets
-  let updates: any = {}
-  let minuteCount = usage.minute_count
-  let dailyCount = usage.daily_count
-
-  if (usage.minute_reset_at && new Date(usage.minute_reset_at) < now) {
-    minuteCount = 0
-    updates.minute_count = 0
-    updates.minute_reset_at = new Date(now.getTime() + 60 * 1000).toISOString()
-  }
-
-  if (usage.daily_reset_at && new Date(usage.daily_reset_at) < now) {
-    dailyCount = 0
-    updates.daily_count = 0
-    updates.daily_reset_at = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()
-  }
-
-  if (Object.keys(updates).length > 0) {
-    await supabase.from('ai_rate_limits').update(updates).eq('user_id', userId)
-  }
-
-  if (minuteCount >= RATE_LIMITS.MINUTE || dailyCount >= RATE_LIMITS.DAILY) {
-    return false
-  }
-
-  return true
+  const result = await checkRateLimitWithDetails(userId)
+  return result.allowed
 }
 
-export async function recordUsage(userId: string, type: string) {
-  const supabase = await createClient()
-  
-  const { data: usage } = await supabase
-    .from('ai_rate_limits')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-    
-  if (usage) {
-    await supabase.from('ai_rate_limits').update({
-      minute_count: usage.minute_count + 1,
-      daily_count: usage.daily_count + 1
-    }).eq('user_id', userId)
+export async function checkRateLimitWithDetails(userId: string): Promise<RateLimitResult> {
+  const supabase = createAdminClient()
+  const now = new Date()
+  const oneMinuteAgo = new Date(now.getTime() - 60 * 1000)
+  const startOfDay = new Date(now.setHours(0, 0, 0, 0))
+
+  const [minuteResult, dailyResult] = await Promise.all([
+    supabase
+      .from('ai_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', oneMinuteAgo.toISOString()),
+    supabase
+      .from('ai_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfDay.toISOString())
+  ])
+
+  const minuteCount = minuteResult.count || 0
+  const dailyCount = dailyResult.count || 0
+
+  const allowed = minuteCount < LIMITS.PER_MINUTE && dailyCount < LIMITS.PER_DAY
+
+  return {
+    allowed,
+    remaining: {
+      minute: Math.max(0, LIMITS.PER_MINUTE - minuteCount),
+      daily: Math.max(0, LIMITS.PER_DAY - dailyCount)
+    },
+    resetIn: allowed ? undefined : {
+      minute: 60 - Math.floor((Date.now() - oneMinuteAgo.getTime()) / 1000),
+      daily: Math.floor((new Date().setHours(24, 0, 0, 0) - Date.now()) / 1000)
+    }
   }
+}
+
+export async function recordUsage(userId: string, actionType: string) {
+  const supabase = createAdminClient()
+  await supabase.from('ai_usage').insert({
+    user_id: userId,
+    action_type: actionType
+  })
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { openai } from '@/lib/ai/openai-client'
-import { checkRateLimit, recordUsage } from '@/lib/ai/rate-limiter'
+import { checkRateLimit, checkRateLimitWithDetails, recordUsage } from '@/lib/ai/rate-limiter'
 import { PROMPTS } from '@/lib/ai/prompts'
 import { withRetry } from '@/lib/ai/utils'
 import { verifyFirebaseAuth } from '@/lib/firebase/auth-server'
@@ -18,10 +18,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const canProceed = await checkRateLimit(user.uid)
-    if (!canProceed) {
+    const rateLimit = await checkRateLimitWithDetails(user.uid)
+    if (!rateLimit.allowed) {
+      const resetIn = rateLimit.resetIn?.minute || rateLimit.resetIn?.daily || 60
+      const message = rateLimit.remaining.minute === 0 
+        ? `분당 사용 제한에 도달했습니다. ${resetIn}초 후 다시 시도하세요.`
+        : `일일 사용 제한에 도달했습니다. 내일 다시 시도하세요.`
+        
       return NextResponse.json(
-        { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'AI 사용 한도를 초과했습니다' } },
+        { 
+          success: false, 
+          error: { 
+            code: 'RATE_LIMIT_EXCEEDED', 
+            message,
+            details: rateLimit 
+          } 
+        },
         { status: 429 }
       )
     }

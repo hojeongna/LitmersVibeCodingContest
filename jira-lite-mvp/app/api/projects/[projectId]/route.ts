@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { updateProjectSchema } from '@/lib/validations/project';
 import { NextResponse } from 'next/server';
 
@@ -8,7 +8,7 @@ import { verifyFirebaseAuth } from '@/lib/firebase/auth-server';
 export async function GET(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // 인증 확인
     const { user, error: authError } = await verifyFirebaseAuth();
@@ -48,7 +48,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
       .select('role')
       .eq('team_id', project.team_id)
       .eq('user_id', user.uid)
-      .eq('status', 'active')
       .single();
 
     if (membershipError || !membership) {
@@ -96,7 +95,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
 export async function PUT(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await request.json();
 
     // 인증 확인
@@ -145,7 +144,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
       .select('role')
       .eq('team_id', project.team_id)
       .eq('user_id', user.uid)
-      .eq('status', 'active')
       .single();
 
     if (membershipError || !membership) {
@@ -203,7 +201,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ proj
 export async function DELETE(request: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // 인증 확인
     const { user, error: authError } = await verifyFirebaseAuth();
@@ -236,7 +234,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ p
       .select('role')
       .eq('team_id', project.team_id)
       .eq('user_id', user.uid)
-      .eq('status', 'active')
       .single();
 
     if (membershipError || !membership) {

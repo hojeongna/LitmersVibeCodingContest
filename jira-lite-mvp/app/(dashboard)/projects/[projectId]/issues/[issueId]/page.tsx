@@ -251,7 +251,7 @@ export default function IssueDetailPage({
                   <SelectItem value="unassigned">미지정</SelectItem>
                   {teamMembers?.map((member) => (
                     <SelectItem key={member.user_id} value={member.user_id}>
-                      {member.profiles?.name || member.profiles?.email}
+                      {member.profile?.name || member.profile?.email}
                     </SelectItem>
                   ))}
                 </SelectContent>

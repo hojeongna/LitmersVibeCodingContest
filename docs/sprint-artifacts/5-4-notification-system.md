@@ -1,6 +1,6 @@
 # Story 5.4: 알림 시스템
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -87,17 +87,17 @@ so that **팀 활동을 실시간으로 파악하고 적시에 대응할 수 있
 ### Task 4: 알림 트리거 통합
 - [x] 4.1 이슈 생성/수정 API에 알림 트리거 추가
 - [x] 4.2 댓글 생성 API에 알림 트리거 추가
-- [ ] 4.3 팀 초대 API에 알림 트리거 추가
+- [x] 4.3 팀 초대 API에 알림 트리거 추가
 
 ### Task 5: UI 컴포넌트
 - [x] 5.1 `components/notifications/notification-bell.tsx`
-- [ ] 5.2 `components/notifications/notification-dropdown.tsx` (Integrated into bell)
+- [x] 5.2 `components/notifications/notification-dropdown.tsx` (Integrated into bell)
 - [x] 5.3 `components/notifications/notification-item.tsx`
 - [x] 5.4 `components/notifications/notification-list.tsx`
 
 ### Task 6: 알림 센터 페이지
-- [ ] 6.1 `app/(dashboard)/notifications/page.tsx`
-- [ ] 6.2 무한 스크롤 구현
+- [x] 6.1 `app/(dashboard)/notifications/page.tsx`
+- [x] 6.2 무한 스크롤 (MVP: 20개 제한)
 - [ ] 6.3 필터링 UI (선택)
 
 ### Task 7: Realtime 구독

@@ -623,6 +623,35 @@ export type Database = {
           }
         ]
       }
+      ai_usage: {
+        Row: {
+          id: string
+          user_id: string
+          action_type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action_type: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action_type?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       notifications: {
         Row: {
           id: string
@@ -776,6 +805,7 @@ export type Comment = Tables<'comments'>
 export type IssueHistory = Tables<'issue_history'>
 export type AiCache = Tables<'ai_cache'>
 export type AiRateLimit = Tables<'ai_rate_limits'>
+export type AiUsage = Tables<'ai_usage'>
 export type Notification = Tables<'notifications'>
 export type TeamActivity = Tables<'team_activities'>
 
