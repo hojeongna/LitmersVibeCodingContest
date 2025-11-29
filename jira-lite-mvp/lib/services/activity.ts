@@ -45,7 +45,7 @@ export async function logActivity(
       action,
       target_type: targetType,
       target_id: targetId,
-      details,
+      details: details as any,
     });
 
     if (error) {

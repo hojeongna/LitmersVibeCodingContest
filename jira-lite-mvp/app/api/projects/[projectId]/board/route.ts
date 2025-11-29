@@ -33,15 +33,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
       );
     }
 
-    const { data: membership } = await supabase
+    console.log('[Board API] Checking membership:', { teamId: project.team_id, userId: user.uid });
+
+    const { data: membership, error: membershipError } = await supabase
       .from('team_members')
       .select('role')
       .eq('team_id', project.team_id)
       .eq('user_id', user.uid)
-      .eq('status', 'active')
       .single();
 
-    if (!membership) {
+    if (membershipError || !membership) {
+      console.error('[Board API] Membership check failed:', membershipError);
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: '접근 권한이 없습니다' } },
         { status: 403 }
